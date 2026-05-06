@@ -1,11 +1,19 @@
 import config from "@/lib/config";
-import instagramConnect from "@/lib/instagram-connect";
+import instagramConnect from "@/lib/instagramConnect";
+import { connectInstagramAccount } from "@/services/account.service";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const code = request.nextUrl.searchParams.get("code");
+    const userId = request.nextUrl.searchParams.get("state");
+
+    if (!code || !userId) {
+      return NextResponse.redirect(
+        `${config.PUBLIC_URL}/?error=Missing+parameters`,
+      );
+    }
 
     // Step 1: Short-lived token
     const shortRes = await axios.post(
@@ -15,7 +23,7 @@ export async function GET(request: NextRequest) {
         client_secret: config.APP_SECRET,
         grant_type: "authorization_code",
         redirect_uri: config.REDIRECT_URL,
-        code: code!,
+        code,
       }),
       {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -25,11 +33,12 @@ export async function GET(request: NextRequest) {
 
     const raw = shortRes.data;
     const tokenMatch = raw.match(/"access_token"\s*:\s*"([^"]+)"/);
-    const userIdMatch = raw.match(/"user_id"\s*:\s*(\d+)/);
+    const igUserIdMatch = raw.match(/"user_id"\s*:\s*(\d+)/);
 
     const shortToken = tokenMatch?.[1];
-    const user_id = userIdMatch?.[1]; //
+    const igUserId = igUserIdMatch?.[1];
 
+    // Step 2: Exchange for long-lived token
     const longRes = await axios.get(
       "https://graph.instagram.com/access_token",
       {
@@ -43,8 +52,9 @@ export async function GET(request: NextRequest) {
 
     const { access_token: longToken } = longRes.data;
 
+    // Step 3: Fetch profile
     const profile = await axios.get(
-      `https://graph.instagram.com/v21.0/${user_id.toString()}`,
+      `https://graph.instagram.com/v21.0/${igUserId}`,
       {
         params: {
           fields: instagramConnect.profileFields,
@@ -53,15 +63,16 @@ export async function GET(request: NextRequest) {
       },
     );
 
-    console.log("Profile = ", profile.data);
-
     if (profile.data.error) {
       return NextResponse.redirect(
         `${config.PUBLIC_URL}/?error=${encodeURIComponent(profile.data.error.message)}`,
       );
     }
 
-    return NextResponse.redirect(`${config.PUBLIC_URL}`);
+    // Step 4: Save account + token
+    await connectInstagramAccount(userId, profile.data, longToken);
+
+    return NextResponse.redirect(`${config.PUBLIC_URL}/dashboard`);
   } catch (err) {
     if (axios.isAxiosError(err)) {
       console.error("Instagram API error:", err.response?.data);
