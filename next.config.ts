@@ -1,8 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  allowedDevOrigins: ["noncontemporaneously-sigillate-cristin.ngrok-free.dev"],
+  allowedDevOrigins: [
+    "noncontemporaneously-sigillate-cristin.ngrok-free.dev",
+    "app.localhost",
+    "admin.localhost",
+  ],
 };
 
 export default nextConfig;
