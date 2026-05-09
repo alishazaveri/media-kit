@@ -350,30 +350,30 @@ function Nav() {
 
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-7">
-          <a
+          {/* <a
             href="#sample"
             className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
           >
             Sample Profile
-          </a>
-          <a
+          </a> */}
+          {/* <a
             href="#features"
             className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
           >
             Features
-          </a>
-          <a
+          </a> */}
+          {/* <a
             href="#reviews"
             className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
           >
             Reviews
-          </a>
-          <a
+          </a> */}
+          {/* <a
             href="#sample"
             className="text-sm text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1"
           >
             View sample <span className="text-xs">›</span>
-          </a>
+          </a> */}
         </nav>
 
         {/* CTA */}
@@ -418,8 +418,8 @@ function Hero() {
             {[
               "No coding or design skills needed",
               "Real-time preview as you build",
-              "Payment required only to go public",
-              "Cancel or update anytime",
+              // "Payment required only to go public",
+              // "Cancel or update anytime",
             ].map((item) => (
               <div key={item} className="flex items-start gap-2">
                 <CheckIcon />
@@ -438,18 +438,18 @@ function Hero() {
               Create Your Page — Free
               <span>→</span>
             </a>
-            <a
+            {/* <a
               href="#sample"
               className="inline-flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 font-medium text-sm px-5 py-3 rounded-full transition-colors"
             >
               <span className="text-xs text-gray-400">▶</span>
               View Sample
-            </a>
+            </a> */}
           </div>
 
           {/* Social proof */}
           <div className="flex items-center gap-5">
-            <div className="flex -space-x-2">
+            {/* <div className="flex -space-x-2">
               {[
                 "bg-rose-400",
                 "bg-violet-400",
@@ -461,27 +461,27 @@ function Hero() {
                   className={`w-8 h-8 ${color} rounded-full border-2 border-white`}
                 />
               ))}
-            </div>
-            <div>
+            </div> */}
+            {/* <div>
               <p className="text-sm font-semibold text-gray-900">
                 12,000+ creators
               </p>
               <p className="text-xs text-gray-400">already using Kloot</p>
             </div>
-            <div className="h-8 w-px bg-gray-200" />
-            <div>
+            <div className="h-8 w-px bg-gray-200" /> */}
+            {/* <div>
               <div className="flex items-center gap-1">
                 <Stars />
                 <span className="text-sm font-bold text-gray-900">4.9/5</span>
               </div>
               <p className="text-xs text-gray-400">rating</p>
-            </div>
+            </div> */}
           </div>
         </div>
 
         {/* Right — phone mockup */}
         <div className="flex-1 flex justify-center lg:justify-end">
-          <PhoneMockup />
+          {/* <PhoneMockup /> */}
         </div>
       </div>
     </section>
@@ -633,10 +633,10 @@ function CTASection() {
           Your creator page is{" "}
           <span className="text-primary">one click away</span>
         </h2>
-        <p className="text-gray-400 text-base mb-8">
-          Join 12,000+ creators who use Kloot to land more brand deals
-          with less effort.
-        </p>
+        {/* <p className="text-gray-400 text-base mb-8">
+          Join 12,000+ creators who use Kloot to land more brand deals with less
+          effort.
+        </p> */}
         <a
           href={APP_URL}
           className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm px-6 py-3.5 rounded-full transition-colors shadow-md shadow-primary/25"
@@ -645,9 +645,9 @@ function CTASection() {
           Create Your Free Page
           <span>→</span>
         </a>
-        <p className="text-xs text-gray-400 mt-4">
+        {/* <p className="text-xs text-gray-400 mt-4">
           No credit card required · Free preview always
-        </p>
+        </p> */}
       </div>
     </section>
   );
@@ -662,15 +662,18 @@ function Footer() {
 
         {/* Links */}
         <div className="flex items-center gap-6">
-          {["Privacy", "Terms", "Support"].map((link) => (
-            <a
-              key={link}
-              href="#"
-              className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              {link}
-            </a>
-          ))}
+          <a
+            href="/privacy"
+            className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            Privacy
+          </a>
+          <a
+            href="/terms"
+            className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            Terms
+          </a>
         </div>
 
         <p className="text-xs text-gray-400">© 2026 Kloot</p>
@@ -686,9 +689,9 @@ export default function Home() {
     <main>
       <Nav />
       <Hero />
-      <Stats />
+      {/* <Stats /> */}
       <Features />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <CTASection />
       <Footer />
     </main>
