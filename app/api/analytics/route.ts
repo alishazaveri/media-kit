@@ -24,6 +24,7 @@ export async function GET() {
       draft: (userData as any)?.draft_data ?? {},
       published: (userData as any)?.published_data ?? {},
       username: session.username,
+      email: session.email,
     });
   } catch (err) {
     console.error("GET /api/analytics:", err);

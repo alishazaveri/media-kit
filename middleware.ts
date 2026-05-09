@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET);
 
 const GUEST_ONLY = ["/login"];
 const PROTECTED = ["/dashboard", "/settings"];
@@ -14,8 +15,15 @@ async function isAuthenticated(req: NextRequest): Promise<boolean> {
       return true;
     } catch {}
   }
-  // Refresh token present means the route handler can silently reissue — treat as authed
-  return req.cookies.has("refresh_token");
+  // Verify refresh token signature before trusting it — presence alone is not enough
+  const refreshToken = req.cookies.get("refresh_token")?.value;
+  if (refreshToken) {
+    try {
+      await jwtVerify(refreshToken, refreshSecret);
+      return true;
+    } catch {}
+  }
+  return false;
 }
 
 function applyAuthGuards(

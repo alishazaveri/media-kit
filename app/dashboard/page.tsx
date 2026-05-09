@@ -168,6 +168,7 @@ export default function DashboardPage() {
   const [displayName, setDisplayName] = useState("");
   const [handle, setHandle] = useState("");
   const [appUsername, setAppUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [tagline, setTagline] = useState("");
   const [location, setLocation] = useState("India");
   const [availableForCollabs, setAvailableForCollabs] = useState(true);
@@ -313,6 +314,7 @@ export default function DashboardPage() {
 
         // App username (used in public profile URL)
         if (res.data?.username) setAppUsername(res.data.username);
+        if (res.data?.email) setEmail(res.data.email);
 
         // Editable fields: draft first, fallback to analytics
         setDisplayName(draft.display_name ?? ig.name ?? "");
@@ -461,7 +463,7 @@ export default function DashboardPage() {
         </nav>
 
         <div className="px-3 pb-5 space-y-1 border-t border-gray-100 pt-4">
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:bg-gray-50 transition-colors">
+          {/* <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:bg-gray-50 transition-colors">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path
                 d="M9 1V3M9 15V17M1 9H3M15 9H17M3.2 3.2L4.6 4.6M13.4 13.4L14.8 14.8M3.2 14.8L4.6 13.4M13.4 4.6L14.8 3.2"
@@ -472,7 +474,7 @@ export default function DashboardPage() {
               <circle cx="9" cy="9" r="3" stroke="#9CA3AF" strokeWidth="1.5" />
             </svg>
             Dark mode
-          </button>
+          </button> */}
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:bg-gray-50 transition-colors"
@@ -1333,21 +1335,23 @@ export default function DashboardPage() {
                       Email
                     </label>
                     <input
-                      defaultValue="sarah@example.com"
-                      className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                      value={email}
+                      readOnly
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm outline-none bg-gray-50 text-gray-500 cursor-default"
                     />
                   </div>
                   <div>
                     <label className="text-sm text-gray-500 block mb-1.5">
                       Username
                     </label>
-                    <div className="flex border border-gray-200 rounded-2xl overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                    <div className="flex border border-gray-200 rounded-2xl overflow-hidden bg-gray-50">
                       <span className="flex items-center justify-center w-12 bg-gray-100 text-gray-400 text-sm border-r border-gray-200 shrink-0">
                         @
                       </span>
                       <input
-                        defaultValue="sarahjcreates"
-                        className="flex-1 px-4 py-3 text-sm outline-none"
+                        value={appUsername}
+                        readOnly
+                        className="flex-1 px-4 py-3 text-sm outline-none bg-gray-50 text-gray-500 cursor-default"
                       />
                     </div>
                   </div>
@@ -1357,8 +1361,9 @@ export default function DashboardPage() {
                     </label>
                     <input
                       type="password"
-                      defaultValue="password"
-                      className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                      placeholder="••••••••"
+                      readOnly
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm outline-none bg-gray-50 cursor-default"
                     />
                   </div>
                 </div>
@@ -1399,7 +1404,10 @@ export default function DashboardPage() {
                           Instagram
                         </p>
                         <p className="text-xs text-gray-400">
-                          @sarahjcreates · 485K followers
+                          {handle ? `@${handle}` : "—"}
+                          {igStats.followers
+                            ? ` · ${formatCount(igStats.followers)} followers`
+                            : ""}
                         </p>
                       </div>
                     </div>
