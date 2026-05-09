@@ -377,12 +377,20 @@ function Nav() {
         </nav>
 
         {/* CTA */}
-        <a
-          href={APP_URL}
-          className="bg-primary hover:bg-primary-hover text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
-        >
-          Create Your Page
-        </a>
+        <div className="flex items-center gap-3">
+          <a
+            href="/login"
+            className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+          >
+            Login
+          </a>
+          <a
+            href={APP_URL}
+            className="bg-primary hover:bg-primary-hover text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
+          >
+            Create Your Page
+          </a>
+        </div>
       </div>
     </header>
   );
@@ -673,6 +681,12 @@ function Footer() {
             className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
           >
             Terms
+          </a>
+          <a
+            href="/data-deletion"
+            className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            Data Deletion
           </a>
         </div>
 

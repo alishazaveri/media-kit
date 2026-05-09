@@ -255,12 +255,20 @@ export default function PrivacyPage() {
       <footer className="border-t border-gray-100 px-6 py-6">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <p className="text-xs text-gray-400">© 2026 Kloot</p>
-          <Link
-            href="/terms"
-            className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            Terms &amp; Conditions
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/data-deletion"
+              className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Data Deletion
+            </Link>
+            <Link
+              href="/terms"
+              className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Terms &amp; Conditions
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
