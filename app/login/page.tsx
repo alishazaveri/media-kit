@@ -10,11 +10,16 @@ type OnboardingStatus = {
   hasPlan: boolean;
 };
 
-function redirectAfterLogin(status: OnboardingStatus, router: ReturnType<typeof useRouter>) {
+function redirectAfterLogin(
+  status: OnboardingStatus,
+  router: ReturnType<typeof useRouter>,
+) {
   if (!status.hasInstagram) {
     router.push("/onboarding?step=connect");
   } else if (!status.hasPlan) {
-    router.push("/onboarding?step=activate");
+    // undo
+    // router.push("/onboarding?step=activate");
+    router.push("/dashboard");
   } else {
     router.push("/dashboard");
   }
@@ -37,10 +42,9 @@ export default function LoginPage() {
       });
       redirectAfterLogin(res.data.onboardingStatus, router);
     } catch (err) {
-      const msg =
-        axios.isAxiosError(err)
-          ? err.response?.data?.error ?? "Invalid credentials"
-          : "Something went wrong";
+      const msg = axios.isAxiosError(err)
+        ? (err.response?.data?.error ?? "Invalid credentials")
+        : "Something went wrong";
       setError(msg);
     } finally {
       setLoading(false);
@@ -55,7 +59,9 @@ export default function LoginPage() {
         </div>
 
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h1>
-        <p className="text-gray-400 text-sm mb-7">Log in to your creator account.</p>
+        <p className="text-gray-400 text-sm mb-7">
+          Log in to your creator account.
+        </p>
 
         {error && (
           <div className="mb-5 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600">
@@ -65,7 +71,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Email
+            </label>
             <input
               type="email"
               placeholder="you@example.com"
@@ -78,8 +86,12 @@ export default function LoginPage() {
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm font-medium text-gray-700">Password</label>
-              <a href="#" className="text-xs text-primary hover:underline">Forgot password?</a>
+              <label className="text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <a href="#" className="text-xs text-primary hover:underline">
+                Forgot password?
+              </a>
             </div>
             <input
               type="password"
@@ -108,7 +120,10 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-500">
           Don&apos;t have an account?{" "}
-          <a href="/onboarding" className="text-primary font-semibold hover:underline">
+          <a
+            href="/onboarding"
+            className="text-primary font-semibold hover:underline"
+          >
             Sign up
           </a>
         </p>

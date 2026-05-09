@@ -144,7 +144,7 @@ function formatCount(n: number): string {
 
 const NAV_ITEMS = [
   { id: "customize" as Tab, label: "Customize", Icon: CustomizeIcon },
-  { id: "plan" as Tab, label: "Plan & billing", Icon: BillingIcon },
+  // { id: "plan" as Tab, label: "Plan & billing", Icon: BillingIcon },
   { id: "account" as Tab, label: "Account", Icon: AccountIcon },
 ];
 
@@ -1408,7 +1408,8 @@ export default function DashboardPage() {
                     </span>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                {/* undo */}
+                {/* <div className="bg-white rounded-2xl border border-gray-200 p-5">
                   <p className="font-bold text-gray-900 text-base mb-4">
                     Subscription
                   </p>
@@ -1428,7 +1429,7 @@ export default function DashboardPage() {
                   <button className="text-sm text-red-400 hover:text-red-600 transition-colors">
                     Cancel subscription
                   </button>
-                </div>
+                </div> */}
                 <button
                   onClick={handleLogout}
                   className="w-full border border-red-200 text-red-500 font-semibold py-4 rounded-2xl hover:bg-red-50 transition-colors text-base"

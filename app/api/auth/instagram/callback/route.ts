@@ -94,9 +94,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.redirect(
-      `${config.PUBLIC_URL}/onboarding?connected=true`,
-    );
+    // undo
+    // return NextResponse.redirect(
+    //   `${config.PUBLIC_URL}/onboarding?connected=true`,
+    // );
+
+    return NextResponse.redirect(`${config.PUBLIC_URL}/dashboard`);
   } catch (err) {
     if (axios.isAxiosError(err)) {
       console.error("Instagram API error:", err.response?.data);
