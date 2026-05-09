@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { AppLogo } from "@/components/AppLogo";
@@ -553,7 +553,7 @@ function ActivateStep({ onNext }: { onNext: () => void }) {
 /* ──────────────────────────────────────────────
    Root onboarding page
 ────────────────────────────────────────────── */
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>("signup");
@@ -614,5 +614,13 @@ export default function OnboardingPage() {
         <ActivateStep onNext={() => router.push("/dashboard")} />
       )}
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense>
+      <OnboardingContent />
+    </Suspense>
   );
 }
