@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface IAccount extends Document {
+export interface ISocialChannel extends Document {
   user_id: mongoose.Types.ObjectId;
   platform: string;
   platform_user_id: string;
@@ -11,21 +11,21 @@ export interface IAccount extends Document {
   created_at: Date;
 }
 
-const AccountSchema = new Schema<IAccount>(
+const SocialChannelSchema = new Schema<ISocialChannel>(
   {
     user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    platform: {
-      type: String,
-      required: true,
-    },
+    platform: { type: String, required: true },
     platform_user_id: { type: String, required: true },
     platform_username: { type: String },
     followers: { type: Number, default: 0 },
     following: { type: Number, default: 0 },
     media_count: { type: Number, default: 0 },
   },
-  { timestamps: { createdAt: "created_at", updatedAt: false } },
+  {
+    collection: "social_channels",
+    timestamps: { createdAt: "created_at", updatedAt: false },
+  }
 );
 
-export default mongoose.models.Account ||
-  mongoose.model<IAccount>("Account", AccountSchema);
+export default mongoose.models.SocialChannel ||
+  mongoose.model<ISocialChannel>("SocialChannel", SocialChannelSchema);

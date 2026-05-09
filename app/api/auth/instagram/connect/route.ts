@@ -1,10 +1,14 @@
 import config from "@/lib/config";
 import instagramConnect from "@/lib/instagramConnect";
+import { getSession } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = req.nextUrl.searchParams.get("userId");
+    // Session takes precedence over query param (handles post-login redirects)
+    const session = await getSession();
+    const userId = session?.userId ?? req.nextUrl.searchParams.get("userId");
+
     if (!userId) {
       return NextResponse.json(
         { error: "userId is required" },

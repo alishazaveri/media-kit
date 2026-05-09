@@ -101,6 +101,7 @@ export async function loginUser(email: string, password: string) {
       name: user.name,
       email: user.email,
       username: user.username,
+      planId: user.plan_id?.toString() ?? null,
     },
   };
 }

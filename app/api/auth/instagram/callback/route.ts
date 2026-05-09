@@ -1,6 +1,7 @@
 import config from "@/lib/config";
 import instagramConnect from "@/lib/instagramConnect";
-import { connectInstagramAccount } from "@/services/account.service";
+import { connectInstagramChannel } from "@/services/social_channel.service";
+import { fetchAndSaveInstagramAnalytics } from "@/services/instagram.service";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -70,9 +71,32 @@ export async function GET(request: NextRequest) {
     }
 
     // Step 4: Save account + token
-    await connectInstagramAccount(userId, profile.data, longToken);
+    const account = await connectInstagramChannel(
+      userId,
+      profile.data,
+      longToken,
+    );
 
-    return NextResponse.redirect(`${config.PUBLIC_URL}/dashboard`);
+    // Step 5: Fetch Instagram analytics and save as draft
+    console.log(
+      "[Callback] Starting analytics fetch for account:",
+      account._id.toString(),
+    );
+    try {
+      await fetchAndSaveInstagramAnalytics(userId, account._id.toString());
+      console.log(
+        "[Callback] Analytics fetch succeeded, redirecting to onboarding.",
+      );
+    } catch (analyticsErr) {
+      console.error("[Callback] Analytics fetch failed:", analyticsErr);
+      return NextResponse.redirect(
+        `${config.PUBLIC_URL}/onboarding?error=analytics_failed`,
+      );
+    }
+
+    return NextResponse.redirect(
+      `${config.PUBLIC_URL}/onboarding?connected=true`,
+    );
   } catch (err) {
     if (axios.isAxiosError(err)) {
       console.error("Instagram API error:", err.response?.data);

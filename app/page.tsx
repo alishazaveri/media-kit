@@ -2,17 +2,6 @@ const APP_URL = "/onboarding";
 
 /* ─── SVG Icons ─── */
 
-function SparkleIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path
-        d="M7 1L8.2 5.2L12.5 7L8.2 8.8L7 13L5.8 8.8L1.5 7L5.8 5.2L7 1Z"
-        fill="white"
-      />
-    </svg>
-  );
-}
-
 function CheckIcon() {
   return (
     <svg
@@ -357,12 +346,7 @@ function Nav() {
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center shadow-sm">
-            <SparkleIcon />
-          </div>
-          <span className="font-bold text-gray-900 text-2xl">cloutcheck</span>
-        </div>
+        <span className="font-bold text-gray-900 text-2xl">Kloot</span>
 
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-7">
@@ -482,7 +466,7 @@ function Hero() {
               <p className="text-sm font-semibold text-gray-900">
                 12,000+ creators
               </p>
-              <p className="text-xs text-gray-400">already using CreatorPage</p>
+              <p className="text-xs text-gray-400">already using Kloot</p>
             </div>
             <div className="h-8 w-px bg-gray-200" />
             <div>
@@ -650,7 +634,7 @@ function CTASection() {
           <span className="text-primary">one click away</span>
         </h2>
         <p className="text-gray-400 text-base mb-8">
-          Join 12,000+ creators who use CreatorPage to land more brand deals
+          Join 12,000+ creators who use Kloot to land more brand deals
           with less effort.
         </p>
         <a
@@ -674,12 +658,7 @@ function Footer() {
     <footer className="border-t border-gray-100 bg-white py-8">
       <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         {/* Logo */}
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
-            <SparkleIcon />
-          </div>
-          <span className="font-bold text-gray-900 text-sm">CreatorPage</span>
-        </div>
+        <span className="font-bold text-gray-900 text-sm">Kloot</span>
 
         {/* Links */}
         <div className="flex items-center gap-6">
@@ -694,7 +673,7 @@ function Footer() {
           ))}
         </div>
 
-        <p className="text-xs text-gray-400">© 2026 CreatorPage</p>
+        <p className="text-xs text-gray-400">© 2026 Kloot</p>
       </div>
     </footer>
   );

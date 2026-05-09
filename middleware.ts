@@ -3,14 +3,8 @@ import { jwtVerify } from "jose";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
-const APP_PROTECTED = [
-  "/dashboard",
-  "/settings",
-  "/connect-instagram",
-  "/syncing",
-  "/connected",
-  "/activate",
-];
+const GUEST_ONLY = ["/login"];
+const PROTECTED = ["/dashboard", "/settings"];
 
 async function isAuthenticated(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get("access_token")?.value;
@@ -20,57 +14,58 @@ async function isAuthenticated(req: NextRequest): Promise<boolean> {
       return true;
     } catch {}
   }
+  // Refresh token present means the route handler can silently reissue — treat as authed
   return req.cookies.has("refresh_token");
 }
 
-function getSubdomain(host: string): string | null {
-  const hostWithoutPort = host.split(":")[0];
-  const parts = hostWithoutPort.split(".");
-  const isLocalhost =
-    hostWithoutPort === "localhost" || hostWithoutPort.endsWith(".localhost");
+function applyAuthGuards(
+  req: NextRequest,
+  pathname: string,
+  authed: boolean,
+): NextResponse | null {
+  const sp = req.nextUrl.searchParams;
+  const loginUrl = new URL("/login", req.url);
+  const dashboardUrl = new URL("/dashboard", req.url);
 
-  if (isLocalhost) return parts.length >= 2 ? parts[0] : null;
-  return parts.length >= 3 ? parts[0] : null;
+  if (authed) {
+    if (GUEST_ONLY.includes(pathname)) {
+      return NextResponse.redirect(dashboardUrl);
+    }
+    // Logged-in users hitting bare /onboarding are trying to sign up again — send to dashboard.
+    // Allow through if they have mid-flow params: ?step=, ?connected=, ?error=
+    if (
+      pathname === "/onboarding" &&
+      !sp.has("step") &&
+      !sp.has("connected") &&
+      !sp.has("error")
+    ) {
+      return NextResponse.redirect(dashboardUrl);
+    }
+  } else {
+    if (PROTECTED.some((p) => pathname.startsWith(p))) {
+      return NextResponse.redirect(loginUrl);
+    }
+    // Bare /onboarding is the signup page (public).
+    // Any param (?step=, ?connected=, ?error=) means they're past signup → require auth.
+    if (
+      pathname === "/onboarding" &&
+      (sp.has("step") || sp.has("connected") || sp.has("error"))
+    ) {
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  return null;
 }
 
 export async function middleware(req: NextRequest) {
-  const host = req.headers.get("host") || "";
   const { pathname } = req.nextUrl;
-  const sub = getSubdomain(host);
 
-  // ── Creator app subdomain (app.localhost:3000 / app.domain.com) ──
-  if (sub === "app") {
-    // if (APP_PROTECTED.some((p) => pathname.startsWith(p))) {
-    //   if (!(await isAuthenticated(req))) {
-    //     return NextResponse.redirect(new URL("/signup", req.url));
-    //   }
-    // }
-    const url = req.nextUrl.clone();
-    url.pathname = `/app${pathname === "/" ? "/onboarding" : pathname}`;
-    return NextResponse.rewrite(url);
-  }
-
-  // ── Admin subdomain ──
-  if (sub === "admin") {
-    const url = req.nextUrl.clone();
-    url.pathname = `/admin${pathname}`;
-    return NextResponse.rewrite(url);
-  }
-
-  // ── Creator public profile subdomain (username.domain.com) ──
-  if (sub && sub !== "www") {
-    const url = req.nextUrl.clone();
-    url.pathname = `/username/${sub}`;
-    return NextResponse.rewrite(url);
-  }
-
-  // ── Dev fallback: no subdomain but hitting app routes directly ──
-  // Allows localhost:3000/onboarding, /login, /dashboard to work without app. subdomain
-  const APP_ROUTES = ["/onboarding", "/login", "/dashboard", "/settings"];
-  if (APP_ROUTES.some((r) => pathname.startsWith(r))) {
-    const url = req.nextUrl.clone();
-    url.pathname = `/app${pathname}`;
-    return NextResponse.rewrite(url);
+  const GUARDED_ROUTES = ["/onboarding", "/login", "/dashboard", "/settings"];
+  if (GUARDED_ROUTES.some((r) => pathname.startsWith(r))) {
+    const authed = await isAuthenticated(req);
+    const guard = applyAuthGuards(req, pathname, authed);
+    if (guard) return guard;
   }
 
   return NextResponse.next();

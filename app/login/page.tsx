@@ -2,18 +2,49 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { AppLogo } from "@/components/AppLogo";
+
+type OnboardingStatus = {
+  hasInstagram: boolean;
+  hasPlan: boolean;
+};
+
+function redirectAfterLogin(status: OnboardingStatus, router: ReturnType<typeof useRouter>) {
+  if (!status.hasInstagram) {
+    router.push("/onboarding?step=connect");
+  } else if (!status.hasPlan) {
+    router.push("/onboarding?step=activate");
+  } else {
+    router.push("/dashboard");
+  }
+}
 
 export default function LoginPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    // TODO: wire up login API
-    router.push("/dashboard");
+    try {
+      const res = await axios.post("/api/auth/login", {
+        email: form.email,
+        password: form.password,
+      });
+      redirectAfterLogin(res.data.onboardingStatus, router);
+    } catch (err) {
+      const msg =
+        axios.isAxiosError(err)
+          ? err.response?.data?.error ?? "Invalid credentials"
+          : "Something went wrong";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,6 +56,12 @@ export default function LoginPage() {
 
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h1>
         <p className="text-gray-400 text-sm mb-7">Log in to your creator account.</p>
+
+        {error && (
+          <div className="mb-5 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
@@ -71,7 +108,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-500">
           Don&apos;t have an account?{" "}
-          <a href="/signup" className="text-primary font-semibold hover:underline">
+          <a href="/onboarding" className="text-primary font-semibold hover:underline">
             Sign up
           </a>
         </p>

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CreatorPage — Your brand deal magnet",
+  title: "Kloot — Your brand deal magnet",
   description:
     "Create a stunning creator portfolio page that brands love. Showcase your stats, content, and pricing — all in one beautiful shareable link.",
 };

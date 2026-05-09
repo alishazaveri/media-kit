@@ -1,17 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { AppLogo } from "@/components/AppLogo";
 import { ProfilePreview } from "@/components/ProfilePreview";
 
 /* ─── Types ─── */
 type Step = "signup" | "connect" | "activate";
-type ConnectState = "idle" | "syncing" | "connected";
-
-/* ─── Helpers ─── */
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /* ─── Step badge ─── */
 function StepBadge({ step }: { step: 2 | 3 }) {
@@ -72,16 +68,28 @@ function FeatureCheck({ text }: { text: string }) {
 /* ──────────────────────────────────────────────
    STEP 1 — Signup
 ────────────────────────────────────────────── */
-function SignupStep({ onNext }: { onNext: () => void }) {
+function SignupStep({ onNext }: { onNext: (userId: string) => void }) {
   const [form, setForm] = useState({ email: "", username: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: call signup API
-    await delay(400);
-    onNext();
+    setError("");
+    try {
+      const res = await axios.post("/api/auth/signup", form);
+      onNext(res.data.userId);
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(
+          err.response?.data?.error || "Signup failed. Please try again.",
+        );
+      } else {
+        setError("Signup failed. Please try again.");
+      }
+      setLoading(false);
+    }
   };
 
   return (
@@ -130,14 +138,19 @@ function SignupStep({ onNext }: { onNext: () => void }) {
           </label>
           <input
             type="password"
-            placeholder="At least 6 characters"
+            placeholder="At least 8 characters"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             required
-            minLength={6}
+            minLength={8}
             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition"
           />
         </div>
+        {error && (
+          <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+            {error}
+          </p>
+        )}
         <button
           type="submit"
           disabled={loading}
@@ -164,112 +177,61 @@ function SignupStep({ onNext }: { onNext: () => void }) {
 }
 
 /* ──────────────────────────────────────────────
-   STEP 2 — Connect Instagram (idle → syncing → connected)
+   STEP 2 — Connect Instagram
 ────────────────────────────────────────────── */
-const SYNC_STEPS = [
-  "Reading profile…",
-  "Calculating engagement…",
-  "Fetching demographics…",
-];
-
-function ConnectStep({ onNext }: { onNext: () => void }) {
-  const [state, setState] = useState<ConnectState>("idle");
-  const [syncIndex, setSyncIndex] = useState(0);
+function ConnectStep({
+  userId,
+  externalError = "",
+}: {
+  userId: string;
+  externalError?: string;
+}) {
+  const [connecting, setConnecting] = useState(false);
+  const [error, setError] = useState("");
 
   const handleConnect = async () => {
-    setState("syncing");
+    setConnecting(true);
+    setError("");
     try {
-      const res = await axios.get("/api/instagram/auth/connect");
+      const res = await axios.get(
+        `/api/auth/instagram/connect?userId=${userId}`,
+      );
       const url = res?.data?.url;
       if (url) {
         window.location.href = url;
-        return;
+        return; // page navigates away — no need to reset state
       }
-    } catch {
-      // fall through to demo flow
+      throw new Error("No redirect URL returned");
+    } catch (err) {
+      const msg = axios.isAxiosError(err)
+        ? (err.response?.data?.error ?? "Failed to connect Instagram")
+        : "Failed to connect Instagram";
+      setError(msg);
+      setConnecting(false);
     }
-
-    // Demo: animate through sync steps then show connected
-    for (let i = 1; i < SYNC_STEPS.length; i++) {
-      await delay(1300);
-      setSyncIndex(i);
-    }
-    await delay(1300);
-    setState("connected");
-    await delay(2200);
-    onNext();
   };
 
-  /* Connected validation */
-  if (state === "connected") {
+  /* Connecting — full-card loader shown while awaiting API + redirect */
+  if (connecting) {
     return (
-      <div className="w-full max-w-lg bg-white rounded-3xl shadow-sm p-12 text-center">
-        <div className="flex justify-center mb-8">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-sm p-10 flex flex-col items-center text-center">
+        <div className="mb-8">
           <AppLogo size="lg" />
         </div>
-        <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/25">
-            <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-              <path
-                d="M9 18L15 24L27 12"
-                stroke="white"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
+        <div className="relative w-14 h-14 mb-6">
+          <div
+            className="absolute inset-0 rounded-full animate-spin"
+            style={{
+              background:
+                "conic-gradient(from 0deg, #833AB4, #FD1D1D, #F56040, transparent 70%)",
+            }}
+          />
+          <div className="absolute inset-1 bg-white rounded-full" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Instagram connected!
-        </h2>
-        <p className="text-gray-400 text-sm">
-          Hi @sarahjcreates — 485K followers synced.
+        <h2 className="text-lg font-bold text-gray-900 mb-1">Connecting…</h2>
+        <p className="text-sm text-gray-400">
+          You&apos;ll be redirected to Instagram.
         </p>
-      </div>
-    );
-  }
-
-  /* Syncing state */
-  if (state === "syncing") {
-    return (
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-sm p-10 text-center">
-        <div className="flex justify-center mb-8">
-          <AppLogo size="lg" />
-        </div>
-        <div className="flex justify-center mb-8">
-          <div className="relative w-16 h-16">
-            <div
-              className="absolute inset-0 rounded-full animate-spin-slow"
-              style={{
-                background:
-                  "conic-gradient(from 0deg, #7C3AED, #EC4899, #F59E0B, transparent 75%)",
-              }}
-            />
-            <div className="absolute inset-1 bg-white rounded-full" />
-          </div>
-        </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
-          Syncing Instagram…
-        </h2>
-        <p className="text-gray-400 text-sm mb-8">
-          Pulling real-time stats from your account.
-        </p>
-        <div className="space-y-2 text-left">
-          {SYNC_STEPS.map((s, i) => (
-            <div
-              key={s}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors ${
-                i === syncIndex ? "bg-gray-50 text-gray-700" : "text-gray-300"
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full shrink-0 ${i === syncIndex ? "bg-primary" : "bg-gray-200"}`}
-              />
-              {s}
-            </div>
-          ))}
-        </div>
       </div>
     );
   }
@@ -303,6 +265,11 @@ function ConnectStep({ onNext }: { onNext: () => void }) {
           ))}
         </ul>
       </div>
+      {(externalError || error) && (
+        <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600">
+          {externalError || error}
+        </div>
+      )}
       <button
         onClick={handleConnect}
         className="w-full flex items-center justify-center gap-3 text-white font-semibold py-3.5 rounded-2xl"
@@ -345,7 +312,43 @@ const PLAN_FEATURES = [
 ];
 
 /* Preview panel — shared between desktop inline and mobile modal */
-function PreviewPanel({ className = "" }: { className?: string }) {
+function PreviewPanel({
+  className = "",
+  analytics,
+  appUsername,
+}: {
+  className?: string;
+  analytics: Record<string, any> | null;
+  appUsername?: string;
+}) {
+  const ig = analytics ?? {};
+  const urlSlug = appUsername ?? "yourhandle";
+
+  const engagementRate =
+    ig.followers_count && Array.isArray(ig.posts) && ig.posts.length
+      ? +(
+          (((ig.total_likes ?? 0) + (ig.total_comments ?? 0)) /
+            (ig.followers_count * ig.posts.length)) *
+          100
+        ).toFixed(1)
+      : null;
+
+  const stats = {
+    followers: ig.followers_count ?? null,
+    avgViews: ig.impressions_30d || null,
+    engagement: engagementRate,
+    avgReach: ig.reach_30d || null,
+    growth: ig.follower_gain_30d || null,
+  };
+
+  const insights = {
+    gender_age: Array.isArray(ig.gender_age) ? ig.gender_age : [],
+    top_countries: Array.isArray(ig.top_countries) ? ig.top_countries : [],
+    top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
+  };
+
+  const posts = Array.isArray(ig.posts) ? ig.posts : [];
+
   return (
     <div
       className={`bg-white rounded-2xl shadow-sm flex flex-col overflow-hidden ${className}`}
@@ -357,13 +360,26 @@ function PreviewPanel({ className = "" }: { className?: string }) {
           <div className="w-3 h-3 rounded-full bg-amber-400" />
           <div className="w-3 h-3 rounded-full bg-green-400" />
         </div>
-        <div className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-1 text-xs text-gray-400">
-          mycreatorprofile.com/sarahjcreates
-        </div>
+        <a
+          href={`/${urlSlug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-1 text-xs text-gray-400 hover:text-primary hover:border-primary/40 transition-colors cursor-pointer"
+        >
+          kloot.io/{urlSlug}
+        </a>
       </div>
       {/* Only this inner area scrolls */}
       <div className="flex-1 overflow-y-auto p-6">
-        <ProfilePreview />
+        <ProfilePreview
+          name={ig.name}
+          handle={ig.username}
+          tagline={ig.biography}
+          profilePic={ig.profile_pic}
+          stats={stats}
+          insights={insights}
+          posts={posts}
+        />
       </div>
     </div>
   );
@@ -372,6 +388,18 @@ function PreviewPanel({ className = "" }: { className?: string }) {
 function ActivateStep({ onNext }: { onNext: () => void }) {
   const [billing, setBilling] = useState<"annual" | "monthly">("annual");
   const [showPreview, setShowPreview] = useState(false);
+  const [analytics, setAnalytics] = useState<Record<string, any> | null>(null);
+  const [appUsername, setAppUsername] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    axios
+      .get("/api/analytics")
+      .then((res) => {
+        if (res.data?.data?.data) setAnalytics(res.data.data.data);
+        if (res.data?.username) setAppUsername(res.data.username);
+      })
+      .catch(() => {}); // silently fall back to defaults
+  }, []);
 
   const price =
     billing === "annual"
@@ -389,7 +417,7 @@ function ActivateStep({ onNext }: { onNext: () => void }) {
         };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden w-full">
+    <div className="flex-1 flex flex-col lg:overflow-hidden w-full">
       {/* Mobile full-screen preview modal */}
       {showPreview && (
         <div className="fixed inset-0 z-50 bg-gray-100 flex flex-col lg:hidden">
@@ -412,13 +440,13 @@ function ActivateStep({ onNext }: { onNext: () => void }) {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4">
-            <PreviewPanel />
+            <PreviewPanel analytics={analytics} appUsername={appUsername} />
           </div>
         </div>
       )}
 
       {/* Layout — fills flex-1 height given by the root page */}
-      <div className="w-full flex-1 flex flex-col lg:flex-row gap-5 overflow-hidden">
+      <div className="w-full flex-1 flex flex-col lg:flex-row gap-5 lg:overflow-hidden">
         {/* Pricing card — natural height, does not stretch or scroll */}
         <div className="w-full max-w-[420px] mx-auto lg:mx-0 lg:min-w-[376px] lg:w-[376px] shrink-0 bg-white rounded-3xl shadow-sm p-7 flex flex-col self-start">
           <div className="mb-5">
@@ -514,7 +542,7 @@ function ActivateStep({ onNext }: { onNext: () => void }) {
           </p>
           {/* flex-1 + overflow-hidden lets PreviewPanel fill height and scroll internally */}
           <div className="flex-1 overflow-hidden">
-            <PreviewPanel className="h-full" />
+            <PreviewPanel className="h-full" analytics={analytics} appUsername={appUsername} />
           </div>
         </div>
       </div>
@@ -527,7 +555,39 @@ function ActivateStep({ onNext }: { onNext: () => void }) {
 ────────────────────────────────────────────── */
 export default function OnboardingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>("signup");
+  const [userId, setUserId] = useState("");
+  const [connectError, setConnectError] = useState("");
+
+  // Handle all URL-driven step transitions:
+  //   ?step=connect        → post-login redirect, Instagram not yet connected
+  //   ?step=activate       → post-login redirect, plan not yet selected
+  //   ?connected=true      → Instagram OAuth callback success
+  //   ?error=analytics_... → Instagram OAuth callback failure
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      setConnectError(
+        errorParam === "analytics_failed"
+          ? "Something went wrong while fetching your Instagram analytics. Please try connecting again."
+          : decodeURIComponent(errorParam),
+      );
+      setStep("connect");
+      return;
+    }
+    if (searchParams.get("connected") === "true") {
+      setStep("activate");
+      return;
+    }
+    const stepParam = searchParams.get("step");
+    if (stepParam === "connect") {
+      // User is already logged in (session exists); ConnectStep will read userId from session
+      setStep("connect");
+    } else if (stepParam === "activate") {
+      setStep("activate");
+    }
+  }, [searchParams]);
 
   const isActivate = step === "activate";
 
@@ -535,12 +595,21 @@ export default function OnboardingPage() {
     <div
       className={`bg-gray-100 p-4 ${
         isActivate
-          ? "h-screen overflow-hidden flex flex-col" // page locked, only preview scrolls
-          : "min-h-screen flex items-center justify-center" // centred card for signup / connect
+          ? "min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden overflow-y-auto flex flex-col"
+          : "min-h-[100dvh] flex items-center justify-center"
       }`}
     >
-      {step === "signup" && <SignupStep onNext={() => setStep("connect")} />}
-      {step === "connect" && <ConnectStep onNext={() => setStep("activate")} />}
+      {step === "signup" && (
+        <SignupStep
+          onNext={(id) => {
+            setUserId(id);
+            setStep("connect");
+          }}
+        />
+      )}
+      {step === "connect" && (
+        <ConnectStep userId={userId} externalError={connectError} />
+      )}
       {step === "activate" && (
         <ActivateStep onNext={() => router.push("/dashboard")} />
       )}
