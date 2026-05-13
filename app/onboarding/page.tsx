@@ -1,13 +1,14 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { AppLogo } from "@/components/AppLogo";
 import { ProfilePreview } from "@/components/ProfilePreview";
 
 /* ─── Types ─── */
-type Step = "signup" | "connect" | "activate";
+type Step = "username" | "signup" | "connect" | "activate";
+type CheckState = "idle" | "checking" | "available" | "unavailable" | "invalid";
 
 /* ─── Step badge ─── */
 function StepBadge({ step }: { step: 2 | 3 }) {
@@ -66,10 +67,175 @@ function FeatureCheck({ text }: { text: string }) {
 }
 
 /* ──────────────────────────────────────────────
+   STEP 0 — Claim username
+────────────────────────────────────────────── */
+function UsernameStep({
+  prefill,
+  onNext,
+}: {
+  prefill?: string;
+  onNext: (username: string) => void;
+}) {
+  const [username, setUsername] = useState(prefill ?? "");
+  const [checkState, setCheckState] = useState<CheckState>("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync prefill once searchParams resolve inside Suspense
+  useEffect(() => {
+    if (prefill && !username) setUsername(prefill);
+  }, [prefill]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    const trimmed = username.trim().toLowerCase();
+    if (!trimmed) {
+      setCheckState("idle");
+      setErrorMsg("");
+      return;
+    }
+    if (!/^[a-z0-9_]{1,30}$/.test(trimmed)) {
+      setCheckState("invalid");
+      setErrorMsg("Only letters, numbers, and underscores allowed (max 30 chars)");
+      return;
+    }
+
+    setCheckState("checking");
+    setErrorMsg("");
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await axios.get(
+          `/api/auth/check-username?username=${encodeURIComponent(trimmed)}`,
+        );
+        if (res.data.available) {
+          setCheckState("available");
+          setErrorMsg("");
+        } else {
+          setCheckState("unavailable");
+          setErrorMsg(res.data.error || "That username is already taken");
+        }
+      } catch {
+        setCheckState("idle");
+        setErrorMsg("");
+      }
+    }, 450);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [username]);
+
+  const canProceed = username.trim().length > 0 && checkState === "available";
+
+  return (
+    <div className="w-full max-w-md bg-white rounded-3xl shadow-sm p-8">
+      <div className="mb-8">
+        <AppLogo size="md" />
+      </div>
+
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Claim your link</h1>
+      <p className="text-gray-400 text-sm mb-8">
+        Pick a username for your creator media kit page.
+      </p>
+
+      <div className="mb-2">
+        <div
+          className={`flex items-center border rounded-xl px-4 py-3 gap-2 transition-all ${
+            checkState === "available"
+              ? "border-green-400 ring-2 ring-green-100"
+              : checkState === "unavailable" || checkState === "invalid"
+                ? "border-red-300 ring-2 ring-red-100"
+                : "border-gray-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10"
+          }`}
+        >
+          <span className="text-gray-400 text-sm font-medium shrink-0 select-none">
+            kloot.io/
+          </span>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value.toLowerCase())}
+            placeholder="yourname"
+            autoFocus
+            autoComplete="off"
+            spellCheck={false}
+            className="flex-1 min-w-0 text-sm font-semibold text-gray-900 placeholder:text-gray-300 outline-none bg-transparent"
+          />
+          <div className="shrink-0 w-5 h-5 flex items-center justify-center">
+            {checkState === "checking" && (
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-primary rounded-full animate-spin" />
+            )}
+            {checkState === "available" && (
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="9" fill="#22c55e" />
+                <path
+                  d="M5 9L7.5 11.5L13 6.5"
+                  stroke="white"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+            {(checkState === "unavailable" || checkState === "invalid") && (
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="9" fill="#ef4444" />
+                <path
+                  d="M6 6L12 12M12 6L6 12"
+                  stroke="white"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+          </div>
+        </div>
+
+        {(checkState === "unavailable" || checkState === "invalid") && errorMsg && (
+          <p className="mt-2 text-xs text-red-500 font-medium pl-1">{errorMsg}</p>
+        )}
+        {checkState === "available" && (
+          <p className="mt-2 text-xs text-green-600 font-medium pl-1">
+            kloot.io/{username.trim()} is available!
+          </p>
+        )}
+      </div>
+
+      <button
+        onClick={() => canProceed && onNext(username.trim().toLowerCase())}
+        disabled={!canProceed}
+        className="mt-6 w-full bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-xl transition-colors"
+      >
+        Next
+      </button>
+
+      <p className="text-center text-sm text-gray-400 mt-5">
+        Already have an account?{" "}
+        <a href="/login" className="text-primary font-semibold hover:underline">
+          Log in
+        </a>
+      </p>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────
    STEP 1 — Signup
 ────────────────────────────────────────────── */
-function SignupStep({ onNext }: { onNext: (userId: string) => void }) {
-  const [form, setForm] = useState({ email: "", username: "", password: "" });
+function SignupStep({
+  onNext,
+  claimedUsername,
+}: {
+  onNext: (userId: string) => void;
+  claimedUsername: string;
+}) {
+  const [form, setForm] = useState({
+    email: "",
+    username: claimedUsername,
+    password: "",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -115,19 +281,6 @@ function SignupStep({ onNext }: { onNext: (userId: string) => void }) {
             placeholder="you@example.com"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            required
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Username
-          </label>
-          <input
-            type="text"
-            placeholder="sarahjcreates"
-            value={form.username}
-            onChange={(e) => setForm({ ...form, username: e.target.value })}
             required
             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition"
           />
@@ -542,7 +695,11 @@ function ActivateStep({ onNext }: { onNext: () => void }) {
           </p>
           {/* flex-1 + overflow-hidden lets PreviewPanel fill height and scroll internally */}
           <div className="flex-1 overflow-hidden">
-            <PreviewPanel className="h-full" analytics={analytics} appUsername={appUsername} />
+            <PreviewPanel
+              className="h-full"
+              analytics={analytics}
+              appUsername={appUsername}
+            />
           </div>
         </div>
       </div>
@@ -556,9 +713,11 @@ function ActivateStep({ onNext }: { onNext: () => void }) {
 function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [step, setStep] = useState<Step>("signup");
+  const [step, setStep] = useState<Step>("username");
   const [userId, setUserId] = useState("");
   const [connectError, setConnectError] = useState("");
+  const [claimedUsername, setClaimedUsername] = useState("");
+  const prefillUsername = searchParams.get("username") ?? undefined;
 
   // Handle all URL-driven step transitions:
   //   ?step=connect        → post-login redirect, Instagram not yet connected
@@ -582,7 +741,6 @@ function OnboardingContent() {
     }
     const stepParam = searchParams.get("step");
     if (stepParam === "connect") {
-      // User is already logged in (session exists); ConnectStep will read userId from session
       setStep("connect");
     } else if (stepParam === "activate") {
       setStep("activate");
@@ -599,12 +757,22 @@ function OnboardingContent() {
           : "min-h-[100dvh] flex items-center justify-center"
       }`}
     >
+      {step === "username" && (
+        <UsernameStep
+          prefill={prefillUsername}
+          onNext={(u) => {
+            setClaimedUsername(u);
+            setStep("signup");
+          }}
+        />
+      )}
       {step === "signup" && (
         <SignupStep
           onNext={(id) => {
             setUserId(id);
             setStep("connect");
           }}
+          claimedUsername={claimedUsername}
         />
       )}
       {step === "connect" && (

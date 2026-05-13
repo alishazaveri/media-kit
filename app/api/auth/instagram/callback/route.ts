@@ -94,10 +94,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // undo
-    // return NextResponse.redirect(
-    //   `${config.PUBLIC_URL}/onboarding?connected=true`,
-    // );
+    return NextResponse.redirect(
+      `${config.PUBLIC_URL}/onboarding?connected=true`,
+    );
 
     return NextResponse.redirect(`${config.PUBLIC_URL}/dashboard`);
   } catch (err) {

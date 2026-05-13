@@ -17,8 +17,7 @@ function redirectAfterLogin(
   if (!status.hasInstagram) {
     router.push("/onboarding?step=connect");
   } else if (!status.hasPlan) {
-    // undo
-    // router.push("/onboarding?step=activate");
+    router.push("/onboarding?step=activate");
     router.push("/dashboard");
   } else {
     router.push("/dashboard");
