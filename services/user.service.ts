@@ -65,10 +65,13 @@ export async function registerUser(
   return { user, verifyToken };
 }
 
-export async function loginUser(email: string, password: string) {
-  if (!email || !password) throw new Error("Email and password are required");
+export async function loginUser(identifier: string, password: string) {
+  if (!identifier || !password) throw new Error("Identifier and password are required");
 
-  const user = await getUserByEmail(email);
+  const isEmail = identifier.includes("@");
+  const user = isEmail
+    ? await getUserByEmail(identifier)
+    : await getUserByUsername(identifier);
   if (!user) throw new Error("Invalid credentials");
 
   const valid = await bcrypt.compare(password, user.password_hash);

@@ -351,9 +351,10 @@ function HeroDesktop() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [cardsVisible, setCardsVisible] = useState(false);
   const cardsTriggered = useRef(false);
-  // New key on every mount forces Framer Motion to re-run word animations
-  // when the user navigates back to this page.
-  const [mountId] = useState(() => Date.now());
+  // Stable 0 on server; updated to Date.now() after hydration so framer-motion
+  // re-runs word animations on client navigations without causing an SSR mismatch.
+  const [mountId, setMountId] = useState(0);
+  useEffect(() => { setMountId(Date.now()); }, []);
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {

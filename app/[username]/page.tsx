@@ -49,7 +49,7 @@ export default async function PublishedProfilePage(props: {
   console.log({ userData });
 
   return (
-    <main className="min-h-screen  mx-auto">
+    <main className="min-h-screen ">
       <CreatorProfile
         name={published.display_name ?? ig.name}
         handle={ig.username ?? username}

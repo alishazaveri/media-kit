@@ -7,9 +7,9 @@ const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60;
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    const { identifier, password } = await req.json();
 
-    const { accessToken, refreshToken, user } = await loginUser(email, password);
+    const { accessToken, refreshToken, user } = await loginUser(identifier, password);
 
     // Determine where in onboarding the user is so the client can redirect correctly
     const igAccount = await getUserInstagramChannel(user.id);
