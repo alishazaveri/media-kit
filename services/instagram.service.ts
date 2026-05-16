@@ -133,7 +133,7 @@ export async function fetchAndSaveInstagramAnalytics(
     axios.get(`${GRAPH}/${igUserId}/media`, {
       params: {
         fields:
-          "id,caption,media_type,media_product_type,thumbnail_url,media_url,timestamp,like_count,comments_count",
+          "id,caption,media_type,media_product_type,thumbnail_url,media_url,permalink,timestamp,like_count,comments_count",
         limit: 25,
         access_token: token,
       },
@@ -327,6 +327,7 @@ export async function fetchAndSaveInstagramAnalytics(
       media_product_type: post.media_product_type ?? "POST",
       thumbnail_url: post.thumbnail_url ?? null,
       media_url: post.media_url ?? null,
+      permalink: post.permalink ?? null,
       timestamp: post.timestamp,
       like_count: post.like_count ?? 0,
       comments_count: post.comments_count ?? 0,

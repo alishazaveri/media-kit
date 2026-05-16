@@ -1,12 +1,12 @@
-import Nav from "../components/Nav";
-import Hero from "../components/Hero";
-import StepsSection from "../components/StepsSection";
-import AnalyticsSection from "../components/AnalyticsSection";
-import FeatureCardsSection from "../components/FeatureCardsSection";
-import TestimonialsSection from "../components/TestimonialsSection";
-import CTASection from "../components/CTASection";
-import Footer from "../components/Footer";
-import ClaimBar from "../components/ClaimBar";
+import Nav from "../components/website/Nav";
+import Hero from "../components/website/Hero";
+import StepsSection from "../components/website/StepsSection";
+import AnalyticsSection from "../components/website/AnalyticsSection";
+import FeatureCardsSection from "../components/website/FeatureCardsSection";
+import TestimonialsSection from "../components/website/TestimonialsSection";
+import CTASection from "../components/website/CTASection";
+import Footer from "../components/website/Footer";
+import ClaimBar from "../components/website/ClaimBar";
 
 export default function Home() {
   return (

@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { getUserByUsername } from "@/db/user.db";
 import { getSocialChannelByPlatform } from "@/db/social_channel.db";
 import { getUserData } from "@/db/user_data.db";
@@ -12,7 +13,7 @@ export default async function PublishedProfilePage(props: {
   const user = await getUserByUsername(username);
 
   if (!user) {
-    return <WipPage username={username} />;
+    notFound();
   }
 
   const userId = (user as any)._id.toString();
