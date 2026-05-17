@@ -11,7 +11,7 @@ export function NavBar({
 }) {
   return (
     <nav
-      className={`sticky top-0 z-50 backdrop-blur-sm border-b border-gray-100 px-4 md:px-8 py-4 `}
+      className={`sticky top-0 z-50 backdrop-blur-sm border-b border-gray-100 px-0 md:px-8 py-4 `}
       style={{ backgroundColor: `${primaryColor}BF` }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6">

@@ -146,7 +146,7 @@ export function AudienceSection({
         {
           label: "Alpha (13–17)",
           pct: Math.round((alpha / ageTotal) * 100),
-          color: "#C8E6E0",
+          color: primaryColor,
         },
         {
           label: "35+",
@@ -157,7 +157,7 @@ export function AudienceSection({
     : [
         { label: "Gen Z (18–24)", pct: 54, color: accentColor },
         { label: "Millennial (25–34)", pct: 31, color: secondaryColor },
-        { label: "Alpha (13–17)", pct: 9, color: "#C8E6E0" },
+        { label: "Alpha (13–17)", pct: 9, color: primaryColor },
         { label: "35+", pct: 6, color: "#D1D5DB" },
       ];
 
@@ -200,24 +200,28 @@ export function AudienceSection({
     >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 items-start">
         {/* Left: Audience DNA white card */}
-        <div className="flex-1 bg-white rounded-3xl p-8 shadow-sm">
+        <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-[var(--foreground)]/5 h-full md:w-1/2 w-full">
           <div className="flex items-start justify-between mb-6">
-            <h2 className="font-black text-gray-900 text-2xl">Audience DNA</h2>
-            <span
-              className="bg-blue-100 text-xs font-bold px-3 py-1.5 rounded-full"
-              style={{ color: accentColor }}
+            <h2 className="font-display text-2xl md:text-3xl font-bold">
+              Audience DNA
+            </h2>
+            {/* <span
+              className="text-xs font-bold px-3 py-1.5 rounded-full"
+              style={{ color: accentColor, backgroundColor: primaryColor }}
             >
-              2024 UPDATE {/* [DUMMY] */}
-            </span>
+              2026 UPDATE 
+            </span> */}
           </div>
 
-          <div className="flex items-center gap-6 mb-8">
-            <DonutChart
-              segments={ageGroups}
-              centerPct={`${dominant.pct}%`}
-              centerLabel={dominant.label.split(" ")[0]}
-              secondaryColor={secondaryColor}
-            />
+          <div className="flex md:flex-row flex-col md:items-center gap-6 mb-8">
+            <div className="flex items-center justify-center">
+              <DonutChart
+                segments={ageGroups}
+                centerPct={`${dominant.pct}%`}
+                centerLabel={dominant.label.split(" ")[0]}
+                secondaryColor={secondaryColor}
+              />
+            </div>
             <div className="space-y-2.5 flex-1">
               {ageGroups.map((g) => (
                 <div
@@ -249,21 +253,21 @@ export function AudienceSection({
           </div>
 
           {/* [DUMMY: no device field] */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <ProgressBar label="MOBILE" pct={94} color={accentColor} />
             <ProgressBar label="DESKTOP" pct={6} color={secondaryColor} />
-          </div>
+          </div> */}
         </div>
 
         {/* Right: dark navy card */}
         <div
-          className="md:w-80 shrink-0 rounded-3xl p-8 text-white"
+          className="shrink-0 rounded-3xl p-8 text-white md:w-1/2 w-full"
           style={{ backgroundColor: secondaryColor }}
         >
-          <p className="text-xs font-bold tracking-[0.18em] text-gray-400 uppercase mb-5">
+          <h2 className="font-display text-2xl md:text-3xl font-bold mb-6">
             Top Markets
-          </p>
-          <div className="space-y-4 mb-8">
+          </h2>
+          <div className="space-y-6 mb-8">
             {displayCities.map(({ name, pct }) => (
               <div key={name}>
                 <div className="flex justify-between mb-1.5">
@@ -283,7 +287,7 @@ export function AudienceSection({
             ))}
           </div>
 
-          <p className="text-xs font-bold tracking-[0.18em] text-gray-400 uppercase mb-4">
+          {/* <p className="text-xs font-bold tracking-[0.18em] text-gray-400 uppercase mb-4">
             Brand Affinities
           </p>
           <div className="flex flex-wrap gap-2">
@@ -295,7 +299,7 @@ export function AudienceSection({
                 {tag}
               </span>
             ))}
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

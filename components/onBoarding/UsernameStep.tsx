@@ -25,22 +25,40 @@ export function UsernameStep({
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const trimmed = username.trim().toLowerCase();
-    if (!trimmed) { setCheckState("idle"); setErrorMsg(""); return; }
+    if (!trimmed) {
+      setCheckState("idle");
+      setErrorMsg("");
+      return;
+    }
     if (!/^[a-z0-9_]{1,30}$/.test(trimmed)) {
       setCheckState("invalid");
-      setErrorMsg("Only letters, numbers, and underscores allowed (max 30 chars)");
+      setErrorMsg(
+        "Only letters, numbers, and underscores allowed (max 30 chars)",
+      );
       return;
     }
     setCheckState("checking");
     setErrorMsg("");
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await axios.get(`/api/auth/check-username?username=${encodeURIComponent(trimmed)}`);
-        if (res.data.available) { setCheckState("available"); setErrorMsg(""); }
-        else { setCheckState("unavailable"); setErrorMsg(res.data.error || "That username is already taken"); }
-      } catch { setCheckState("idle"); setErrorMsg(""); }
+        const res = await axios.get(
+          `/api/auth/check-username?username=${encodeURIComponent(trimmed)}`,
+        );
+        if (res.data.available) {
+          setCheckState("available");
+          setErrorMsg("");
+        } else {
+          setCheckState("unavailable");
+          setErrorMsg(res.data.error || "That username is already taken");
+        }
+      } catch {
+        setCheckState("idle");
+        setErrorMsg("");
+      }
     }, 450);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [username]);
 
   const canProceed = username.trim().length > 0 && checkState === "available";
@@ -52,18 +70,18 @@ export function UsernameStep({
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 pb-16">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 bg-[#FFE8E0] text-primary rounded-full px-4 py-2 mb-8 text-sm font-medium">
+        {/* <div className="inline-flex items-center gap-2 bg-[#FFE8E0] text-primary rounded-full px-4 py-2 mb-8 text-sm font-medium">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
           </svg>
           One link for everything you create
-        </div>
+        </div> */}
 
         {/* Heading */}
-        <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-900 text-center mb-4 leading-tight">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-3 leading-tight">
           Claim your <span className="text-primary">kloot</span> link
         </h1>
-        <p className="text-gray-500 text-center mb-10 text-lg">
+        <p className="text-gray-500 text-center mb-10 text-md">
           Your unique creator URL. Share once, monetize everywhere.
         </p>
 
@@ -92,19 +110,23 @@ export function UsernameStep({
               <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
               <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
             </svg>
-            <span className="text-gray-400 text-sm shrink-0 select-none">kloot.io/</span>
+            <span className="text-gray-400 text-sm shrink-0 select-none">
+              kloot.io/
+            </span>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value.toLowerCase())}
-              placeholder="yourname"
+              placeholder="username"
               autoFocus
               autoComplete="off"
               spellCheck={false}
-              className="flex-1 min-w-0 text-sm font-medium text-gray-900 placeholder:text-gray-300 outline-none bg-transparent"
+              className="flex-1 min-w-0 text-sm font-medium text-primary placeholder:text-primaryBF outline-none bg-transparent"
             />
             <button
-              onClick={() => canProceed && onNext(username.trim().toLowerCase())}
+              onClick={() =>
+                canProceed && onNext(username.trim().toLowerCase())
+              }
               disabled={!canProceed}
               className="shrink-0 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
             >
@@ -116,13 +138,22 @@ export function UsernameStep({
             </button>
           </div>
 
-          {(checkState === "unavailable" || checkState === "invalid") && errorMsg && (
-            <p className="mt-2 text-xs text-red-500 font-medium pl-1">{errorMsg}</p>
-          )}
+          {(checkState === "unavailable" || checkState === "invalid") &&
+            errorMsg && (
+              <p className="mt-2 text-xs text-red-500 font-medium pl-1">
+                {errorMsg}
+              </p>
+            )}
           {checkState === "available" && (
             <p className="mt-2 text-xs text-primary font-medium pl-1 flex items-center gap-1">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6L4.5 8.5L10 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M2 6L4.5 8.5L10 3"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
               kloot.io/{username.trim()} is available
             </p>
@@ -130,15 +161,20 @@ export function UsernameStep({
         </div>
 
         {/* Steps */}
-        <div className="flex items-center gap-8 sm:gap-12 mt-12 text-sm text-gray-400">
+        {/* <div className="flex items-center gap-8 sm:gap-12 mt-12 text-sm text-gray-400">
           <span>Connect Instagram</span>
           <span>Custom theme</span>
           <span>Get paid</span>
-        </div>
+        </div> */}
 
         <p className="text-sm text-gray-400 mt-6">
           Already have an account?{" "}
-          <a href="/login" className="text-primary font-semibold hover:underline">Sign in</a>
+          <a
+            href="/login"
+            className="text-primary font-semibold hover:underline"
+          >
+            Sign in
+          </a>
         </p>
       </div>
     </div>

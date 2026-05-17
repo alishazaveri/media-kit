@@ -1,3 +1,5 @@
+"use client";
+import { useEffect, useRef, useState } from "react";
 import { fmt, type Stats } from "./types";
 
 export function StatsSection({
@@ -11,6 +13,32 @@ export function StatsSection({
   accentColor: string;
   secondaryColor: string;
 }) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          observer.disconnect();
+          const start = performance.now();
+          const duration = 1500;
+          const tick = (now: number) => {
+            const t = Math.min((now - start) / duration, 1);
+            setProgress(1 - Math.pow(1 - t, 3)); // ease-out cubic
+            if (t < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }
+      },
+      { threshold: 0.2 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const endVal = stats.followers ?? 1_200_000;
   const startVal = Math.round(endVal * 0.575);
   const ratios = [0, 0.09, 0.19, 0.28, 0.39, 0.51, 0.64, 0.8, 1.0];
@@ -40,15 +68,26 @@ export function StatsSection({
   const linePath = `M ${pts.join(" L ")}`;
   const areaPath = `${linePath} L ${W},${H} L 0,${H} Z`;
 
+  const followersTarget = stats.followers ?? 1_200_000;
+  const engagementTarget = stats.engagement;
+  const growthTarget = stats.growth ?? 42_000;
+
   const bigStats = [
-    { value: fmt(stats.followers), label: "ACTIVE COMMUNITY", blue: true },
     {
-      value: stats.engagement != null ? `${stats.engagement}%` : "—",
+      value: fmt(Math.round(followersTarget * progress)),
+      label: "ACTIVE COMMUNITY",
+      blue: true,
+    },
+    {
+      value:
+        engagementTarget != null
+          ? `${(engagementTarget * progress).toFixed(1)}%`
+          : "—",
       label: "AVG. ENGAGEMENT",
       blue: false,
     },
     {
-      value: stats.growth != null ? fmt(stats.growth) : "42K", // [DUMMY if no growth data]
+      value: fmt(Math.round(growthTarget * progress)),
       label: "WEEKLY GROWTH",
       blue: false,
     },
@@ -131,46 +170,53 @@ export function StatsSection({
 
   return (
     <section
+      ref={sectionRef}
       id="stats"
       className="px-4 py-12 md:px-8 md:py-20"
       style={{ backgroundColor: primaryColor }}
     >
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 md:gap-12 items-start">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 md:gap-12 md:items-start ">
         {/* Left: big numbers */}
-        <div className="md:w-64 shrink-0">
-          <p className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase mb-4 md:mb-6">
-            Impact Metrics
-          </p>
-          <div className="grid grid-cols-3 md:grid-cols-1 gap-4 md:gap-0 md:space-y-6">
+        <div className="flex flex-col  justify-center md:w-1/3 mx-4">
+          <div style={{ opacity: 1, transform: "none" }} className="mb-10">
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-muted">
+              Impact Metrics
+            </h2>
+          </div>
+          <div>
             {bigStats.map(({ value, label, blue }, i) => (
-              <div key={label}>
-                {i > 0 && (
-                  <div className="hidden md:block border-t border-gray-300/50 mb-6" />
-                )}
-                <p
-                  className={`text-3xl md:text-5xl font-black leading-none mb-1 md:mb-2 ${blue ? "" : "text-gray-900"}`}
-                  style={blue ? { color: accentColor } : undefined}
-                >
-                  {value}
-                </p>
-                <p className="text-[10px] md:text-xs font-bold tracking-[0.15em] text-gray-400">
+              <div
+                key={label}
+                style={{ opacity: 1, transform: "none" }}
+                className="mb-10 cursor-default"
+              >
+                <div className="font-display text-6xl md:text-7xl font-extrabold tracking-tighter leading-none transition-transform hover:translate-x-2">
+                  <span style={{ color: i > 0 ? "#1d293d" : accentColor }}>
+                    {value}
+                  </span>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest mt-2 text-[#1d293d]/70">
                   {label}
                 </p>
+                <div className="w-full h-px bg-[#1d293d]/10 mt-5"></div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Right: Follower Growth card */}
-        <div className="flex-1 bg-white rounded-3xl p-4 md:p-8 shadow-sm">
-          <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-            <h2 className="font-black text-gray-900 text-2xl">
+        <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-[#1d293d]/5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
+            <h2 className="font-display text-2xl md:text-3xl font-bold">
               Follower Growth
             </h2>
             <div className="flex items-center gap-2">
               <span
-                className="bg-blue-100 text-xs font-bold px-3 py-1.5 rounded-full"
-                style={{ color: accentColor }}
+                className={` text-xs font-bold px-3 py-1.5 rounded-full`}
+                style={{
+                  color: accentColor,
+                  backgroundColor: `${primaryColor}`,
+                }}
               >
                 YTD +97% {/* [DUMMY: no YTD data] */}
               </span>
@@ -190,7 +236,7 @@ export function StatsSection({
           </div>
 
           {/* SVG line chart */}
-          <div className="mb-6">
+          <div className="mb-6 h-56 w-full">
             <div className="flex gap-3">
               <div className="flex flex-col-reverse justify-between text-[10px] text-gray-400 pr-1 h-40 shrink-0 text-right w-12">
                 {yLabels.map((v) => (
@@ -237,21 +283,20 @@ export function StatsSection({
           </div>
 
           {/* Metrics row */}
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-5 gap-4">
             {metricCards.map(({ icon, label, value }) => (
               <div
                 key={label}
-                className="bg-gray-50 rounded-2xl p-3 flex flex-col gap-1"
+                className={`rounded-2xl  p-4 border border-[#1d293d]/5`}
+                style={{ backgroundColor: primaryColor }}
               >
-                <div className="flex items-center gap-1 text-gray-400">
+                <div className="flex items-center gap-2 text-muted text-[10px] font-bold uppercase tracking-[.1em]">
                   {icon}
                   <span className="text-[9px] font-bold tracking-wider uppercase">
                     {label}
                   </span>
                 </div>
-                <p className="font-black text-gray-900 text-lg leading-none">
-                  {value}
-                </p>
+                <p className="font-display text-2xl font-bold mt-1">{value}</p>
               </div>
             ))}
           </div>

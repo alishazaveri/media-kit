@@ -18,9 +18,14 @@ export function ConnectStep({
     setConnecting(true);
     setError("");
     try {
-      const res = await axios.get(`/api/auth/instagram/connect?userId=${userId}`);
+      const res = await axios.get(
+        `/api/auth/instagram/connect?userId=${userId}`,
+      );
       const url = res?.data?.url;
-      if (url) { window.location.href = url; return; }
+      if (url) {
+        window.location.href = url;
+        return;
+      }
       throw new Error("No redirect URL returned");
     } catch (err) {
       const msg = axios.isAxiosError(err)
@@ -40,12 +45,19 @@ export function ConnectStep({
             <div className="relative w-14 h-14 mb-6">
               <div
                 className="absolute inset-0 rounded-full animate-spin"
-                style={{ background: "conic-gradient(from 0deg, #833AB4, #FD1D1D, #F56040, transparent 70%)" }}
+                style={{
+                  background:
+                    "conic-gradient(from 0deg, #833AB4, #FD1D1D, #F56040, transparent 70%)",
+                }}
               />
               <div className="absolute inset-1 bg-[#FAF7F2] rounded-full" />
             </div>
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Connecting…</h2>
-            <p className="text-sm text-gray-400">You&apos;ll be redirected to Instagram.</p>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">
+              Connecting…
+            </h2>
+            <p className="text-sm text-gray-400">
+              You&apos;ll be redirected to Instagram.
+            </p>
           </div>
         </div>
       </div>
@@ -60,9 +72,20 @@ export function ConnectStep({
         {/* Instagram icon */}
         <div
           className="w-20 h-20 rounded-2xl flex items-center justify-center mb-8"
-          style={{ background: "linear-gradient(135deg, #E8714A 0%, #D4603A 100%)" }}
+          style={{
+            background: "linear-gradient(135deg, #E8714A 0%, #D4603A 100%)",
+          }}
         >
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="36"
+            height="36"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <rect x="2" y="2" width="20" height="20" rx="5" />
             <circle cx="12" cy="12" r="4" />
             <circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none" />
@@ -73,7 +96,8 @@ export function ConnectStep({
           Connect your Instagram
         </h1>
         <p className="text-gray-500 text-center text-base leading-relaxed mb-10 max-w-sm">
-          We&apos;ll pull in your latest posts, profile picture, and bio to build your kloot page automatically.
+          We&apos;ll pull in your latest posts, profile picture, and bio to
+          build your kloot page automatically.
         </p>
 
         <div className="w-full max-w-md">

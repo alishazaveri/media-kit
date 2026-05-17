@@ -40,7 +40,8 @@ export function WorkSection({
               ? p.media_url
               : null),
           videoUrl:
-            (p.media_type === "REELS" || p.media_type === "VIDEO") && p.media_url
+            (p.media_type === "REELS" || p.media_type === "VIDEO") &&
+            p.media_url
               ? `/api/proxy-media?url=${encodeURIComponent(p.media_url)}`
               : null,
           permalink: p.permalink ?? null,
@@ -106,11 +107,9 @@ export function WorkSection({
             <h2 className="font-black text-white text-3xl md:text-5xl mb-2">
               The Visual Lab
             </h2>
-            <p className="text-gray-500 text-sm font-mono">
-              @{handle} // feed_dump.04
-            </p>
+            <p className="text-gray-500 text-sm font-mono">@{handle}</p>
           </div>
-          <button
+          {/* <button
             className="flex items-center gap-2 text-white font-semibold text-sm hover:text-[var(--accent)]400 transition-colors"
             style={{ "--accent": accentColor } as React.CSSProperties}
           >
@@ -124,7 +123,7 @@ export function WorkSection({
                 strokeLinejoin="round"
               />
             </svg>
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -134,7 +133,9 @@ export function WorkSection({
           {cardData.map((card, i) => {
             const inner = (
               <>
-                <div className={`w-full h-full bg-gradient-to-br ${card.gradient}`} />
+                <div
+                  className={`w-full h-full bg-gradient-to-br ${card.gradient}`}
+                />
                 {card.videoUrl ? (
                   <video
                     src={card.videoUrl}
@@ -176,10 +177,11 @@ export function WorkSection({
               </>
             );
 
-            const cardClass = `relative rounded-2xl overflow-hidden ${i % 2 === 1 ? "md:mt-8" : ""}`;
+            const cardClass = `relative rounded-2xl overflow-hidden ${i % 2 === 1 ? "md:mt-8 mt-5" : ""}`;
             const cardStyle = { aspectRatio: "3/4" };
 
-            const href = card.permalink ?? `https://www.instagram.com/${handle}/`;
+            const href =
+              card.permalink ?? `https://www.instagram.com/${handle}/`;
             return (
               <a
                 key={card.id}

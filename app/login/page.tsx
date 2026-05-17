@@ -56,15 +56,22 @@ export default function LoginPage() {
           </div>
           <span className="font-bold text-gray-900 text-sm">kloot</span>
         </a>
-        <a href="/onboarding" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+        <a
+          href="/onboarding"
+          className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+        >
           Sign up
         </a>
       </nav>
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Welcome back</h1>
-          <p className="text-gray-500 text-sm mb-8">Log in to your creator account.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            Welcome back
+          </h1>
+          <p className="text-gray-500 text-sm mb-8">
+            Log in to your creator account.
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
@@ -119,7 +126,10 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-gray-500 mt-6">
             Don&apos;t have an account?{" "}
-            <a href="/onboarding" className="text-gray-900 font-semibold hover:underline">
+            <a
+              href="/onboarding"
+              className="text-primary font-semibold hover:underline"
+            >
               Sign up
             </a>
           </p>

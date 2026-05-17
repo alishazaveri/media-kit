@@ -70,15 +70,26 @@ export function PartnerSection({
   return (
     <section id="partner" style={{ backgroundColor: primaryColor }}>
       {/* TRUSTED BY bar */}
-      <div className="px-4 py-8 md:px-8 md:py-10 border-b border-gray-200/60">
-        <div className="max-w-7xl mx-auto flex items-center gap-6 md:gap-10 flex-wrap">
-          <span className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase shrink-0">
-            Trusted By
-          </span>
-          {trustedBrands.map((brand) => (
+      <style>{`
+        @keyframes tickerX {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .ticker-scroll {
+          animation: tickerX ${trustedBrands.length * 1.5}s linear infinite;
+        }
+        @media (min-width: 768px) {
+          .ticker-scroll {
+            animation-duration: ${trustedBrands.length * 6}s;
+          }
+        }
+      `}</style>
+      <div className="py-8 md:py-10 border-b border-gray-200/60 overflow-hidden">
+        <div className="ticker-scroll flex items-center gap-10 md:gap-16 whitespace-nowrap">
+          {[...trustedBrands, ...trustedBrands].map((brand, i) => (
             <span
-              key={brand}
-              className="font-black text-gray-700 text-lg tracking-wide uppercase"
+              key={i}
+              className="font-black text-gray-700 text-lg tracking-wide uppercase shrink-0"
             >
               {brand}
             </span>
@@ -87,7 +98,7 @@ export function PartnerSection({
       </div>
 
       <div className="px-4 py-12 md:px-8 md:py-16">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto md:px-6 px-0 ">
           {/* Packages list */}
           {visiblePackages.length > 0 && (
             <div className="mb-16">
@@ -96,34 +107,37 @@ export function PartnerSection({
               </p>
               <div>
                 {visiblePackages.map(({ id, title, description, price }, i) => (
-                  <div key={id}>
-                    {i > 0 && <div className="border-t border-gray-200/80" />}
-                    <div className="flex items-center justify-between py-6 md:py-8 gap-4">
+                  <div key={id} className=" ">
+                    <div className="border-t border-gray-200/80" />
+                    <div className="group flex flex-col md:flex-row items-start md:items-center justify-between py-8 hover:bg-surface/60 transition-colors px-2 md:px-4">
                       <div className="min-w-0">
-                        <p className="font-black text-gray-900 text-xl md:text-2xl mb-1">
-                          {title || "Package"}
-                        </p>
-                        <p className="text-sm text-gray-500">{description}</p>
+                        <h4 className="font-display text-2xl md:text-3xl font-bold">
+                          {title}
+                        </h4>
+                        <p className="text-gray-500 text-sm">{description}</p>
                       </div>
-                      <div className="flex items-center gap-3 md:gap-5 shrink-0">
-                        <span className="text-sm text-gray-400 hidden md:block">
+                      <div className="flex items-center justify-between w-full md:w-max gap-6 mt-4 md:mt-0 shrink-0">
+                        <span className="text-xs font-semibold text-gray-400 hidden md:inline">
                           {turnaround || "Custom timeline"} delivery
                         </span>
                         <p
-                          className="font-black text-xl md:text-2xl"
+                          className="font-display text-3xl md:text-4xl font-black text-brand-accent transition-transform group-hover:scale-110"
                           style={{ color: accentColor }}
                         >
                           {price || "—"}
                         </p>
                         <button
-                          className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-blue-500 hover:text-[var(--accent)]500 transition-colors shrink-0"
+                          className="w-12 h-12 rounded-full border-1  flex items-center justify-center hover:border-[var(--accent)] hover:text-white transition-colors shrink-0 text-[var(--accent)] hover:bg-[var(--accent)] "
                           style={
-                            { "--accent": accentColor } as React.CSSProperties
+                            {
+                              "--accent": accentColor,
+                              borderColor: `${accentColor}80`,
+                            } as React.CSSProperties
                           }
                         >
                           <svg
-                            width="14"
-                            height="14"
+                            width="24"
+                            height="24"
                             viewBox="0 0 24 24"
                             fill="none"
                           >
@@ -223,8 +237,9 @@ export function PartnerSection({
           </div>
 
           {/* The Vibe card */}
+          {/* Hidden for now */}
           <div
-            className="bg-[#DFF0EA] rounded-3xl p-6 md:p-10"
+            className="bg-[#DFF0EA] rounded-3xl p-6 md:p-10 hidden"
             // style={{ backgroundColor: primaryColor }}
           >
             <div className="flex flex-col md:flex-row gap-6 md:gap-10">

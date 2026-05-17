@@ -17,7 +17,7 @@ export function FooterSection({
         <p className="text-xs font-bold tracking-[0.3em] text-gray-400 uppercase mb-8">
           Let&apos;s Create The Next Shift
         </p>
-        <div className="flex items-center justify-center gap-4 mb-8">
+        <div className="flex items-start md:items-center justify-center gap-4 mb-8">
           <svg
             width="40"
             height="40"
@@ -43,7 +43,7 @@ export function FooterSection({
           </svg>
           <a
             href={`mailto:hello@${handle || "creator"}.com`}
-            className="font-black text-gray-900 transition-colors hover:text-[var(--accent)]"
+            className="font-black text-gray-900 transition-colors hover:text-[var(--accent)] break-all"
             style={
               {
                 "--accent": accentColor,

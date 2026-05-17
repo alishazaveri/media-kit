@@ -11,7 +11,11 @@ export function SignupStep({
   onNext: (userId: string) => void;
   claimedUsername: string;
 }) {
-  const [form, setForm] = useState({ email: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -32,7 +36,9 @@ export function SignupStep({
       onNext(res.data.userId);
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.error || "Signup failed. Please try again.");
+        setError(
+          err.response?.data?.error || "Signup failed. Please try again.",
+        );
       } else {
         setError("Signup failed. Please try again.");
       }
@@ -46,7 +52,9 @@ export function SignupStep({
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Create your account</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            Create your account
+          </h1>
           <p className="text-gray-500 text-sm mb-8">
             Claiming kloot.io/{claimedUsername}
           </p>
@@ -87,7 +95,9 @@ export function SignupStep({
                 type="password"
                 placeholder="••••••••"
                 value={form.confirmPassword}
-                onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, confirmPassword: e.target.value })
+                }
                 required
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition bg-white"
               />
@@ -110,12 +120,20 @@ export function SignupStep({
 
           <p className="text-center text-sm text-gray-400 mt-6">
             By continuing you agree to our{" "}
-            <a href="/terms" className="underline hover:text-gray-600">Terms & Privacy</a>.
+            <a href="/terms" className="underline hover:text-gray-600">
+              Terms & Privacy
+            </a>
+            .
           </p>
 
           <p className="text-center text-sm text-gray-500 mt-4">
             Already have an account?{" "}
-            <a href="/login" className="text-gray-900 font-semibold hover:underline">Sign in</a>
+            <a
+              href="/login"
+              className="text-primary font-semibold hover:underline"
+            >
+              Sign in
+            </a>
           </p>
         </div>
       </div>

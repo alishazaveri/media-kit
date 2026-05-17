@@ -31,7 +31,7 @@ export default function ClaimBar() {
             onChange={(e) => setUsername(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleClaim()}
             placeholder="username"
-            className="flex-1 min-w-0 text-sm font-semibold text-primary placeholder-primary outline-none bg-transparent opacity-60"
+            className="flex-1 min-w-0 text-sm font-semibold text-primary placeholder-primaryBF outline-none bg-transparent "
           />
         </div>
         <button

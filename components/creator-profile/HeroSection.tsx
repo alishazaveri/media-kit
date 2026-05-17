@@ -32,10 +32,10 @@ export function HeroSection({
 }) {
   return (
     <section className="" style={{ backgroundColor: primaryColor }}>
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-end gap-10 pt-12 md:pt-20 px-6 pb-20 ">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-end gap-10 pt-4 md:pt-20 px-6 pb-20 ">
         {/* Photo */}
         <div className="relative shrink-0">
-          <div className="relative w-64 md:w-80 aspect-[4/5] bg-white rounded-[3rem] shadow-2xl overflow-hidden ring-8 ring-white/60">
+          <div className="relative w-[300px] md:w-80 aspect-[4/5] bg-white rounded-[3rem] shadow-2xl overflow-hidden ring-8 ring-white/60">
             {profilePic ? (
               <img
                 src={profilePic}
@@ -61,9 +61,13 @@ export function HeroSection({
         </div>
 
         {/* Info */}
-        <div className="flex-1 mb-2">
+        <div className="flex-1 mb-2 flex md:items-start items-start flex-col">
           {/* Available row */}
           <div className="flex items-center gap-3 mb-5 flex-wrap">
+            <div
+              className="h-px w-14 shrink-0 md:hidden block"
+              style={{ backgroundColor: accentColor }}
+            />
             <span
               className="text-xs font-bold tracking-[0.25em] uppercase"
               style={{ color: accentColor }}
@@ -76,10 +80,15 @@ export function HeroSection({
               className="h-px w-14 shrink-0"
               style={{ backgroundColor: accentColor }}
             />
-            <span className="text-sm text-gray-500">
-              she/her · {location || "Worldwide"}{" "}
-              {/* [DUMMY: pronouns field] */}
-            </span>
+            {/* dummy */}
+            {/* [DUMMY: pronouns field] */}
+            <a
+              className="text-sm text-gray-500 md:block hidden"
+              href={`https://www.instagram.com/${handle}/`}
+              target="__blank"
+            >
+              @{handle || "yourhandle"}
+            </a>
           </div>
 
           {/* Name */}
@@ -98,7 +107,7 @@ export function HeroSection({
 
           {/* Tags */}
           <div className="flex items-center gap-2.5 flex-wrap mb-6 text-xs">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1d293d]/5 text-[#1d293d]/80 ">
+            <span className="inline-flex md:hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1d293d]/5 text-[#1d293d]/80 ">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <rect
                   x="2"
@@ -152,7 +161,7 @@ export function HeroSection({
           </div>
 
           {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+          <div className="flex flex-row items-stretch  gap-3 sm:gap-4">
             <button
               style={
                 {
@@ -176,9 +185,9 @@ export function HeroSection({
                 />
               </svg>
             </button>
-            <button className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface border border-[#1d293d]/10 text-[#1d293d] font-bold text-sm hover:bg-mint-pill transition-colors">
-              Media Kit PDF
-            </button>
+            {/* <button className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface border border-[#1d293d]/10 text-[#1d293d] font-bold text-sm hover:bg-mint-pill transition-colors">
+              Contact
+            </button> */}
           </div>
         </div>
       </div>

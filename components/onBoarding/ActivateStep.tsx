@@ -27,7 +27,11 @@ function PreviewPanel({
 
   const engagementRate =
     ig.followers_count && Array.isArray(ig.posts) && ig.posts.length
-      ? +(((ig.total_likes ?? 0) + (ig.total_comments ?? 0)) / (ig.followers_count * ig.posts.length) * 100).toFixed(1)
+      ? +(
+          (((ig.total_likes ?? 0) + (ig.total_comments ?? 0)) /
+            (ig.followers_count * ig.posts.length)) *
+          100
+        ).toFixed(1)
       : null;
 
   const stats = {
@@ -48,7 +52,9 @@ function PreviewPanel({
 
   return (
     <div className="flex flex-col h-full">
-      <p className="text-sm text-gray-400 text-center mb-4 shrink-0">Live preview of your page</p>
+      <p className="text-sm text-gray-400 text-center mb-4 shrink-0">
+        Live preview of your page
+      </p>
       <div className="flex-1 overflow-hidden rounded-2xl border border-gray-200 bg-white">
         <div className="h-full overflow-y-auto p-6">
           <ProfilePreview
@@ -95,7 +101,12 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
               className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <path
+                  d="M1 1L13 13M13 1L1 13"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
               </svg>
             </button>
           </div>
@@ -113,9 +124,15 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
                 growth: analytics?.follower_gain_30d || null,
               }}
               insights={{
-                gender_age: Array.isArray(analytics?.gender_age) ? analytics.gender_age : [],
-                top_countries: Array.isArray(analytics?.top_countries) ? analytics.top_countries : [],
-                top_cities: Array.isArray(analytics?.top_cities) ? analytics.top_cities : [],
+                gender_age: Array.isArray(analytics?.gender_age)
+                  ? analytics.gender_age
+                  : [],
+                top_countries: Array.isArray(analytics?.top_countries)
+                  ? analytics.top_countries
+                  : [],
+                top_cities: Array.isArray(analytics?.top_cities)
+                  ? analytics.top_cities
+                  : [],
               }}
               posts={Array.isArray(analytics?.posts) ? analytics.posts : []}
             />
@@ -129,7 +146,9 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">
             Activate your kloot link
           </h1>
-          <p className="text-gray-400 text-base mb-6">One simple plan. Cancel anytime.</p>
+          <p className="text-gray-400 text-base mb-6">
+            One simple plan. Cancel anytime.
+          </p>
 
           <div className="bg-white rounded-2xl border border-gray-200 p-7 flex flex-col gap-6">
             {/* Price */}
@@ -138,15 +157,32 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
                 <span className="text-5xl font-black text-gray-900">$9</span>
                 <span className="text-lg text-gray-400 mb-2">/month</span>
               </div>
-              <p className="text-sm text-gray-400">Billed monthly · 7-day free trial</p>
+              <p className="text-sm text-gray-400">
+                Billed monthly · 7-day free trial
+              </p>
             </div>
 
             {/* Features */}
             <ul className="space-y-3">
               {FEATURES.map((f) => (
-                <li key={f} className="flex items-center gap-3 text-sm text-gray-700">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
-                    <path d="M3 8L6.5 11.5L13 5" stroke="#E8714A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <li
+                  key={f}
+                  className="flex items-center gap-3 text-sm text-gray-700"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    className="shrink-0"
+                  >
+                    <path
+                      d="M3 8L6.5 11.5L13 5"
+                      stroke="#E8714A"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                   {f}
                 </li>

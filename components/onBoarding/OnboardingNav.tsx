@@ -4,7 +4,7 @@ export function OnboardingNav({ currentStep }: { currentStep: 1 | 2 | 3 | 4 }) {
   return (
     <nav className="flex items-center justify-between px-6 py-4 bg-[#FAF7F2]">
       <span className="font-bold text-gray-900 text-lg">kloot</span>
-      <div className="hidden sm:flex items-center gap-4">
+      {/* <div className="hidden sm:flex items-center gap-4">
         {STEPS.map((label, i) => {
           const num = i + 1;
           const done = num <= currentStep;
@@ -30,7 +30,7 @@ export function OnboardingNav({ currentStep }: { currentStep: 1 | 2 | 3 | 4 }) {
             </div>
           );
         })}
-      </div>
+      </div> */}
     </nav>
   );
 }
