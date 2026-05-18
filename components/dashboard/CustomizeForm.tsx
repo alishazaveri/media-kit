@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Package, Collaboration, IgStats } from "./types";
+import { type ThemeData } from "@/components/CreatorProfile";
+import { THEMES } from "@/constants/themes";
 
 const POST_GRADIENTS = [
   "from-orange-300 to-rose-300",
@@ -14,12 +16,6 @@ const POST_GRADIENTS = [
   "from-blue-200 to-indigo-300",
 ];
 
-const THEMES = [
-  { id: "sunset", label: "Sunset", style: "bg-gradient-to-br from-orange-300 to-rose-400" },
-  { id: "midnight", label: "Midnight", style: "bg-[#0D1B2A]" },
-  { id: "cream", label: "Cream", style: "bg-[#F5F0E8]" },
-  { id: "forest", label: "Forest", style: "bg-[#1E3A2F]" },
-];
 
 const ANALYTICS_TOGGLES = [
   { id: "followers", label: "Followers" },
@@ -106,6 +102,7 @@ export interface CustomizeFormProps {
   removeCollab: (id: number) => void;
   updateCollab: (id: number, field: keyof Collaboration, value: string | boolean) => void;
   onPreviewClick: () => void;
+  onThemeChange?: (identifier: string, theme: ThemeData) => void;
 }
 
 export function CustomizeForm({
@@ -119,11 +116,22 @@ export function CustomizeForm({
   packages, addPackage, removePackage, updatePackage,
   collabs, addCollab, removeCollab, updateCollab,
   onPreviewClick,
+  onThemeChange,
 }: CustomizeFormProps) {
   const [pronouns, setPronouns] = useState("she/her");
   const [displayEmail, setDisplayEmail] = useState("");
   const [languages, setLanguages] = useState("English");
-  const [theme, setTheme] = useState("sunset");
+  const [theme, setTheme] = useState("default");
+
+  useEffect(() => {
+    fetch("/api/customization")
+      .then((r) => r.json())
+      .then((data) => {
+        const identifier = data.draft?.theme_identifier;
+        if (identifier) setTheme(identifier);
+      })
+      .catch(() => {});
+  }, []);
   const [nicheText, setNicheText] = useState(nicheTags.join(", "));
   const [analyticsToggles, setAnalyticsToggles] = useState<Record<string, boolean>>({
     followers: true, views: true, growth: true, shares: false,
@@ -259,14 +267,29 @@ export function CustomizeForm({
         <p className="font-semibold text-gray-900 mb-4">Theme</p>
         <div className="grid grid-cols-4 gap-3">
           {THEMES.map((t) => (
-            <button key={t.id} onClick={() => setTheme(t.id)} className="flex flex-col items-center gap-2">
+            <button
+              key={t.identifier}
+              onClick={() => {
+                setTheme(t.identifier);
+                onThemeChange?.(t.identifier, { accent_color: t.accent_color, base_color: t.base_color, contrast_color: t.contrast_color });
+                fetch("/api/customization", {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ theme_identifier: t.identifier }),
+                }).catch(() => {});
+              }}
+              className="flex flex-col items-center gap-2"
+            >
               <div
-                className={`w-full aspect-[3/4] rounded-2xl ${t.style} transition-all ${
-                  theme === t.id ? "ring-2 ring-primary ring-offset-2" : ""
+                className={`w-full aspect-[3/4] rounded-2xl overflow-hidden transition-all ${
+                  theme === t.identifier ? "ring-2 ring-primary ring-offset-2" : ""
                 }`}
-              />
-              <span className={`text-sm ${theme === t.id ? "font-semibold text-gray-900" : "text-gray-500"}`}>
-                {t.label}
+                style={{ backgroundColor: t.base_color }}
+              >
+                <div className="h-[30%] mt-auto" style={{ backgroundColor: t.accent_color, marginTop: "70%" }} />
+              </div>
+              <span className={`text-xs text-center capitalize ${theme === t.identifier ? "font-semibold text-gray-900" : "text-gray-500"}`}>
+                {t.name}
               </span>
             </button>
           ))}

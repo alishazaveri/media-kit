@@ -3,6 +3,8 @@ import { getUserByUsername } from "@/db/user.db";
 import { getSocialChannelByPlatform } from "@/db/social_channel.db";
 import { getUserData } from "@/db/user_data.db";
 import { getInsightBySocialChannel } from "@/db/insight.db";
+import { getCustomization } from "@/db/customization.db";
+import { getThemeByIdentifier } from "@/constants/themes";
 import { CreatorProfile } from "@/components/CreatorProfile";
 
 export default async function PublishedProfilePage(props: {
@@ -24,10 +26,17 @@ export default async function PublishedProfilePage(props: {
     return <WipPage username={username} />;
   }
 
-  const [userData, insight] = await Promise.all([
+  const [userData, insight, customization] = await Promise.all([
     getUserData(userId, "instagram"),
     getInsightBySocialChannel((channel as any)._id.toString()),
+    getCustomization(userId, "published"),
   ]);
+
+  const themeIdentifier = (customization as any)?.theme_identifier;
+  const resolved = themeIdentifier ? getThemeByIdentifier(themeIdentifier) : undefined;
+  const theme = resolved
+    ? { accent_color: resolved.accent_color, base_color: resolved.base_color, contrast_color: resolved.contrast_color }
+    : undefined;
 
   const published: Record<string, any> =
     (userData as any)?.published_data ?? {};
@@ -92,6 +101,7 @@ export default async function PublishedProfilePage(props: {
           Array.isArray(published.deliverables) ? published.deliverables : []
         }
         turnaround={published.turnaround ?? "7-10 days"}
+        theme={theme}
       />
     </main>
   );

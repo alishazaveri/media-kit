@@ -17,6 +17,12 @@ import type {
 
 export type { Stats, AudienceInsights, PostItem, Package, Collaboration };
 
+export type ThemeData = {
+  accent_color: string;
+  base_color: string;
+  contrast_color: string;
+};
+
 export interface CreatorProfileProps {
   name?: string;
   handle?: string;
@@ -34,6 +40,7 @@ export interface CreatorProfileProps {
   restrictedIndustries?: string[];
   deliverables?: string[];
   turnaround?: string;
+  theme?: ThemeData;
 }
 
 export function CreatorProfile({
@@ -138,6 +145,7 @@ export function CreatorProfile({
     "Product Photography",
   ],
   turnaround = "7-10 days",
+  theme,
 }: CreatorProfileProps) {
   const nameParts = name.trim().split(/\s+/);
   const firstName = nameParts[0] || "";
@@ -153,9 +161,11 @@ export function CreatorProfile({
   );
   const visiblePackages = packages.slice(0, 4);
 
-  const primaryColor = "#fff4ef";
-  const accentColor = "#ff7350";
-  const secondaryColor = "#0D1B2A";
+  console.log({ theme });
+
+  const primaryColor = theme?.base_color ?? "#fff4ef";
+  const accentColor = theme?.accent_color ?? "#ff7350";
+  const secondaryColor = theme?.contrast_color ?? "#1B1210";
 
   return (
     <div className="font-sans min-h-screen bg-white">

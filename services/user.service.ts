@@ -14,6 +14,7 @@ import {
   deleteToken,
   deleteTokensByUserId,
 } from "@/db/token.db";
+import { upsertCustomization } from "@/db/customization.db";
 
 const SALT_ROUNDS = 12;
 const ACCESS_TOKEN_TTL = "15m";
@@ -52,14 +53,15 @@ export async function registerUser(
 
   const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
   const user = await createUser({ name, email, username, password_hash });
+  const userId = user._id.toString();
 
   const verifyToken = crypto.randomBytes(32).toString("hex");
-  await createToken(
-    user._id.toString(),
-    verifyToken,
-    "email_verify",
-    new Date(Date.now() + EMAIL_VERIFY_TTL_MS)
-  );
+
+  await Promise.all([
+    createToken(userId, verifyToken, "email_verify", new Date(Date.now() + EMAIL_VERIFY_TTL_MS)),
+    upsertCustomization(userId, "draft", "default"),
+    upsertCustomization(userId, "published", "default"),
+  ]);
 
   // TODO: send verification email with verifyToken
   return { user, verifyToken };

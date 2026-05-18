@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { ProfilePreview } from "@/components/ProfilePreview";
 import { CustomizeForm } from "./CustomizeForm";
 import { Package, Collaboration, IgStats, IgInsights } from "./types";
+import { type ThemeData } from "@/components/CreatorProfile";
 
 interface Props {
   profilePic: string | null;
@@ -46,6 +47,8 @@ interface Props {
     field: keyof Collaboration,
     value: string | boolean,
   ) => void;
+  theme?: ThemeData;
+  onThemeChange?: (identifier: string, theme: ThemeData) => void;
 }
 
 export function CustomizeTab(props: Props) {
@@ -53,6 +56,7 @@ export function CustomizeTab(props: Props) {
     profilePic,
     setProfilePic,
     displayName,
+
     setDisplayName,
     appUsername,
     handle,
@@ -82,6 +86,8 @@ export function CustomizeTab(props: Props) {
     addCollab,
     removeCollab,
     updateCollab,
+    theme,
+    onThemeChange,
   } = props;
 
   const [showPreview, setShowPreview] = useState(false);
@@ -104,6 +110,7 @@ export function CustomizeTab(props: Props) {
     restrictedIndustries,
     deliverables,
     turnaround,
+    theme,
   };
 
   useEffect(() => {
@@ -123,6 +130,7 @@ export function CustomizeTab(props: Props) {
     packages,
     collabs,
     turnaround,
+    theme,
   ]);
 
   const formProps = {
@@ -157,6 +165,7 @@ export function CustomizeTab(props: Props) {
     removeCollab,
     updateCollab,
     onPreviewClick: () => setShowPreview(true),
+    onThemeChange,
   };
 
   return (
@@ -183,7 +192,7 @@ export function CustomizeTab(props: Props) {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4">
-            <ProfilePreview {...previewProps} />
+            <ProfilePreview {...previewProps} theme={theme} />
           </div>
         </div>
       )}
