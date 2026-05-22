@@ -49,12 +49,14 @@ function Label({ children }: { children: React.ReactNode }) {
 function Input({
   value,
   onChange,
+  onBlur,
   placeholder,
   readOnly,
   className = "",
 }: {
   value: string;
   onChange?: (v: string) => void;
+  onBlur?: () => void;
   placeholder?: string;
   readOnly?: boolean;
   className?: string;
@@ -63,6 +65,7 @@ function Input({
     <input
       value={value}
       onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+      onBlur={onBlur}
       placeholder={placeholder}
       readOnly={readOnly}
       className={`w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 ${readOnly ? "bg-gray-50 text-gray-500 cursor-default" : "bg-white"} ${className}`}
@@ -254,11 +257,11 @@ export function CustomizeForm({
           <Input
             value={nicheText}
             onChange={setNicheText}
+            onBlur={syncNicheTags}
             placeholder="lifestyle, travel, beauty"
             className=""
           />
           <p className="text-xs text-gray-400 mt-1">Comma separated</p>
-          <input type="hidden" onBlur={syncNicheTags} />
         </div>
       </section>
 

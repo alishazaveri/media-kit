@@ -65,30 +65,39 @@ export function HeroSection({
           {/* Available row */}
           <div className="flex items-center gap-3 mb-5 flex-wrap">
             <div
-              className="h-px w-14 shrink-0 md:hidden block"
+              className="h-px w-6 sm:w-10 lg:w-16 shrink-0  block"
               style={{ backgroundColor: accentColor }}
             />
-            <span
+            {/* <span
               className="text-xs font-bold tracking-[0.25em] uppercase"
               style={{ color: accentColor }}
             >
               {availableForCollabs
                 ? "Available for Collab"
                 : "Not Currently Available"}
+            </span> */}
+
+            <span
+              className="md:text-xs text-[11px] font-bold tracking-[0.25em] uppercase"
+              style={{
+                color: accentColor,
+              }}
+            >
+              {nicheTags.join(" • ")}
             </span>
+
             <div
-              className="h-px w-14 shrink-0"
+              className="h-px w-6 sm:w-10 lg:w-16 shrink-0"
               style={{ backgroundColor: accentColor }}
             />
-            {/* dummy */}
-            {/* [DUMMY: pronouns field] */}
-            <a
+
+            {/* <a
               className="text-sm text-gray-500 md:block hidden"
               href={`https://www.instagram.com/${handle}/`}
               target="__blank"
             >
               @{handle || "yourhandle"}
-            </a>
+            </a> */}
           </div>
 
           {/* Name */}
@@ -107,7 +116,7 @@ export function HeroSection({
 
           {/* Tags */}
           <div className="flex items-center gap-2.5 flex-wrap mb-6 text-xs">
-            <span className="inline-flex md:hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1d293d]/5 text-[#1d293d]/80 ">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1d293d]/5 text-[#1d293d]/80 ">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <rect
                   x="2"
@@ -129,12 +138,6 @@ export function HeroSection({
               </svg>
               @{handle || "yourhandle"}
             </span>
-
-            {nicheTags.length > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1d293d]/5 text-[#1d293d]/80 text-xs">
-                {nicheTags.slice(0, 2).join(" · ")}
-              </span>
-            )}
 
             {location && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1d293d]/5 text-[#1d293d]/80  text-xs">
