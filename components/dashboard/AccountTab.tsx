@@ -9,9 +9,12 @@ interface Props {
   handle: string;
   igStats: IgStats;
   onLogout: () => void;
+  onConnectInstagram: () => void;
+  onDisconnectInstagram: () => void;
 }
 
-export function AccountTab({ email, appUsername, handle, igStats, onLogout }: Props) {
+export function AccountTab({ email, appUsername, handle, igStats, onLogout, onConnectInstagram, onDisconnectInstagram }: Props) {
+  const isConnected = Boolean(handle);
   return (
     <div className="h-full overflow-y-auto px-4 lg:px-6 py-5 pb-24 lg:pb-5">
       <div className="max-w-2xl mx-auto space-y-5">
@@ -65,14 +68,27 @@ export function AccountTab({ email, appUsername, handle, igStats, onLogout }: Pr
               <div>
                 <p className="text-sm font-semibold text-gray-900">Instagram</p>
                 <p className="text-xs text-gray-400">
-                  {handle ? `@${handle}` : "—"}
-                  {igStats.followers != null ? ` · ${formatCount(igStats.followers)} followers` : ""}
+                  {isConnected
+                    ? `@${handle}${igStats.followers != null ? ` · ${formatCount(igStats.followers)} followers` : ""}`
+                    : "Not connected"}
                 </p>
               </div>
             </div>
-            <span className="border border-green-300 text-green-600 text-xs font-semibold px-3 py-1.5 rounded-xl bg-green-50">
-              Connected
-            </span>
+            {isConnected ? (
+              <button
+                onClick={onDisconnectInstagram}
+                className="border border-red-200 text-red-500 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-red-50 transition-colors"
+              >
+                Disconnect
+              </button>
+            ) : (
+              <button
+                onClick={onConnectInstagram}
+                className="border border-gray-300 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-gray-50 transition-colors"
+              >
+                Connect
+              </button>
+            )}
           </div>
         </div>
 

@@ -2,13 +2,25 @@ import config from "@/lib/config";
 import instagramConnect from "@/lib/instagramConnect";
 import { connectInstagramChannel } from "@/services/social_channel.service";
 import { fetchAndSaveInstagramAnalytics } from "@/services/instagram.service";
+import isLinkActive from "@/lib/isLinkActive";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const code = request.nextUrl.searchParams.get("code");
-    const userId = request.nextUrl.searchParams.get("state");
+    const rawState = request.nextUrl.searchParams.get("state") ?? "";
+
+    let userId: string | null = null;
+    let returnTo = "";
+    try {
+      const parsed = JSON.parse(Buffer.from(rawState, "base64url").toString());
+      userId = parsed.uid ?? null;
+      returnTo = parsed.ret ?? "";
+    } catch {
+      // legacy state: plain userId string
+      userId = rawState || null;
+    }
 
     if (!code || !userId) {
       return NextResponse.redirect(
@@ -94,11 +106,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.redirect(
-      `${config.PUBLIC_URL}/onboarding?connected=true`,
-    );
-
-    return NextResponse.redirect(`${config.PUBLIC_URL}/dashboard`);
+    let successRedirect: string;
+    if (returnTo) {
+      successRedirect = `${config.PUBLIC_URL}${returnTo}`;
+    } else {
+      const hasPlan = await isLinkActive(userId).catch(() => false);
+      successRedirect = hasPlan
+        ? `${config.PUBLIC_URL}/dashboard`
+        : `${config.PUBLIC_URL}/onboarding?connected=true`;
+    }
+    return NextResponse.redirect(successRedirect);
   } catch (err) {
     if (axios.isAxiosError(err)) {
       console.error("Instagram API error:", err.response?.data);

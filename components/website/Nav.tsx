@@ -17,13 +17,12 @@ export default function Nav() {
         {/* ── Main row ── */}
         <div className="flex items-center gap-6 px-4 py-2.5">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-sm">k</span>
-            </div>
-            <span className="font-black text-gray-900 text-base tracking-tight">
-              Kloot
-            </span>
+          <a href="/" className="flex items-center shrink-0">
+            <img
+              src="/assets/images/logo/logo-transparent-slim.png"
+              alt="Kloot"
+              className="h-7 w-auto object-contain"
+            />
           </a>
 
           {/* Desktop links */}

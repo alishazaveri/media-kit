@@ -1,6 +1,7 @@
 "use client";
 
-import { Tab } from "./types";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 function CustomizeIcon({ active }: { active: boolean }) {
   return (
@@ -62,53 +63,57 @@ function BillingIcon({ active }: { active: boolean }) {
   );
 }
 
-const NAV_ITEMS = [
-  { id: "customize" as Tab, label: "Customize", Icon: CustomizeIcon },
-  { id: "account" as Tab, label: "Account", Icon: AccountIcon },
-  { id: "plan" as Tab, label: "Plan & billing", Icon: BillingIcon },
+export const NAV_ITEMS = [
+  { id: "customize", label: "Customize", Icon: CustomizeIcon, href: "/dashboard" },
+  { id: "account", label: "Account", Icon: AccountIcon, href: "/account" },
+  { id: "plan", label: "Plan & billing", Icon: BillingIcon, href: "/plan" },
 ];
 
 interface Props {
-  activeTab: Tab;
-  setActiveTab: (tab: Tab) => void;
   onLogout: () => void;
   collapsed: boolean;
 }
 
-export function DashboardSidebar({ activeTab, setActiveTab, onLogout, collapsed }: Props) {
+export function DashboardSidebar({ onLogout, collapsed }: Props) {
+  const pathname = usePathname();
+
   return (
     <aside
       className={`hidden lg:flex shrink-0 bg-[#f8f8f8] flex-col transition-all duration-200 ${
         collapsed ? "w-16" : "w-56"
       }`}
     >
-      <div className={`py-5 flex items-center shrink-0 ${collapsed ? "justify-center px-0" : "gap-2.5 px-5"}`}>
-        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="">
-            <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
-          </svg>
-        </div>
-        {!collapsed && <span className="font-bold text-base">kloot</span>}
+      <div className={`py-5 flex items-center shrink-0 ${collapsed ? "justify-center px-0" : "px-5"}`}>
+        {!collapsed && (
+          <img
+            src="/assets/images/logo/logo-transparent-slim.png"
+            alt="Kloot"
+            className="h-6 w-auto object-contain"
+          />
+        )}
       </div>
 
       <nav className="flex-1 px-2 py-2 space-y-0.5">
-        {NAV_ITEMS.map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            onClick={() => setActiveTab(id)}
-            title={collapsed ? label : undefined}
-            className={`w-full flex items-center py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
-              collapsed ? "justify-center px-0" : "gap-3 px-3"
-            } ${
-              activeTab === id
-                ? "bg-[#f9f3f4]"
-                : "text-gray-500 hover:bg-[#f9f3f4] hover:text-gray-800"
-            }`}
-          >
-            <Icon active={activeTab === id} />
-            {!collapsed && label}
-          </button>
-        ))}
+        {NAV_ITEMS.map(({ label, Icon, href }) => {
+          const active = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              title={collapsed ? label : undefined}
+              className={`w-full flex items-center py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                collapsed ? "justify-center px-0" : "gap-3 px-3"
+              } ${
+                active
+                  ? "bg-[#f9f3f4]"
+                  : "text-gray-500 hover:bg-[#f9f3f4] hover:text-gray-800"
+              }`}
+            >
+              <Icon active={active} />
+              {!collapsed && label}
+            </Link>
+          );
+        })}
       </nav>
 
       <div className={`pb-5 border-t border-gray-100 pt-4 px-2`}>
@@ -134,5 +139,3 @@ export function DashboardSidebar({ activeTab, setActiveTab, onLogout, collapsed 
     </aside>
   );
 }
-
-export { NAV_ITEMS };

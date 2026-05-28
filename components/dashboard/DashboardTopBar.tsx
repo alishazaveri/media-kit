@@ -3,30 +3,29 @@
 interface Props {
   appUsername: string;
   profilePic: string | null;
-  publishing: boolean;
-  hasUnpublishedChanges: boolean;
-  onPublish: () => void;
+  publishing?: boolean;
+  hasUnpublishedChanges?: boolean;
+  onPublish?: () => void;
   onToggleCollapse: () => void;
 }
 
 export function DashboardTopBar({
   appUsername,
   profilePic,
-  publishing,
-  hasUnpublishedChanges,
+  publishing = false,
+  hasUnpublishedChanges = false,
   onPublish,
   onToggleCollapse,
 }: Props) {
   return (
     <div className="bg-[#fdfdfd] border-b border-gray-100 px-4 py-3 flex items-center gap-3 shrink-0">
       {/* Mobile: logo */}
-      <div className="lg:hidden flex items-center gap-2">
-        <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
-            <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
-          </svg>
-        </div>
-        <span className="font-bold text-gray-900 text-sm">kloot</span>
+      <div className="lg:hidden flex items-center">
+        <img
+          src="/assets/images/logo/logo-transparent-slim.png"
+          alt="Kloot"
+          className="h-6 w-auto object-contain"
+        />
       </div>
 
       {/* Desktop: sidebar toggle */}
@@ -108,7 +107,7 @@ export function DashboardTopBar({
 
       {/* Right: device toggles + actions + avatar */}
       <div className="flex items-center gap-2 ml-auto lg:ml-0">
-        <div className="hidden lg:flex items-center bg-gray-100 rounded-lg p-1 gap-0.5">
+        {onPublish && <div className="hidden lg:flex items-center bg-gray-100 rounded-lg p-1 gap-0.5">
           {(
             [
               {
@@ -144,7 +143,7 @@ export function DashboardTopBar({
               </svg>
             </button>
           ))}
-        </div>
+        </div>}
 
         <a
           href={`/${appUsername}`}
@@ -169,27 +168,29 @@ export function DashboardTopBar({
           Open live
         </a>
 
-        <button
-          onClick={onPublish}
-          disabled={publishing || !hasUnpublishedChanges}
-          className="bg-gray-900 hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-1.5 rounded-xl flex items-center gap-2 transition-colors"
-        >
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        {onPublish && (
+          <button
+            onClick={onPublish}
+            disabled={publishing || !hasUnpublishedChanges}
+            className="bg-gray-900 hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-1.5 rounded-xl flex items-center gap-2 transition-colors"
           >
-            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
-            <polyline points="17 21 17 13 7 13 7 21" />
-            <polyline points="7 3 7 8 15 8" />
-          </svg>
-          {publishing ? "Saving…" : "Save & publish"}
-        </button>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            {publishing ? "Saving…" : "Save & publish"}
+          </button>
+        )}
 
         <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden shrink-0">
           {profilePic && (
