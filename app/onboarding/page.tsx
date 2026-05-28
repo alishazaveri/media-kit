@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { UsernameStep } from "@/components/onBoarding/UsernameStep";
 import { SignupStep } from "@/components/onBoarding/SignupStep";
 import { ConnectStep } from "@/components/onBoarding/ConnectStep";
-import { ActivateStep } from "@/components/onBoarding/ActivateStep";
+// import { ActivateStep } from "@/components/onBoarding/ActivateStep";
 
-type Step = "username" | "signup" | "connect" | "activate";
+type Step = "username" | "signup" | "connect"; // | "activate";
 
 function OnboardingContent() {
   const router = useRouter();
@@ -29,21 +29,15 @@ function OnboardingContent() {
       setStep("connect");
       return;
     }
-    if (searchParams.get("connected") === "true") { setStep("activate"); return; }
+    if (searchParams.get("connected") === "true") { router.push("/dashboard"); return; }
     const stepParam = searchParams.get("step");
     if (stepParam === "connect") setStep("connect");
-    else if (stepParam === "activate") setStep("activate");
+    // else if (stepParam === "activate") setStep("activate");
   }, [searchParams]);
-
-  const isActivate = step === "activate";
 
   return (
     <div
-      className={
-        isActivate
-          ? "min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden overflow-y-auto flex flex-col bg-gray-100 p-4"
-          : ""
-      }
+      className=""
     >
       {step === "username" && (
         <UsernameStep
@@ -60,9 +54,9 @@ function OnboardingContent() {
       {step === "connect" && (
         <ConnectStep userId={userId} externalError={connectError} />
       )}
-      {step === "activate" && (
+      {/* step === "activate" && (
         <ActivateStep onNext={() => router.push("/dashboard")} />
-      )}
+      ) */}
     </div>
   );
 }
