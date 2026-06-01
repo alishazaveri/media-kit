@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest) {
 
     const allowed = [
       "display_name", "tagline", "pitch", "location", "niche_tags",
-      "available_for_collabs", "packages", "collabs",
+      "available_for_collabs", "packages", "collabs", "posts",
     ];
     const patch: Record<string, any> = {};
     for (const key of allowed) {

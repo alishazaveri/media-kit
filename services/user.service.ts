@@ -15,6 +15,7 @@ import {
   deleteTokensByUserId,
 } from "@/db/token.db";
 import { upsertCustomization } from "@/db/customization.db";
+import { initializeCreatorUserData } from "@/services/user_data.service";
 
 const SALT_ROUNDS = 12;
 const ACCESS_TOKEN_TTL = "15m";
@@ -61,6 +62,7 @@ export async function registerUser(
     createToken(userId, verifyToken, "email_verify", new Date(Date.now() + EMAIL_VERIFY_TTL_MS)),
     upsertCustomization(userId, "draft", "default"),
     upsertCustomization(userId, "published", "default"),
+    initializeCreatorUserData(userId, "instagram"),
   ]);
 
   // TODO: send verification email with verifyToken

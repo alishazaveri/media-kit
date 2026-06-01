@@ -47,6 +47,8 @@ interface Props {
     field: keyof Collaboration,
     value: string | boolean,
   ) => void;
+  featuredPosts: any[];
+  onFeaturedPostsChange: (posts: any[]) => void;
   theme?: ThemeData;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
 }
@@ -86,12 +88,15 @@ export function CustomizeTab(props: Props) {
     addCollab,
     removeCollab,
     updateCollab,
+    featuredPosts,
+    onFeaturedPostsChange,
     theme,
     onThemeChange,
   } = props;
 
   const [showPreview, setShowPreview] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const previewPropsRef = useRef<Record<string, any>>({});
 
   const previewProps = {
     name: displayName,
@@ -101,7 +106,7 @@ export function CustomizeTab(props: Props) {
     profilePic,
     stats: igStats,
     insights: igInsights,
-    posts: igPosts,
+    posts: featuredPosts.length > 0 ? featuredPosts : igPosts,
     availableForCollabs,
     nicheTags,
     packages,
@@ -113,6 +118,25 @@ export function CustomizeTab(props: Props) {
     theme,
   };
 
+  // Keep ref in sync so the PREVIEW_READY handler always sends fresh data
+  previewPropsRef.current = previewProps;
+
+  // Respond to PREVIEW_READY — fires after the iframe's React app has hydrated
+  // and set up its own message listener, which happens AFTER the iframe onLoad event.
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === "PREVIEW_READY") {
+        iframeRef.current?.contentWindow?.postMessage(
+          { type: "PREVIEW_UPDATE", payload: previewPropsRef.current },
+          "*",
+        );
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
+  // Push updates whenever form values change after the preview is already live
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage(
       { type: "PREVIEW_UPDATE", payload: previewProps },
@@ -130,6 +154,7 @@ export function CustomizeTab(props: Props) {
     packages,
     collabs,
     turnaround,
+    featuredPosts,
     theme,
   ]);
 
@@ -164,6 +189,8 @@ export function CustomizeTab(props: Props) {
     addCollab,
     removeCollab,
     updateCollab,
+    featuredPosts,
+    onFeaturedPostsChange,
     onPreviewClick: () => setShowPreview(true),
     onThemeChange,
   };

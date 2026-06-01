@@ -36,7 +36,8 @@ export default function DashboardPage() {
     top_countries: [],
     top_cities: [],
   });
-  const [igPosts, setIgPosts] = useState<any[]>([]);
+  const [igPosts] = useState<any[]>([]);
+  const [featuredPosts, setFeaturedPosts] = useState<any[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [publishedData, setPublishedData] = useState<Record<string, any>>({});
 
@@ -168,10 +169,10 @@ export default function DashboardPage() {
         const draft: Record<string, any> = res.data?.draft ?? {};
 
         const engagementRate =
-          ig.followers_count && Array.isArray(ig.posts) && ig.posts.length
+          ig.followers_count && ig.post_count
             ? +(
                 (((ig.total_likes ?? 0) + (ig.total_comments ?? 0)) /
-                  (ig.followers_count * ig.posts.length)) *
+                  (ig.followers_count * ig.post_count)) *
                 100
               ).toFixed(1)
             : null;
@@ -190,7 +191,6 @@ export default function DashboardPage() {
             : [],
           top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
         });
-        if (Array.isArray(ig.posts)) setIgPosts(ig.posts);
         if (ig.profile_pic) setProfilePic(ig.profile_pic);
         if (ig.username) setHandle(ig.username);
         if (res.data?.username) setAppUsername(res.data.username);
@@ -207,6 +207,9 @@ export default function DashboardPage() {
           setPackages(draft.packages);
         if (Array.isArray(draft.collabs) && draft.collabs.length)
           setCollabs(draft.collabs);
+        if (Array.isArray(draft.posts) && draft.posts.length) {
+          setFeaturedPosts(draft.posts);
+        }
         setPublishedData(res.data?.published ?? {});
       })
       .catch(() => {})
@@ -261,6 +264,7 @@ export default function DashboardPage() {
         available_for_collabs: availableForCollabs,
         packages,
         collabs,
+        posts: featuredPosts,
       });
       setPublishedThemeIdentifier(draftThemeIdentifier);
     } catch {
@@ -310,6 +314,7 @@ export default function DashboardPage() {
     available_for_collabs: availableForCollabs,
     packages,
     collabs,
+    posts: featuredPosts,
   };
   const hasUnpublishedTheme = draftThemeIdentifier !== publishedThemeIdentifier;
 
@@ -379,6 +384,8 @@ export default function DashboardPage() {
               igStats={igStats}
               igInsights={igInsights}
               igPosts={igPosts}
+              featuredPosts={featuredPosts}
+              onFeaturedPostsChange={setFeaturedPosts}
               packages={packages}
               addPackage={addPackage}
               removePackage={removePackage}

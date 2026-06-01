@@ -80,7 +80,13 @@ export default async function PublishedProfilePage(props: {
             : [],
           top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
         }}
-        posts={Array.isArray(ig.posts) ? ig.posts : []}
+        posts={
+          Array.isArray(published.posts) && published.posts.length > 0
+            ? published.posts
+            : Array.isArray(ig.posts)
+              ? ig.posts.slice(0, 4)
+              : []
+        }
         availableForCollabs={published.available_for_collabs ?? true}
         nicheTags={
           Array.isArray(published.niche_tags) ? published.niche_tags : []

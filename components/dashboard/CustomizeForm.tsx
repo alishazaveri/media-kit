@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Package, Collaboration, IgStats } from "./types";
 import { type ThemeData } from "@/components/CreatorProfile";
 import { THEMES } from "@/constants/themes";
@@ -104,6 +104,8 @@ export interface CustomizeFormProps {
   addCollab: () => void;
   removeCollab: (id: number) => void;
   updateCollab: (id: number, field: keyof Collaboration, value: string | boolean) => void;
+  featuredPosts: any[];
+  onFeaturedPostsChange: (posts: any[]) => void;
   onPreviewClick: () => void;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
 }
@@ -116,6 +118,8 @@ export function CustomizeForm({
   location, setLocation,
   nicheTags, setNicheTags,
   igPosts,
+  featuredPosts,
+  onFeaturedPostsChange,
   packages, addPackage, removePackage, updatePackage,
   collabs, addCollab, removeCollab, updateCollab,
   onPreviewClick,
@@ -142,19 +146,73 @@ export function CustomizeForm({
   });
   const [servicesVisible, setServicesVisible] = useState(true);
 
-  const defaultPosts =
-    igPosts.length > 0
-      ? igPosts
-      : Array.from({ length: 8 }, (_, i) => ({ id: `dummy_${i}`, media_type: ["REELS", "IMAGE", "IMAGE", "REELS", "IMAGE", "REELS", "IMAGE", "IMAGE"][i] }));
+  const [featuredIds, setFeaturedIds] = useState<string[]>(() => {
+    if (featuredPosts.length > 0) return featuredPosts.map((p: any) => p.id);
+    if (igPosts.length > 0) return igPosts.slice(0, 4).map((p: any) => p.id);
+    return [];
+  });
 
-  const [featuredIds, setFeaturedIds] = useState<string[]>(
-    defaultPosts.slice(0, 4).map((p: any) => p.id),
-  );
+  // Sync when real posts arrive after initial mount
+  useEffect(() => {
+    setFeaturedIds((prev) => {
+      const needsInit = prev.length === 0 || prev.every((id) => id.startsWith("dummy_"));
+      if (!needsInit) return prev;
+      if (featuredPosts.length > 0) return featuredPosts.map((p: any) => p.id);
+      if (igPosts.length > 0) return igPosts.slice(0, 4).map((p: any) => p.id);
+      return prev;
+    });
+  }, [igPosts, featuredPosts]);
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [modalPosts, setModalPosts] = useState<any[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalLoadingMore, setModalLoadingMore] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  async function fetchPosts(cursor?: string) {
+    const isFirst = !cursor;
+    if (isFirst) {
+      setModalLoading(true);
+      setModalPosts([]);
+      setNextCursor(null);
+    } else {
+      setModalLoadingMore(true);
+    }
+    try {
+      const url = `/api/instagram/posts?limit=20${cursor ? `&after=${encodeURIComponent(cursor)}` : ""}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const newPosts: any[] = data.posts ?? [];
+      setModalPosts((prev) => (isFirst ? newPosts : [...prev, ...newPosts]));
+      setNextCursor(data.nextCursor ?? null);
+    } catch {
+      // silent
+    } finally {
+      if (isFirst) setModalLoading(false);
+      else setModalLoadingMore(false);
+    }
+  }
+
+  function handleScroll() {
+    const el = scrollContainerRef.current;
+    if (!el || modalLoadingMore || !nextCursor) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 80) {
+      fetchPosts(nextCursor);
+    }
+  }
 
   function togglePost(id: string) {
-    setFeaturedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    const next = featuredIds.includes(id)
+      ? featuredIds.filter((x) => x !== id)
+      : featuredIds.length >= 4
+        ? featuredIds
+        : [...featuredIds, id];
+    setFeaturedIds(next);
+    const posts = next
+      .map((nid) => modalPosts.find((p: any) => p.id === nid) ?? featuredPosts.find((p: any) => p.id === nid))
+      .filter(Boolean);
+    onFeaturedPostsChange(posts);
   }
 
   function syncNicheTags() {
@@ -302,38 +360,162 @@ export function CustomizeForm({
       {/* ── Featured Instagram content ── */}
       <section className="bg-white rounded-2xl border border-gray-100 p-5">
         <p className="font-semibold text-gray-900 mb-1">Featured Instagram content</p>
-        <p className="text-xs text-gray-400 mb-4">Tap to select. First 4 are shown by default.</p>
-        <div className="grid grid-cols-4 gap-2">
-          {defaultPosts.slice(0, 8).map((post: any, i: number) => {
-            const thumb = post.thumbnail_url ?? (post.media_type === "IMAGE" || post.media_type === "CAROUSEL_ALBUM" ? post.media_url : null);
-            const selected = featuredIds.includes(post.id);
-            return (
-              <button
-                key={post.id}
-                onClick={() => togglePost(post.id)}
-                className={`relative rounded-2xl overflow-hidden aspect-square transition-all ${selected ? "ring-2 ring-primary ring-offset-1" : ""}`}
-              >
+        <p className="text-xs text-gray-400 mb-3">Up to 4 posts or reels shown on your page.</p>
+
+        {/* Selected posts preview — always visible */}
+        <div className="grid grid-cols-4 gap-2 mb-3">
+          {Array.from({ length: 4 }, (_, i) => {
+            const post = featuredPosts[i] ?? null;
+            const thumb = post
+              ? (post.thumbnail_url ?? (post.media_type === "IMAGE" || post.media_type === "CAROUSEL_ALBUM" ? post.media_url : null))
+              : null;
+            return post ? (
+              <div key={i} className="relative rounded-2xl overflow-hidden aspect-square ring-2 ring-primary ring-offset-1">
                 {thumb ? (
                   <img src={thumb} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`} />
                 )}
-                {/* Type badge */}
                 <span className="absolute top-1.5 right-1.5 bg-gray-900/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md">
                   {mediaTypeLabel(post.media_type)}
                 </span>
-                {/* Selected check */}
-                {selected && (
-                  <span className="absolute bottom-1.5 left-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                      <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                )}
-              </button>
+                <span className="absolute bottom-1 left-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white">
+                  {i + 1}
+                </span>
+              </div>
+            ) : (
+              <div key={i} className="rounded-2xl aspect-square bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center">
+                <span className="text-gray-300 text-sm font-medium">{i + 1}</span>
+              </div>
             );
           })}
         </div>
+
+        {/* Open picker */}
+        <button
+          onClick={() => { setDropdownOpen(true); fetchPosts(); }}
+          className="w-full border border-gray-200 rounded-xl py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+            <rect x="8" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+            <rect x="1" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+            <rect x="8" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+          </svg>
+          {featuredIds.length > 0 ? "Change selection" : "Choose posts"}
+        </button>
+
+        {/* Post picker modal */}
+        {dropdownOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/40 backdrop-blur-sm"
+            onClick={() => setDropdownOpen(false)}
+          >
+            <div
+              className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-sm max-h-[85vh] flex flex-col shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
+                <div>
+                  <p className="font-semibold text-gray-900">Choose posts</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{featuredIds.length} of 4 selected</p>
+                </div>
+                <button
+                  onClick={() => setDropdownOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Max reached banner */}
+              {featuredIds.length >= 4 && (
+                <div className="mx-5 mt-4 shrink-0 bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 text-xs text-center text-primary font-medium">
+                  4 posts selected — deselect one to swap
+                </div>
+              )}
+
+              {/* Scrollable grid */}
+              <div
+                ref={scrollContainerRef}
+                className="overflow-y-auto flex-1 p-4"
+                onScroll={handleScroll}
+              >
+                <div className="grid grid-cols-3 gap-2">
+                  {modalLoading
+                    ? Array.from({ length: 9 }, (_, i) => (
+                        <div key={i} className="rounded-2xl aspect-square bg-gray-100 animate-pulse" />
+                      ))
+                    : modalPosts.length === 0
+                    ? null
+                    : modalPosts.map((post: any, i: number) => {
+                        const thumb = post.thumbnail_url ?? (post.media_type === "IMAGE" || post.media_type === "CAROUSEL_ALBUM" ? post.media_url : null);
+                        const selected = featuredIds.includes(post.id);
+                        const dimmed = featuredIds.length >= 4 && !selected;
+                        return (
+                          <button
+                            key={post.id}
+                            onClick={() => togglePost(post.id)}
+                            className={`relative rounded-2xl overflow-hidden aspect-square transition-all
+                              ${selected ? "ring-2 ring-primary ring-offset-1" : ""}
+                              ${dimmed ? "cursor-not-allowed" : "cursor-pointer"}
+                            `}
+                          >
+                            {thumb ? (
+                              <img src={thumb} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`} />
+                            )}
+                            <span className="absolute top-1.5 right-1.5 bg-gray-900/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md">
+                              {mediaTypeLabel(post.media_type)}
+                            </span>
+                            {selected && (
+                              <span className="absolute bottom-1.5 left-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                                  <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                </div>
+                {!modalLoading && modalPosts.length === 0 && (
+                  <p className="text-center text-sm text-gray-400 py-8">No posts found</p>
+                )}
+                {modalLoadingMore && (
+                  <div className="flex justify-center py-3">
+                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
+
+              {/* Modal footer */}
+              <div className="px-5 py-4 border-t border-gray-100 shrink-0">
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    const selectedPosts = featuredIds
+                      .map((id) => modalPosts.find((p: any) => p.id === id) ?? featuredPosts.find((p: any) => p.id === id))
+                      .filter(Boolean);
+                    onFeaturedPostsChange(selectedPosts);
+                    fetch("/api/analytics/draft", {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ posts: selectedPosts }),
+                    }).catch(() => {});
+                  }}
+                  className="w-full bg-primary text-white font-semibold py-3 rounded-2xl text-sm"
+                >
+                  Done — {featuredIds.length} selected
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ── Brands you've worked with ── */}

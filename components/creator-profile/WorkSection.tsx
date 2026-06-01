@@ -94,6 +94,8 @@ export function WorkSection({
           },
         ];
 
+  console.log({ cardData });
+
   return (
     <section
       id="work"
@@ -136,7 +138,7 @@ export function WorkSection({
                 <div
                   className={`w-full h-full bg-gradient-to-br ${card.gradient}`}
                 />
-                {card.videoUrl ? (
+                {/* {card.videoUrl ? (
                   <video
                     src={card.videoUrl}
                     poster={card.thumb ?? undefined}
@@ -149,7 +151,8 @@ export function WorkSection({
                       (e.target as HTMLVideoElement).style.display = "none";
                     }}
                   />
-                ) : card.thumb ? (
+                ) :  */}
+                {card.thumb ? (
                   <img
                     src={card.thumb}
                     alt={card.title}
