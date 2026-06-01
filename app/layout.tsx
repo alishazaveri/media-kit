@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   title: "Kloot — Your brand deal magnet",
   description:
     "Create a stunning creator portfolio page that brands love. Showcase your stats, content, and pricing — all in one beautiful shareable link.",
+  icons: {
+    icon: "/assets/images/logo/logo-k-transparent.png",
+  },
 };
 
 export default function RootLayout({

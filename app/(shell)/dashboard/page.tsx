@@ -2,16 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import {
-  DashboardSidebar,
-  NAV_ITEMS,
-} from "@/components/dashboard/DashboardSidebar";
 import { DashboardTopBar } from "@/components/dashboard/DashboardTopBar";
 import { CustomizeTab } from "@/components/dashboard/CustomizeTab";
-import { PlanTab } from "@/components/dashboard/PlanTab";
-import { AccountTab } from "@/components/dashboard/AccountTab";
 import {
-  Tab,
   Package,
   Collaboration,
   IgStats,
@@ -19,10 +12,11 @@ import {
 } from "@/components/dashboard/types";
 import { type ThemeData } from "@/components/CreatorProfile";
 import { getThemeByIdentifier } from "@/constants/themes";
+import { useDashboard } from "@/components/dashboard/DashboardContext";
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("customize");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { sidebarCollapsed, setSidebarCollapsed } = useDashboard();
+
   const [analyticsLoaded, setAnalyticsLoaded] = useState(false);
   const [igStats, setIgStats] = useState<IgStats>({
     followers: null,
@@ -46,7 +40,6 @@ export default function DashboardPage() {
   const [displayName, setDisplayName] = useState("");
   const [handle, setHandle] = useState("");
   const [appUsername, setAppUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [tagline, setTagline] = useState("");
   const [location, setLocation] = useState("India");
   const [availableForCollabs, setAvailableForCollabs] = useState(true);
@@ -138,27 +131,30 @@ export default function DashboardPage() {
   ]);
 
   const [theme, setTheme] = useState<ThemeData | undefined>(undefined);
-  const [draftThemeIdentifier, setDraftThemeIdentifier] = useState<string>("default");
-  const [publishedThemeIdentifier, setPublishedThemeIdentifier] = useState<string>("default");
+  const [draftThemeIdentifier, setDraftThemeIdentifier] =
+    useState<string>("default");
+  const [publishedThemeIdentifier, setPublishedThemeIdentifier] =
+    useState<string>("default");
 
   useEffect(() => {
     fetch("/api/customization")
       .then((r) => r.json())
       .then((data) => {
         const draftId: string = data.draft?.theme_identifier ?? "default";
-        const publishedId: string = data.published?.theme_identifier ?? "default";
+        const publishedId: string =
+          data.published?.theme_identifier ?? "default";
         setDraftThemeIdentifier(draftId);
         setPublishedThemeIdentifier(publishedId);
         const t = getThemeByIdentifier(draftId);
-        if (t) setTheme({ accent_color: t.accent_color, base_color: t.base_color, contrast_color: t.contrast_color });
+        if (t)
+          setTheme({
+            accent_color: t.accent_color,
+            base_color: t.base_color,
+            contrast_color: t.contrast_color,
+          });
       })
       .catch(() => {});
   }, []);
-
-  const handleLogout = async () => {
-    await axios.post("/api/auth/logout").catch(() => {});
-    window.location.href = "/login";
-  };
 
   /* Load analytics on mount */
   useEffect(() => {
@@ -194,7 +190,6 @@ export default function DashboardPage() {
         if (ig.profile_pic) setProfilePic(ig.profile_pic);
         if (ig.username) setHandle(ig.username);
         if (res.data?.username) setAppUsername(res.data.username);
-        if (res.data?.email) setEmail(res.data.email);
 
         setDisplayName(draft.display_name ?? ig.name ?? "");
         setTagline(draft.tagline ?? ig.tagline ?? ig.biography ?? "");
@@ -328,114 +323,77 @@ export default function DashboardPage() {
       ));
 
   return (
-    <div className="h-[100dvh] flex overflow-hidden bg-[#FAF7F2]">
-      <DashboardSidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onLogout={handleLogout}
-        collapsed={sidebarCollapsed}
+    <>
+      <DashboardTopBar
+        appUsername={appUsername}
+        profilePic={profilePic}
+        publishing={publishing}
+        hasUnpublishedChanges={hasUnpublishedChanges}
+        onPublish={handlePublish}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <DashboardTopBar
-          appUsername={appUsername}
-          profilePic={profilePic}
-          publishing={publishing}
-          hasUnpublishedChanges={hasUnpublishedChanges}
-          onPublish={handlePublish}
-          onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
-        />
-
-        {/* Mobile draft strip */}
-        {activeTab === "customize" && hasUnpublishedChanges && (
-          <div className="lg:hidden bg-amber-50 border-b border-amber-100 px-4 py-2 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-            <span className="text-xs text-amber-700">
-              Draft ·{" "}
-              <a
-                href={`/${appUsername}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:underline"
-              >
-                kloot.io/{appUsername}
-              </a>
-            </span>
-          </div>
-        )}
-
-        <div className="flex-1 overflow-hidden">
-          {activeTab === "customize" && (
-            <CustomizeTab
-              profilePic={profilePic}
-              setProfilePic={setProfilePic}
-              displayName={displayName}
-              setDisplayName={setDisplayName}
-              appUsername={appUsername}
-              handle={handle}
-              tagline={tagline}
-              setTagline={setTagline}
-              location={location}
-              setLocation={setLocation}
-              availableForCollabs={availableForCollabs}
-              setAvailableForCollabs={setAvailableForCollabs}
-              nicheTags={nicheTags}
-              setNicheTags={setNicheTags}
-              igStats={igStats}
-              igInsights={igInsights}
-              igPosts={igPosts}
-              featuredPosts={featuredPosts}
-              onFeaturedPostsChange={setFeaturedPosts}
-              packages={packages}
-              addPackage={addPackage}
-              removePackage={removePackage}
-              updatePackage={updatePackage}
-              prefIndustries={prefIndustries}
-              setPrefIndustries={setPrefIndustries}
-              restrictedIndustries={restrictedIndustries}
-              setRestrictedIndustries={setRestrictedIndustries}
-              deliverables={deliverables}
-              setDeliverables={setDeliverables}
-              turnaround={turnaround}
-              collabs={collabs}
-              addCollab={addCollab}
-              removeCollab={removeCollab}
-              updateCollab={updateCollab}
-              theme={theme}
-              onThemeChange={(identifier, themeData) => {
-                setDraftThemeIdentifier(identifier);
-                setTheme(themeData);
-              }}
-            />
-          )}
-          {activeTab === "plan" && <PlanTab />}
-          {activeTab === "account" && (
-            <AccountTab
-              email={email}
-              appUsername={appUsername}
-              handle={handle}
-              igStats={igStats}
-              onLogout={handleLogout}
-            />
-          )}
+      {/* Mobile draft strip */}
+      {hasUnpublishedChanges && (
+        <div className="lg:hidden bg-amber-50 border-b border-amber-100 px-4 py-2 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+          <span className="text-xs text-amber-700">
+            Draft ·{" "}
+            <a
+              href={`/${appUsername}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              kloot.io/{appUsername}
+            </a>
+          </span>
         </div>
-      </div>
+      )}
 
-      {/* Mobile bottom tab bar */}
-      <nav className="fixed bottom-0 left-0 right-0 lg:hidden bg-white border-t border-gray-100 flex z-40">
-        {NAV_ITEMS.map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            onClick={() => setActiveTab(id)}
-            className={`flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-medium transition-colors ${
-              activeTab === id ? "text-primary" : "text-gray-400"
-            }`}
-          >
-            <Icon active={activeTab === id} />
-            {label}
-          </button>
-        ))}
-      </nav>
-    </div>
+      <div className="flex-1 overflow-hidden">
+        <CustomizeTab
+          profilePic={profilePic}
+          setProfilePic={setProfilePic}
+          displayName={displayName}
+          setDisplayName={setDisplayName}
+          appUsername={appUsername}
+          handle={handle}
+          tagline={tagline}
+          setTagline={setTagline}
+          location={location}
+          setLocation={setLocation}
+          availableForCollabs={availableForCollabs}
+          setAvailableForCollabs={setAvailableForCollabs}
+          nicheTags={nicheTags}
+          setNicheTags={setNicheTags}
+          igStats={igStats}
+          igInsights={igInsights}
+          igPosts={igPosts}
+          packages={packages}
+          addPackage={addPackage}
+          removePackage={removePackage}
+          updatePackage={updatePackage}
+          prefIndustries={prefIndustries}
+          setPrefIndustries={setPrefIndustries}
+          restrictedIndustries={restrictedIndustries}
+          setRestrictedIndustries={setRestrictedIndustries}
+          deliverables={deliverables}
+          setDeliverables={setDeliverables}
+          turnaround={turnaround}
+          collabs={collabs}
+          addCollab={addCollab}
+          removeCollab={removeCollab}
+          updateCollab={updateCollab}
+          featuredPosts={featuredPosts}
+          onFeaturedPostsChange={setFeaturedPosts}
+          theme={theme}
+          onThemeChange={(identifier, themeData) => {
+            setDraftThemeIdentifier(identifier);
+            setTheme(themeData);
+          }}
+        />
+      </div>
+    </>
   );
 }

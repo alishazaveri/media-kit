@@ -16,12 +16,15 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const returnTo = req.nextUrl.searchParams.get("returnTo") ?? "";
+    const statePayload = Buffer.from(JSON.stringify({ uid: userId, ret: returnTo })).toString("base64url");
+
     const params = new URLSearchParams({
       client_id: config.APP_ID,
       redirect_uri: config.REDIRECT_URL,
       scope: instagramConnect.authScope,
       response_type: "code",
-      state: userId,
+      state: statePayload,
     });
     return NextResponse.json({
       url: `https://api.instagram.com/oauth/authorize?${params.toString()}`,

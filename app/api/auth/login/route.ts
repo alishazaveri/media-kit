@@ -1,5 +1,6 @@
 import { loginUser } from "@/services/user.service";
 import { getUserInstagramChannel } from "@/services/social_channel.service";
+import isLinkActive from "@/lib/isLinkActive";
 import { NextRequest, NextResponse } from "next/server";
 
 const ACCESS_TOKEN_MAX_AGE = 15 * 60;
@@ -12,10 +13,13 @@ export async function POST(req: NextRequest) {
     const { accessToken, refreshToken, user } = await loginUser(identifier, password);
 
     // Determine where in onboarding the user is so the client can redirect correctly
-    const igAccount = await getUserInstagramChannel(user.id);
+    const [igAccount, hasPlan] = await Promise.all([
+      getUserInstagramChannel(user.id),
+      isLinkActive(user.id),
+    ]);
     const onboardingStatus = {
       hasInstagram: !!igAccount,
-      hasPlan: !!user.planId, // extend when billing is wired
+      hasPlan,
     };
 
     const res = NextResponse.json({ userId: user.id, user, onboardingStatus });

@@ -106,7 +106,7 @@ export function CustomizeTab(props: Props) {
     profilePic,
     stats: igStats,
     insights: igInsights,
-    posts: featuredPosts.length > 0 ? featuredPosts : igPosts,
+    posts: (featuredPosts?.length ?? 0) > 0 ? featuredPosts : igPosts,
     availableForCollabs,
     nicheTags,
     packages,

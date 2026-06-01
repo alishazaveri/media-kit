@@ -27,7 +27,7 @@ export default async function PublishedProfilePage(props: {
   }
 
   const [userData, insight, customization] = await Promise.all([
-    getUserData(userId, "instagram"),
+    getUserData(userId, "profile"),
     getInsightBySocialChannel((channel as any)._id.toString()),
     getCustomization(userId, "published"),
   ]);

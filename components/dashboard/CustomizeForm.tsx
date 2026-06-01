@@ -147,8 +147,8 @@ export function CustomizeForm({
   const [servicesVisible, setServicesVisible] = useState(true);
 
   const [featuredIds, setFeaturedIds] = useState<string[]>(() => {
-    if (featuredPosts.length > 0) return featuredPosts.map((p: any) => p.id);
-    if (igPosts.length > 0) return igPosts.slice(0, 4).map((p: any) => p.id);
+    if ((featuredPosts?.length ?? 0) > 0) return featuredPosts.map((p: any) => p.id);
+    if ((igPosts?.length ?? 0) > 0) return igPosts.slice(0, 4).map((p: any) => p.id);
     return [];
   });
 
@@ -157,8 +157,8 @@ export function CustomizeForm({
     setFeaturedIds((prev) => {
       const needsInit = prev.length === 0 || prev.every((id) => id.startsWith("dummy_"));
       if (!needsInit) return prev;
-      if (featuredPosts.length > 0) return featuredPosts.map((p: any) => p.id);
-      if (igPosts.length > 0) return igPosts.slice(0, 4).map((p: any) => p.id);
+      if ((featuredPosts?.length ?? 0) > 0) return featuredPosts.map((p: any) => p.id);
+      if ((igPosts?.length ?? 0) > 0) return igPosts.slice(0, 4).map((p: any) => p.id);
       return prev;
     });
   }, [igPosts, featuredPosts]);

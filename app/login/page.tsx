@@ -13,11 +13,14 @@ function redirectAfterLogin(
   status: OnboardingStatus,
   router: ReturnType<typeof useRouter>,
 ) {
-  if (!status.hasInstagram) {
-    router.push("/onboarding?step=connect");
-  } else {
-    router.push("/dashboard");
-  }
+  router.push("/dashboard");
+  // if (status.hasPlan) {
+  //   router.push(status.hasInstagram ? "/dashboard" : "/account");
+  // } else if (!status.hasInstagram) {
+  //   router.push("/onboarding?step=connect");
+  // } else {
+  //   router.push("/onboarding?step=activate");
+  // }
 }
 
 export default function LoginPage() {
@@ -45,16 +48,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#FAF7F2] flex flex-col">
+    <div className="min-h-dvh bg-[#FAF7F2] flex flex-col">
       {/* Nav */}
       <nav className="px-6 py-4 flex items-center justify-between">
-        <a href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
-              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
-            </svg>
-          </div>
-          <span className="font-bold text-gray-900 text-sm">kloot</span>
+        <a href="/" className="flex items-center">
+          <img
+            src="/assets/images/logo/logo-transparent-slim.png"
+            alt="Kloot"
+            className="h-6 w-auto object-contain"
+          />
         </a>
         <a
           href="/onboarding"
