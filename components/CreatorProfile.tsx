@@ -196,13 +196,14 @@ export function CreatorProfile({
         accentColor={accentColor}
         secondaryColor={secondaryColor}
       />
-      <AudienceSection
+      {/* Uncomment later */}
+      {/* <AudienceSection
         insights={insights}
         nicheTags={nicheTags}
         primaryColor={primaryColor}
         accentColor={accentColor}
         secondaryColor={secondaryColor}
-      />
+      /> */}
       <WorkSection
         posts={posts}
         handle={handle}

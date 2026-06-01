@@ -66,7 +66,8 @@ function BillingIcon({ active }: { active: boolean }) {
 export const NAV_ITEMS = [
   { id: "customize", label: "Customize", Icon: CustomizeIcon, href: "/dashboard" },
   { id: "account", label: "Account", Icon: AccountIcon, href: "/account" },
-  { id: "plan", label: "Plan & billing", Icon: BillingIcon, href: "/plan" },
+  // Uncomment later
+  // { id: "plan", label: "Plan & billing", Icon: BillingIcon, href: "/plan" },
 ];
 
 interface Props {

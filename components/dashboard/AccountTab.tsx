@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { IgStats } from "./types";
 import { formatCount } from "./utils";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 interface Props {
   email: string;
@@ -11,12 +13,45 @@ interface Props {
   onLogout: () => void;
   onConnectInstagram: () => void;
   onDisconnectInstagram: () => void;
+  onDeleteAccount: () => Promise<void>;
 }
 
-export function AccountTab({ email, appUsername, handle, igStats, onLogout, onConnectInstagram, onDisconnectInstagram }: Props) {
+export function AccountTab({ email, appUsername, handle, igStats, onLogout, onConnectInstagram, onDisconnectInstagram, onDeleteAccount }: Props) {
   const isConnected = Boolean(handle);
+  const [showDisconnectModal, setShowDisconnectModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+
   return (
     <div className="h-full overflow-y-auto px-4 lg:px-6 py-5 pb-24 lg:pb-5">
+      {showDisconnectModal && (
+        <ConfirmModal
+          title="Disconnect Instagram?"
+          description="Your Instagram data will be removed from your Kloot page. You can reconnect at any time."
+          confirmLabel="Yes, disconnect"
+          cancelLabel="Cancel"
+          onConfirm={() => {
+            setShowDisconnectModal(false);
+            onDisconnectInstagram();
+          }}
+          onCancel={() => setShowDisconnectModal(false)}
+        />
+      )}
+      {showDeleteModal && (
+        <ConfirmModal
+          title="Delete account and data?"
+          description="This will permanently delete your account, Instagram connection, and all associated data. This cannot be undone."
+          confirmLabel={deleting ? "Deleting…" : "Yes, delete my account"}
+          cancelLabel="Cancel"
+          onConfirm={async () => {
+            setDeleting(true);
+            await onDeleteAccount();
+            setDeleting(false);
+          }}
+          onCancel={() => !deleting && setShowDeleteModal(false)}
+        />
+      )}
       <div className="max-w-2xl mx-auto space-y-5">
         <h2 className="text-2xl font-black text-gray-900">Account</h2>
 
@@ -76,7 +111,7 @@ export function AccountTab({ email, appUsername, handle, igStats, onLogout, onCo
             </div>
             {isConnected ? (
               <button
-                onClick={onDisconnectInstagram}
+                onClick={() => setShowDisconnectModal(true)}
                 className="border border-red-200 text-red-500 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-red-50 transition-colors"
               >
                 Disconnect
@@ -92,7 +127,8 @@ export function AccountTab({ email, appUsername, handle, igStats, onLogout, onCo
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5">
+        {/* Uncomment later */}
+        {/* <div className="bg-white rounded-2xl border border-gray-200 p-5">
           <p className="font-bold text-gray-900 text-base mb-4">Subscription</p>
           <div className="flex items-center justify-between bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 mb-3">
             <div>
@@ -106,6 +142,40 @@ export function AccountTab({ email, appUsername, handle, igStats, onLogout, onCo
           <button className="text-sm text-red-400 hover:text-red-600 transition-colors">
             Cancel subscription
           </button>
+        </div> */}
+
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <button
+            onClick={() => setAdvancedOpen((o) => !o)}
+            className="w-full flex items-center justify-between px-5 py-4 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Advanced settings
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              className={`transition-transform duration-200 ${advancedOpen ? "rotate-180" : ""}`}
+            >
+              <path d="M4 6l4 4 4-4" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          {advancedOpen && (
+            <div className="border-t border-gray-100 px-5 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Delete account and data</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Permanently removes your account and all associated data.</p>
+                </div>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="shrink-0 ml-4 border border-red-200 text-red-500 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-red-50 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <button

@@ -108,7 +108,8 @@ export async function GET(request: NextRequest) {
 
     let successRedirect: string;
     if (returnTo) {
-      successRedirect = `${config.PUBLIC_URL}${returnTo}`;
+      const sep = returnTo.includes("?") ? "&" : "?";
+      successRedirect = `${config.PUBLIC_URL}${returnTo}${sep}ig_connected=1`;
     } else {
       const hasPlan = await isLinkActive(userId).catch(() => false);
       successRedirect = hasPlan
