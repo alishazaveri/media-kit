@@ -1,10 +1,16 @@
+import Image from "next/image";
+
 export function AppLogo({ size = "sm" }: { size?: "sm" | "md" | "lg" }) {
-  const textSize: Record<string, string> = {
-    sm: "text-xl",
-    md: "text-2xl",
-    lg: "text-3xl",
-  };
+  const heights: Record<string, number> = { sm: 24, md: 32, lg: 40 };
+  const h = heights[size];
   return (
-    <span className={`font-bold text-gray-900 ${textSize[size]}`}>Kloot</span>
+    <Image
+      src="/assets/images/logo/logo-transparent-slim.png"
+      alt="Kloot"
+      height={h}
+      width={h * 4}
+      className="object-contain"
+      style={{ height: h, width: "auto" }}
+    />
   );
 }

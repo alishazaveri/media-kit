@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { AppLogo } from "@/components/AppLogo";
 
 type OnboardingStatus = {
   hasInstagram: boolean;
@@ -14,32 +13,29 @@ function redirectAfterLogin(
   status: OnboardingStatus,
   router: ReturnType<typeof useRouter>,
 ) {
-  if (!status.hasInstagram) {
-    router.push("/onboarding?step=connect");
-  } else if (!status.hasPlan) {
-    // undo
-    // router.push("/onboarding?step=activate");
-    router.push("/dashboard");
-  } else {
-    router.push("/dashboard");
-  }
+  router.push("/dashboard");
+  // if (status.hasPlan) {
+  //   router.push(status.hasInstagram ? "/dashboard" : "/account");
+  // } else if (!status.hasInstagram) {
+  //   router.push("/onboarding?step=connect");
+  // } else {
+  //   router.push("/onboarding?step=activate");
+  // }
 }
 
 export default function LoginPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const res = await axios.post("/api/auth/login", {
-        email: form.email,
-        password: form.password,
-      });
+      const res = await axios.post("/api/auth/login", { identifier, password });
       redirectAfterLogin(res.data.onboardingStatus, router);
     } catch (err) {
       const msg = axios.isAxiosError(err)
@@ -52,81 +48,94 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-sm p-8">
-        <div className="mb-8">
-          <AppLogo size="md" />
-        </div>
+    <div className="min-h-dvh bg-[#FAF7F2] flex flex-col">
+      {/* Nav */}
+      <nav className="px-6 py-4 flex items-center justify-between">
+        <a href="/" className="flex items-center">
+          <img
+            src="/assets/images/logo/logo-transparent-slim.png"
+            alt="Kloot"
+            className="h-6 w-auto object-contain"
+          />
+        </a>
+        <a
+          href="/onboarding"
+          className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+        >
+          Sign up
+        </a>
+      </nav>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h1>
-        <p className="text-gray-400 text-sm mb-7">
-          Log in to your creator account.
-        </p>
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md">
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            Welcome back
+          </h1>
+          <p className="text-gray-500 text-sm mb-8">
+            Log in to your creator account.
+          </p>
 
-        {error && (
-          <div className="mb-5 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Email
-            </label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              required
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm font-medium text-gray-700">
-                Password
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-widest mb-2">
+                Email or Username
               </label>
-              <a href="#" className="text-xs text-primary hover:underline">
-                Forgot password?
-              </a>
+              <input
+                type="text"
+                placeholder="you@example.com or yourhandle"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                required
+                autoComplete="username"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition bg-white"
+              />
             </div>
-            <input
-              type="password"
-              placeholder="Your password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              required
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition"
-            />
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60"
-          >
-            {loading ? "Logging in…" : "Log in"}
-          </button>
-        </form>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-widest">
+                  Password
+                </label>
+                <a href="#" className="text-xs text-primary hover:underline">
+                  Forgot password?
+                </a>
+              </div>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition bg-white"
+              />
+            </div>
 
-        <div className="flex items-center gap-3 my-6">
-          <div className="flex-1 h-px bg-gray-100" />
-          <span className="text-xs text-gray-400 font-medium">OR</span>
-          <div className="flex-1 h-px bg-gray-100" />
+            {error && (
+              <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3.5 rounded-xl flex items-center justify-center transition-colors disabled:opacity-60"
+            >
+              {loading ? "Logging in…" : "Log in"}
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-gray-500 mt-6">
+            Don&apos;t have an account?{" "}
+            <a
+              href="/onboarding"
+              className="text-primary font-semibold hover:underline"
+            >
+              Sign up
+            </a>
+          </p>
         </div>
-
-        <p className="text-center text-sm text-gray-500">
-          Don&apos;t have an account?{" "}
-          <a
-            href="/onboarding"
-            className="text-primary font-semibold hover:underline"
-          >
-            Sign up
-          </a>
-        </p>
       </div>
     </div>
   );

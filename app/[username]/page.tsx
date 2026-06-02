@@ -1,7 +1,10 @@
+import { notFound } from "next/navigation";
 import { getUserByUsername } from "@/db/user.db";
 import { getSocialChannelByPlatform } from "@/db/social_channel.db";
 import { getUserData } from "@/db/user_data.db";
 import { getInsightBySocialChannel } from "@/db/insight.db";
+import { getCustomization } from "@/db/customization.db";
+import { getThemeByIdentifier } from "@/constants/themes";
 import { CreatorProfile } from "@/components/CreatorProfile";
 
 export default async function PublishedProfilePage(props: {
@@ -12,7 +15,7 @@ export default async function PublishedProfilePage(props: {
   const user = await getUserByUsername(username);
 
   if (!user) {
-    return <WipPage username={username} />;
+    notFound();
   }
 
   const userId = (user as any)._id.toString();
@@ -23,10 +26,17 @@ export default async function PublishedProfilePage(props: {
     return <WipPage username={username} />;
   }
 
-  const [userData, insight] = await Promise.all([
-    getUserData(userId, "instagram"),
+  const [userData, insight, customization] = await Promise.all([
+    getUserData(userId, "profile"),
     getInsightBySocialChannel((channel as any)._id.toString()),
+    getCustomization(userId, "published"),
   ]);
+
+  const themeIdentifier = (customization as any)?.theme_identifier;
+  const resolved = themeIdentifier ? getThemeByIdentifier(themeIdentifier) : undefined;
+  const theme = resolved
+    ? { accent_color: resolved.accent_color, base_color: resolved.base_color, contrast_color: resolved.contrast_color }
+    : undefined;
 
   const published: Record<string, any> =
     (userData as any)?.published_data ?? {};
@@ -37,11 +47,12 @@ export default async function PublishedProfilePage(props: {
 
   const ig: Record<string, any> = (insight as any)?.data ?? {};
 
+  const postCount = ig.post_count || (Array.isArray(ig.posts) ? ig.posts.length : 0);
   const engagementRate =
-    ig.followers_count && Array.isArray(ig.posts) && ig.posts.length
+    ig.followers_count && postCount
       ? +(
           (((ig.total_likes ?? 0) + (ig.total_comments ?? 0)) /
-            (ig.followers_count * ig.posts.length)) *
+            (ig.followers_count * postCount)) *
           100
         ).toFixed(1)
       : null;
@@ -49,7 +60,7 @@ export default async function PublishedProfilePage(props: {
   console.log({ userData });
 
   return (
-    <main className="min-h-screen  mx-auto">
+    <main className="min-h-screen ">
       <CreatorProfile
         name={published.display_name ?? ig.name}
         handle={ig.username ?? username}
@@ -70,7 +81,13 @@ export default async function PublishedProfilePage(props: {
             : [],
           top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
         }}
-        posts={Array.isArray(ig.posts) ? ig.posts : []}
+        posts={
+          Array.isArray(published.posts) && published.posts.length > 0
+            ? published.posts
+            : Array.isArray(ig.posts)
+              ? ig.posts.slice(0, 4)
+              : []
+        }
         availableForCollabs={published.available_for_collabs ?? true}
         nicheTags={
           Array.isArray(published.niche_tags) ? published.niche_tags : []
@@ -91,6 +108,7 @@ export default async function PublishedProfilePage(props: {
           Array.isArray(published.deliverables) ? published.deliverables : []
         }
         turnaround={published.turnaround ?? "7-10 days"}
+        theme={theme}
       />
     </main>
   );

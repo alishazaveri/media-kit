@@ -12,17 +12,16 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const channel = await getUserInstagramChannel(session.userId);
-    if (!channel) return NextResponse.json({ data: null, draft: {} }, { status: 200 });
 
-    const [insight, userData] = await Promise.all([
-      getInsight(session.userId),
-      getDraft(session.userId, "instagram"),
+    const [insight, profileData] = await Promise.all([
+      channel ? getInsight(session.userId) : Promise.resolve(null),
+      getDraft(session.userId, "profile"),
     ]);
 
     return NextResponse.json({
       data: insight,
-      draft: (userData as any)?.draft_data ?? {},
-      published: (userData as any)?.published_data ?? {},
+      draft: (profileData as any)?.draft_data ?? {},
+      published: (profileData as any)?.published_data ?? {},
       username: session.username,
       email: session.email,
     });

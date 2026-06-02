@@ -2,33 +2,39 @@
 
 /* ─── Design System ─── */
 @theme {
-  /* Primary – Teal */
-  --color-primary:        #0D9488;
-  --color-primary-hover:  #0F766E;
-  --color-primary-light:  #F0FDFA;
-  --color-primary-50:     #F0FDFA;
-  --color-primary-100:    #CCFBF1;
-  --color-primary-200:    #99F6E4;
-  --color-primary-500:    #14B8A6;
-  --color-primary-600:    #0D9488;
-  --color-primary-700:    #0F766E;
+  /* Primary – Orange Coral */
+  --color-primary:        #ff7350;
+  --color-primary-hover:  #e85e3a;
+  --color-primary-light:  #fff4f1;
+  --color-primary-50:     #fff4f1;
+  --color-primary-100:    #ffe4de;
+  --color-primary-200:    #ffcec4;
+  --color-primary-500:    #ff7350;
+  --color-primary-600:    #ff7350;
+  --color-primary-700:    #e85e3a;
 
   /* Secondary – used for subtle backgrounds, badges */
-  --color-secondary:      #F0FBF8;
-  --color-secondary-text: #0D9488;
+  --color-secondary:      #fff4f1;
+  --color-secondary-text: #ff7350;
 
   /* Neutral surfaces */
-  --color-hero-bg:        #EDF9F6;
+  --color-hero-bg:        #FAF8F5;
   --color-section-alt:    #F9FAFB;
 
   /* Typography */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-playfair);
 }
 
 :root {
   --background: #ffffff;
   --foreground: #0F172A;
+}
+
+html,
+body {
+  overflow-x: clip;
 }
 
 body {
@@ -44,4 +50,15 @@ body {
 
 .animate-spin-slow {
   animation: spin 1.4s linear infinite;
+}
+
+@keyframes marqueeRight {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0%); }
+}
+
+.animate-marquee-right {
+  animation: marqueeRight 32s linear infinite;
+  display: flex;
+  width: max-content;
 }

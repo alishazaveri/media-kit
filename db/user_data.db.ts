@@ -42,6 +42,20 @@ export async function linkInsight(userId: string, platform: string, insightsId: 
   );
 }
 
+export async function initializeUserData(userId: string, platform: string) {
+  await connectDB();
+  return UserData.findOneAndUpdate(
+    { user_id: userId, platform },
+    {
+      $setOnInsert: {
+        draft_data: { posts: [] },
+        published_data: { posts: [] },
+      },
+    },
+    { upsert: true, new: true }
+  ).lean();
+}
+
 export async function deleteUserData(userId: string, platform: string) {
   await connectDB();
   return UserData.deleteMany({ user_id: userId, platform });

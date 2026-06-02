@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -34,8 +35,14 @@ export default function TermsPage() {
       {/* Nav */}
       <header className="border-b border-gray-100 px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="font-bold text-gray-900 text-xl">
-            Kloot
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/assets/images/logo/logo-transparent-slim.png"
+              alt="Kloot"
+              height={28}
+              width={80}
+              className="h-7 w-auto object-contain"
+            />
           </Link>
           <Link
             href="/privacy"
@@ -225,7 +232,7 @@ export default function TermsPage() {
         <Section title="14. Contact Information">
           <Para>
             For questions regarding these Terms, contact us at{" "}
-            <a href="mailto:support@kloot.io" className="text-teal-600 hover:underline">
+            <a href="mailto:support@kloot.io" className="text-primary hover:underline">
               support@kloot.io
             </a>
             .

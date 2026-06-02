@@ -3,6 +3,7 @@ import {
   mergeDraftData,
   publishDraftData,
   linkInsight,
+  initializeUserData,
 } from "@/db/user_data.db";
 
 export async function saveDraft(
@@ -19,6 +20,10 @@ export async function publishUserData(userId: string, platform: string) {
 
 export async function getDraft(userId: string, platform = "instagram") {
   return getUserData(userId, platform);
+}
+
+export async function initializeCreatorUserData(userId: string, platform: string) {
+  return initializeUserData(userId, platform);
 }
 
 export async function linkInsightToUserData(

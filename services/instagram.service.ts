@@ -2,7 +2,7 @@ import axios from "axios";
 import { getSocialChannelById } from "@/db/social_channel.db";
 import { getValidInstagramToken } from "@/services/social_channel.service";
 import { saveInsight } from "@/services/insight.service";
-import { linkInsightToUserData } from "@/services/user_data.service";
+import { linkInsightToUserData, getDraft, saveDraft } from "@/services/user_data.service";
 import instagramConnect from "@/lib/instagramConnect";
 
 const GRAPH = "https://graph.instagram.com/v21.0";
@@ -133,7 +133,7 @@ export async function fetchAndSaveInstagramAnalytics(
     axios.get(`${GRAPH}/${igUserId}/media`, {
       params: {
         fields:
-          "id,caption,media_type,media_product_type,thumbnail_url,media_url,timestamp,like_count,comments_count",
+          "id,caption,media_type,media_product_type,thumbnail_url,media_url,permalink,timestamp,like_count,comments_count",
         limit: 25,
         access_token: token,
       },
@@ -327,6 +327,7 @@ export async function fetchAndSaveInstagramAnalytics(
       media_product_type: post.media_product_type ?? "POST",
       thumbnail_url: post.thumbnail_url ?? null,
       media_url: post.media_url ?? null,
+      permalink: post.permalink ?? null,
       timestamp: post.timestamp,
       like_count: post.like_count ?? 0,
       comments_count: post.comments_count ?? 0,
@@ -387,8 +388,7 @@ export async function fetchAndSaveInstagramAnalytics(
       .slice(0, 10),
     gender_breakdown: genderBreakdown,
     age_breakdown: ageBreakdown,
-    // All posts (for any additional client-side ranking)
-    posts,
+    post_count: posts.length,
   };
 
   console.log(
@@ -405,6 +405,32 @@ export async function fetchAndSaveInstagramAnalytics(
   );
   await linkInsightToUserData(userId, "instagram", insight._id.toString());
   console.log("[Instagram Analytics] Saved insight successfully.");
+
+  // Seed draft_data on first-time setup (display_name not yet set by user)
+  const existingDraft = await getDraft(userId, "instagram") as any;
+  if (!existingDraft?.draft_data?.display_name) {
+    const seedPosts = posts.slice(0, 4).map((p) => ({
+      id: p.id,
+      caption: p.caption,
+      media_type: p.media_type,
+      media_product_type: p.media_product_type,
+      thumbnail_url: p.thumbnail_url,
+      media_url: p.media_url,
+      permalink: p.permalink,
+      timestamp: p.timestamp,
+      like_count: p.like_count,
+      comments_count: p.comments_count,
+    }));
+    await saveDraft(userId, "instagram", {
+      display_name: profile.name ?? "",
+      tagline: profile.biography ?? "",
+      posts: seedPosts,
+      niche_tags: [],
+      location: "",
+      available_for_collabs: true,
+    });
+    console.log("[Instagram Analytics] Seeded draft_data for first-time user.");
+  }
 
   return analyticsData;
 }
