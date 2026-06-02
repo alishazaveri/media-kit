@@ -47,11 +47,12 @@ export default async function PublishedProfilePage(props: {
 
   const ig: Record<string, any> = (insight as any)?.data ?? {};
 
+  const postCount = ig.post_count || (Array.isArray(ig.posts) ? ig.posts.length : 0);
   const engagementRate =
-    ig.followers_count && Array.isArray(ig.posts) && ig.posts.length
+    ig.followers_count && postCount
       ? +(
           (((ig.total_likes ?? 0) + (ig.total_comments ?? 0)) /
-            (ig.followers_count * ig.posts.length)) *
+            (ig.followers_count * postCount)) *
           100
         ).toFixed(1)
       : null;
