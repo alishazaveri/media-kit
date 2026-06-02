@@ -1,9 +1,20 @@
+import Image from "next/image";
+
 const STEPS = ["Claim", "Sign up", "Connect", "Pay"];
 
 export function OnboardingNav({ currentStep }: { currentStep: 1 | 2 | 3 | 4 }) {
   return (
     <nav className="flex items-center justify-between px-6 py-4 bg-[#FAF7F2]">
-      <span className="font-bold text-gray-900 text-lg">kloot</span>
+      <a href="/">
+        <Image
+          src="/assets/images/logo/logo-transparent-slim.png"
+          alt="Kloot"
+          height={24}
+          width={96}
+          className="h-6 w-auto object-contain"
+          style={{ height: 24, width: "auto" }}
+        />
+      </a>
       {/* <div className="hidden sm:flex items-center gap-4">
         {STEPS.map((label, i) => {
           const num = i + 1;
