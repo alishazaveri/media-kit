@@ -63,12 +63,13 @@ export function HeroSection({
         {/* Info */}
         <div className="flex-1 mb-2 flex md:items-start items-start flex-col">
           {/* Available row */}
-          <div className="flex items-center gap-3 mb-5 flex-wrap">
-            <div
-              className="h-px w-6 sm:w-10 lg:w-16 shrink-0  block"
-              style={{ backgroundColor: accentColor }}
-            />
-            {/* <span
+          {nicheTags.length > 0 && (
+            <div className="flex items-center gap-3 mb-5 flex-wrap">
+              <div
+                className="h-px w-6 sm:w-10 lg:w-16 shrink-0  block"
+                style={{ backgroundColor: accentColor }}
+              />
+              {/* <span
               className="text-xs font-bold tracking-[0.25em] uppercase"
               style={{ color: accentColor }}
             >
@@ -77,28 +78,29 @@ export function HeroSection({
                 : "Not Currently Available"}
             </span> */}
 
-            <span
-              className="md:text-xs text-[11px] font-bold tracking-[0.25em] uppercase"
-              style={{
-                color: accentColor,
-              }}
-            >
-              {nicheTags.join(" • ")}
-            </span>
+              <span
+                className="md:text-xs text-[11px] font-bold tracking-[0.25em] uppercase"
+                style={{
+                  color: accentColor,
+                }}
+              >
+                {nicheTags.join(" • ")}
+              </span>
 
-            <div
-              className="h-px w-6 sm:w-10 lg:w-16 shrink-0"
-              style={{ backgroundColor: accentColor }}
-            />
+              <div
+                className="h-px w-6 sm:w-10 lg:w-16 shrink-0"
+                style={{ backgroundColor: accentColor }}
+              />
 
-            {/* <a
+              {/* <a
               className="text-sm text-gray-500 md:block hidden"
               href={`https://www.instagram.com/${handle}/`}
               target="__blank"
             >
               @{handle || "yourhandle"}
             </a> */}
-          </div>
+            </div>
+          )}
 
           {/* Name */}
           <h1

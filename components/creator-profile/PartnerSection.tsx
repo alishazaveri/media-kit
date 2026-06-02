@@ -160,7 +160,8 @@ export function PartnerSection({
           )}
 
           {/* Testimonials */}
-          <div className="mb-16">
+          {/* uncomment later */}
+          {/* <div className="mb-16">
             <p className="font-black text-gray-900 text-2xl mb-2">
               What brands say
             </p>
@@ -234,7 +235,7 @@ export function PartnerSection({
                 </button>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* The Vibe card */}
           {/* Hidden for now */}

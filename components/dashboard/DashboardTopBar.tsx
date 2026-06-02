@@ -29,7 +29,10 @@ export function DashboardTopBar({
       </div>
 
       {/* Desktop: sidebar toggle */}
-      <button onClick={onToggleCollapse} className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0">
+      <button
+        onClick={onToggleCollapse}
+        className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
+      >
         <svg
           width="16"
           height="16"
@@ -107,45 +110,48 @@ export function DashboardTopBar({
 
       {/* Right: device toggles + actions + avatar */}
       <div className="flex items-center gap-2 ml-auto lg:ml-0">
-        {onPublish && <div className="hidden lg:flex items-center bg-gray-100 rounded-lg p-1 gap-0.5">
-          {(
-            [
-              {
-                title: "Mobile",
-                d: "M7 2h10a2 2 0 012 2v16a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z",
-              },
-              {
-                title: "Tablet",
-                d: "M5 2h14a2 2 0 012 2v16a2 2 0 01-2 2H5a2 2 0 01-2-2V4a2 2 0 012-2z",
-              },
-              {
-                title: "Desktop",
-                d: "M2 3h20a2 2 0 012 2v12a2 2 0 01-2 2H2a2 2 0 01-2-2V5a2 2 0 012-2zM8 21h8M12 17v4",
-              },
-            ] as { title: string; d: string }[]
-          ).map(({ title, d }) => (
-            <button
-              key={title}
-              title={title}
-              className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-white transition-colors"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+        {/* Uncomment later */}
+        {/* {onPublish && (
+          <div className="hidden lg:flex items-center bg-gray-100 rounded-lg p-1 gap-0.5">
+            {(
+              [
+                {
+                  title: "Mobile",
+                  d: "M7 2h10a2 2 0 012 2v16a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z",
+                },
+                {
+                  title: "Tablet",
+                  d: "M5 2h14a2 2 0 012 2v16a2 2 0 01-2 2H5a2 2 0 01-2-2V4a2 2 0 012-2z",
+                },
+                {
+                  title: "Desktop",
+                  d: "M2 3h20a2 2 0 012 2v12a2 2 0 01-2 2H2a2 2 0 01-2-2V5a2 2 0 012-2zM8 21h8M12 17v4",
+                },
+              ] as { title: string; d: string }[]
+            ).map(({ title, d }) => (
+              <button
+                key={title}
+                title={title}
+                className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-white transition-colors"
               >
-                <path d={d} />
-              </svg>
-            </button>
-          ))}
-        </div>}
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d={d} />
+                </svg>
+              </button>
+            ))}
+          </div>
+        )} */}
 
-        <a
+        {/* <a
           href={`/${appUsername}`}
           target="_blank"
           rel="noopener noreferrer"
@@ -166,7 +172,7 @@ export function DashboardTopBar({
             <line x1="10" y1="14" x2="21" y2="3" />
           </svg>
           Open live
-        </a>
+        </a> */}
 
         {onPublish && (
           <button

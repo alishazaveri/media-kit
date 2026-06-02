@@ -16,7 +16,6 @@ const POST_GRADIENTS = [
   "from-blue-200 to-indigo-300",
 ];
 
-
 const ANALYTICS_TOGGLES = [
   { id: "followers", label: "Followers" },
   { id: "views", label: "Views" },
@@ -28,7 +27,13 @@ const ANALYTICS_TOGGLES = [
   { id: "engagement", label: "Engagement" },
 ];
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <button
       type="button"
@@ -43,7 +48,11 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-sm font-medium text-gray-900 mb-1.5">{children}</label>;
+  return (
+    <label className="block text-sm font-medium text-gray-900 mb-1.5">
+      {children}
+    </label>
+  );
 }
 
 function Input({
@@ -92,7 +101,11 @@ export interface CustomizeFormProps {
   packages: Package[];
   addPackage: () => void;
   removePackage: (id: number) => void;
-  updatePackage: (id: number, field: keyof Package, value: string | boolean) => void;
+  updatePackage: (
+    id: number,
+    field: keyof Package,
+    value: string | boolean,
+  ) => void;
   prefIndustries: string[];
   setPrefIndustries: (v: string[]) => void;
   restrictedIndustries: string[];
@@ -103,7 +116,11 @@ export interface CustomizeFormProps {
   collabs: Collaboration[];
   addCollab: () => void;
   removeCollab: (id: number) => void;
-  updateCollab: (id: number, field: keyof Collaboration, value: string | boolean) => void;
+  updateCollab: (
+    id: number,
+    field: keyof Collaboration,
+    value: string | boolean,
+  ) => void;
   featuredPosts: any[];
   onFeaturedPostsChange: (posts: any[]) => void;
   onPreviewClick: () => void;
@@ -111,17 +128,28 @@ export interface CustomizeFormProps {
 }
 
 export function CustomizeForm({
-  profilePic, setProfilePic,
-  displayName, setDisplayName,
+  profilePic,
+  setProfilePic,
+  displayName,
+  setDisplayName,
   appUsername,
-  tagline, setTagline,
-  location, setLocation,
-  nicheTags, setNicheTags,
+  tagline,
+  setTagline,
+  location,
+  setLocation,
+  nicheTags,
+  setNicheTags,
   igPosts,
   featuredPosts,
   onFeaturedPostsChange,
-  packages, addPackage, removePackage, updatePackage,
-  collabs, addCollab, removeCollab, updateCollab,
+  packages,
+  addPackage,
+  removePackage,
+  updatePackage,
+  collabs,
+  addCollab,
+  removeCollab,
+  updateCollab,
   onPreviewClick,
   onThemeChange,
 }: CustomizeFormProps) {
@@ -140,25 +168,38 @@ export function CustomizeForm({
       .catch(() => {});
   }, []);
   const [nicheText, setNicheText] = useState(nicheTags.join(", "));
-  const [analyticsToggles, setAnalyticsToggles] = useState<Record<string, boolean>>({
-    followers: true, views: true, growth: true, shares: false,
-    audience_split: true, gender: false, locations: true, engagement: true,
+  const [analyticsToggles, setAnalyticsToggles] = useState<
+    Record<string, boolean>
+  >({
+    followers: true,
+    views: true,
+    growth: true,
+    shares: false,
+    audience_split: true,
+    gender: false,
+    locations: true,
+    engagement: true,
   });
   const [servicesVisible, setServicesVisible] = useState(true);
 
   const [featuredIds, setFeaturedIds] = useState<string[]>(() => {
-    if ((featuredPosts?.length ?? 0) > 0) return featuredPosts.map((p: any) => p.id);
-    if ((igPosts?.length ?? 0) > 0) return igPosts.slice(0, 4).map((p: any) => p.id);
+    if ((featuredPosts?.length ?? 0) > 0)
+      return featuredPosts.map((p: any) => p.id);
+    if ((igPosts?.length ?? 0) > 0)
+      return igPosts.slice(0, 4).map((p: any) => p.id);
     return [];
   });
 
   // Sync when real posts arrive after initial mount
   useEffect(() => {
     setFeaturedIds((prev) => {
-      const needsInit = prev.length === 0 || prev.every((id) => id.startsWith("dummy_"));
+      const needsInit =
+        prev.length === 0 || prev.every((id) => id.startsWith("dummy_"));
       if (!needsInit) return prev;
-      if ((featuredPosts?.length ?? 0) > 0) return featuredPosts.map((p: any) => p.id);
-      if ((igPosts?.length ?? 0) > 0) return igPosts.slice(0, 4).map((p: any) => p.id);
+      if ((featuredPosts?.length ?? 0) > 0)
+        return featuredPosts.map((p: any) => p.id);
+      if ((igPosts?.length ?? 0) > 0)
+        return igPosts.slice(0, 4).map((p: any) => p.id);
       return prev;
     });
   }, [igPosts, featuredPosts]);
@@ -210,18 +251,31 @@ export function CustomizeForm({
         : [...featuredIds, id];
     setFeaturedIds(next);
     const posts = next
-      .map((nid) => modalPosts.find((p: any) => p.id === nid) ?? featuredPosts.find((p: any) => p.id === nid))
+      .map(
+        (nid) =>
+          modalPosts.find((p: any) => p.id === nid) ??
+          featuredPosts.find((p: any) => p.id === nid),
+      )
       .filter(Boolean);
     onFeaturedPostsChange(posts);
   }
 
   function syncNicheTags() {
-    const tags = nicheText.split(",").map((t) => t.trim()).filter(Boolean);
+    const tags = nicheText
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
     setNicheTags(tags);
   }
 
   const mediaTypeLabel = (t?: string) =>
-    t === "REELS" ? "Reel" : t === "VIDEO" ? "Video" : t === "CAROUSEL_ALBUM" ? "Post" : "Post";
+    t === "REELS"
+      ? "Reel"
+      : t === "VIDEO"
+        ? "Video"
+        : t === "CAROUSEL_ALBUM"
+          ? "Post"
+          : "Post";
 
   return (
     <div className="w-full lg:w-[520px] shrink-0 overflow-y-auto px-4 lg:px-6 py-5 space-y-4 pb-24 lg:pb-8">
@@ -231,7 +285,12 @@ export function CustomizeForm({
         className="lg:hidden w-full bg-white border border-gray-200 text-gray-700 font-semibold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors text-sm"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M1 8C1 8 3.5 3 8 3C12.5 3 15 8 15 8C15 8 12.5 13 8 13C3.5 13 1 8 1 8Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+          <path
+            d="M1 8C1 8 3.5 3 8 3C12.5 3 15 8 15 8C15 8 12.5 13 8 13C3.5 13 1 8 1 8Z"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+          />
           <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.4" />
         </svg>
         Preview my page
@@ -245,27 +304,47 @@ export function CustomizeForm({
         <div className="flex items-start gap-4">
           <div className="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden shrink-0">
             {profilePic ? (
-              <img src={profilePic} alt="" className="w-full h-full object-cover" />
+              <img
+                src={profilePic}
+                alt=""
+                className="w-full h-full object-cover"
+              />
             ) : null}
           </div>
-          <div>
+          {/* uncomment later */}
+          {/* <div>
             <button className="flex items-center gap-2 border border-gray-200 bg-white text-sm font-medium text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                 <polyline points="17 8 12 3 7 8" />
                 <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
               Upload photo
             </button>
-            <p className="text-xs text-gray-400 mt-1.5">JPG or PNG, square works best.</p>
-          </div>
+            <p className="text-xs text-gray-400 mt-1.5">
+              JPG or PNG, square works best.
+            </p>
+          </div> */}
         </div>
 
         {/* 2-col: Display name + Username */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>Display name</Label>
-            <Input value={displayName} onChange={setDisplayName} placeholder="Your name" />
+            <Input
+              value={displayName}
+              onChange={setDisplayName}
+              placeholder="Your name"
+            />
           </div>
           <div>
             <Label>Username</Label>
@@ -277,11 +356,19 @@ export function CustomizeForm({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>Pronouns</Label>
-            <Input value={pronouns} onChange={setPronouns} placeholder="she/her" />
+            <Input
+              value={pronouns}
+              onChange={setPronouns}
+              placeholder="she/her"
+            />
           </div>
           <div>
             <Label>Location</Label>
-            <Input value={location} onChange={setLocation} placeholder="City, Country" />
+            <Input
+              value={location}
+              onChange={setLocation}
+              placeholder="City, Country"
+            />
           </div>
         </div>
 
@@ -289,11 +376,19 @@ export function CustomizeForm({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>Display email</Label>
-            <Input value={displayEmail} onChange={setDisplayEmail} placeholder="hi@you.com" />
+            <Input
+              value={displayEmail}
+              onChange={setDisplayEmail}
+              placeholder="hi@you.com"
+            />
           </div>
           <div>
             <Label>Languages</Label>
-            <Input value={languages} onChange={setLanguages} placeholder="English" />
+            <Input
+              value={languages}
+              onChange={setLanguages}
+              placeholder="English"
+            />
           </div>
         </div>
 
@@ -332,7 +427,11 @@ export function CustomizeForm({
               key={t.identifier}
               onClick={() => {
                 setTheme(t.identifier);
-                onThemeChange?.(t.identifier, { accent_color: t.accent_color, base_color: t.base_color, contrast_color: t.contrast_color });
+                onThemeChange?.(t.identifier, {
+                  accent_color: t.accent_color,
+                  base_color: t.base_color,
+                  contrast_color: t.contrast_color,
+                });
                 fetch("/api/customization", {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
@@ -342,14 +441,18 @@ export function CustomizeForm({
               className="flex flex-col items-center gap-2"
             >
               <div
-                className={`w-full aspect-[3/4] rounded-2xl overflow-hidden transition-all ${
-                  theme === t.identifier ? "ring-2 ring-primary ring-offset-2" : ""
+                className={`w-full  rounded-2xl overflow-hidden transition-all ${
+                  theme === t.identifier
+                    ? "ring-2 ring-primary ring-offset-2"
+                    : ""
                 }`}
-                style={{ backgroundColor: t.base_color }}
+                style={{ backgroundColor: t.accent_color, paddingTop: "60%" }}
               >
-                <div className="h-[30%] mt-auto" style={{ backgroundColor: t.accent_color, marginTop: "70%" }} />
+                {/* <div className="h-[30%] mt-auto" style={{ backgroundColor: t.accent_color, marginTop: "70%" }} /> */}
               </div>
-              <span className={`text-xs text-center capitalize ${theme === t.identifier ? "font-semibold text-gray-900" : "text-gray-500"}`}>
+              <span
+                className={`text-xs text-center capitalize ${theme === t.identifier ? "font-semibold text-gray-900" : "text-gray-500"}`}
+              >
                 {t.name}
               </span>
             </button>
@@ -359,22 +462,39 @@ export function CustomizeForm({
 
       {/* ── Featured Instagram content ── */}
       <section className="bg-white rounded-2xl border border-gray-100 p-5">
-        <p className="font-semibold text-gray-900 mb-1">Featured Instagram content</p>
-        <p className="text-xs text-gray-400 mb-3">Up to 4 posts or reels shown on your page.</p>
+        <p className="font-semibold text-gray-900 mb-1">
+          Featured Instagram content
+        </p>
+        <p className="text-xs text-gray-400 mb-3">
+          Up to 4 posts or reels shown on your page.
+        </p>
 
         {/* Selected posts preview — always visible */}
         <div className="grid grid-cols-4 gap-2 mb-3">
           {Array.from({ length: 4 }, (_, i) => {
             const post = featuredPosts[i] ?? null;
             const thumb = post
-              ? (post.thumbnail_url ?? (post.media_type === "IMAGE" || post.media_type === "CAROUSEL_ALBUM" ? post.media_url : null))
+              ? (post.thumbnail_url ??
+                (post.media_type === "IMAGE" ||
+                post.media_type === "CAROUSEL_ALBUM"
+                  ? post.media_url
+                  : null))
               : null;
             return post ? (
-              <div key={i} className="relative rounded-2xl overflow-hidden aspect-square ring-2 ring-primary ring-offset-1">
+              <div
+                key={i}
+                className="relative rounded-2xl overflow-hidden aspect-square ring-2 ring-primary ring-offset-1"
+              >
                 {thumb ? (
-                  <img src={thumb} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={thumb}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  <div className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`} />
+                  <div
+                    className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`}
+                  />
                 )}
                 <span className="absolute top-1.5 right-1.5 bg-gray-900/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md">
                   {mediaTypeLabel(post.media_type)}
@@ -384,8 +504,13 @@ export function CustomizeForm({
                 </span>
               </div>
             ) : (
-              <div key={i} className="rounded-2xl aspect-square bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center">
-                <span className="text-gray-300 text-sm font-medium">{i + 1}</span>
+              <div
+                key={i}
+                className="rounded-2xl aspect-square bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center"
+              >
+                <span className="text-gray-300 text-sm font-medium">
+                  {i + 1}
+                </span>
               </div>
             );
           })}
@@ -393,14 +518,49 @@ export function CustomizeForm({
 
         {/* Open picker */}
         <button
-          onClick={() => { setDropdownOpen(true); fetchPosts(); }}
+          onClick={() => {
+            setDropdownOpen(true);
+            fetchPosts();
+          }}
           className="w-full border border-gray-200 rounded-xl py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <rect x="1" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-            <rect x="8" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-            <rect x="1" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-            <rect x="8" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+            <rect
+              x="1"
+              y="1"
+              width="5"
+              height="5"
+              rx="1.5"
+              stroke="currentColor"
+              strokeWidth="1.3"
+            />
+            <rect
+              x="8"
+              y="1"
+              width="5"
+              height="5"
+              rx="1.5"
+              stroke="currentColor"
+              strokeWidth="1.3"
+            />
+            <rect
+              x="1"
+              y="8"
+              width="5"
+              height="5"
+              rx="1.5"
+              stroke="currentColor"
+              strokeWidth="1.3"
+            />
+            <rect
+              x="8"
+              y="8"
+              width="5"
+              height="5"
+              rx="1.5"
+              stroke="currentColor"
+              strokeWidth="1.3"
+            />
           </svg>
           {featuredIds.length > 0 ? "Change selection" : "Choose posts"}
         </button>
@@ -419,14 +579,21 @@ export function CustomizeForm({
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
                 <div>
                   <p className="font-semibold text-gray-900">Choose posts</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{featuredIds.length} of 4 selected</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {featuredIds.length} of 4 selected
+                  </p>
                 </div>
                 <button
                   onClick={() => setDropdownOpen(false)}
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                    <path
+                      d="M1 1l10 10M11 1L1 11"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
                   </svg>
                 </button>
               </div>
@@ -447,44 +614,71 @@ export function CustomizeForm({
                 <div className="grid grid-cols-3 gap-2">
                   {modalLoading
                     ? Array.from({ length: 9 }, (_, i) => (
-                        <div key={i} className="rounded-2xl aspect-square bg-gray-100 animate-pulse" />
+                        <div
+                          key={i}
+                          className="rounded-2xl aspect-square bg-gray-100 animate-pulse"
+                        />
                       ))
                     : modalPosts.length === 0
-                    ? null
-                    : modalPosts.map((post: any, i: number) => {
-                        const thumb = post.thumbnail_url ?? (post.media_type === "IMAGE" || post.media_type === "CAROUSEL_ALBUM" ? post.media_url : null);
-                        const selected = featuredIds.includes(post.id);
-                        const dimmed = featuredIds.length >= 4 && !selected;
-                        return (
-                          <button
-                            key={post.id}
-                            onClick={() => togglePost(post.id)}
-                            className={`relative rounded-2xl overflow-hidden aspect-square transition-all
+                      ? null
+                      : modalPosts.map((post: any, i: number) => {
+                          const thumb =
+                            post.thumbnail_url ??
+                            (post.media_type === "IMAGE" ||
+                            post.media_type === "CAROUSEL_ALBUM"
+                              ? post.media_url
+                              : null);
+                          const selected = featuredIds.includes(post.id);
+                          const dimmed = featuredIds.length >= 4 && !selected;
+                          return (
+                            <button
+                              key={post.id}
+                              onClick={() => togglePost(post.id)}
+                              className={`relative rounded-2xl overflow-hidden aspect-square transition-all
                               ${selected ? "ring-2 ring-primary ring-offset-1" : ""}
                               ${dimmed ? "cursor-not-allowed" : "cursor-pointer"}
                             `}
-                          >
-                            {thumb ? (
-                              <img src={thumb} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <div className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`} />
-                            )}
-                            <span className="absolute top-1.5 right-1.5 bg-gray-900/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md">
-                              {mediaTypeLabel(post.media_type)}
-                            </span>
-                            {selected && (
-                              <span className="absolute bottom-1.5 left-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                                  <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                            >
+                              {thumb ? (
+                                <img
+                                  src={thumb}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div
+                                  className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`}
+                                />
+                              )}
+                              <span className="absolute top-1.5 right-1.5 bg-gray-900/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md">
+                                {mediaTypeLabel(post.media_type)}
                               </span>
-                            )}
-                          </button>
-                        );
-                      })}
+                              {selected && (
+                                <span className="absolute bottom-1.5 left-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                                  <svg
+                                    width="10"
+                                    height="10"
+                                    viewBox="0 0 10 10"
+                                    fill="none"
+                                  >
+                                    <path
+                                      d="M2 5l2.5 2.5L8 3"
+                                      stroke="white"
+                                      strokeWidth="1.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
                 </div>
                 {!modalLoading && modalPosts.length === 0 && (
-                  <p className="text-center text-sm text-gray-400 py-8">No posts found</p>
+                  <p className="text-center text-sm text-gray-400 py-8">
+                    No posts found
+                  </p>
                 )}
                 {modalLoadingMore && (
                   <div className="flex justify-center py-3">
@@ -499,7 +693,11 @@ export function CustomizeForm({
                   onClick={() => {
                     setDropdownOpen(false);
                     const selectedPosts = featuredIds
-                      .map((id) => modalPosts.find((p: any) => p.id === id) ?? featuredPosts.find((p: any) => p.id === id))
+                      .map(
+                        (id) =>
+                          modalPosts.find((p: any) => p.id === id) ??
+                          featuredPosts.find((p: any) => p.id === id),
+                      )
                       .filter(Boolean);
                     onFeaturedPostsChange(selectedPosts);
                     fetch("/api/analytics/draft", {
@@ -521,13 +719,20 @@ export function CustomizeForm({
       {/* ── Brands you've worked with ── */}
       <section className="bg-white rounded-2xl border border-gray-100 p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="font-semibold text-gray-900">Brands you&apos;ve worked with</p>
+          <p className="font-semibold text-gray-900">
+            Brands you&apos;ve worked with
+          </p>
           <button
             onClick={addCollab}
             className="flex items-center gap-1.5 text-sm text-gray-600 border border-gray-200 bg-white px-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors"
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <path
+                d="M6 1v10M1 6h10"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
             </svg>
             Add
           </button>
@@ -544,7 +749,16 @@ export function CustomizeForm({
                 onClick={() => removeCollab(c.id)}
                 className="shrink-0 w-9 h-9 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <polyline points="3 6 5 6 21 6" />
                   <path d="M19 6l-1 14H6L5 6" />
                   <path d="M10 11v6M14 11v6" />
@@ -557,21 +771,31 @@ export function CustomizeForm({
       </section>
 
       {/* ── Analytics on your page ── */}
-      <section className="bg-white rounded-2xl border border-gray-100 p-5">
-        <p className="font-semibold text-gray-900 mb-1">Analytics on your page</p>
-        <p className="text-xs text-gray-400 mb-4">Choose which stats to publicly display.</p>
+      {/* uncomment later */}
+      {/* <section className="bg-white rounded-2xl border border-gray-100 p-5">
+        <p className="font-semibold text-gray-900 mb-1">
+          Analytics on your page
+        </p>
+        <p className="text-xs text-gray-400 mb-4">
+          Choose which stats to publicly display.
+        </p>
         <div className="grid grid-cols-2 gap-2">
           {ANALYTICS_TOGGLES.map(({ id, label }) => (
-            <div key={id} className="flex items-center justify-between border border-gray-100 rounded-xl px-3 py-2.5">
+            <div
+              key={id}
+              className="flex items-center justify-between border border-gray-100 rounded-xl px-3 py-2.5"
+            >
               <span className="text-sm text-gray-700">{label}</span>
               <Toggle
                 checked={analyticsToggles[id] ?? false}
-                onChange={(v) => setAnalyticsToggles((prev) => ({ ...prev, [id]: v }))}
+                onChange={(v) =>
+                  setAnalyticsToggles((prev) => ({ ...prev, [id]: v }))
+                }
               />
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* ── Services & rates ── */}
       <section className="bg-white rounded-2xl border border-gray-100 p-5">
@@ -579,10 +803,15 @@ export function CustomizeForm({
           <p className="font-semibold text-gray-900">Services &amp; rates</p>
           <Toggle checked={servicesVisible} onChange={setServicesVisible} />
         </div>
-        <p className="text-xs text-gray-400 mb-4">Toggle visibility on your page.</p>
+        <p className="text-xs text-gray-400 mb-4">
+          Toggle visibility on your page.
+        </p>
         <div className="space-y-3">
           {packages.map((pkg) => (
-            <div key={pkg.id} className="border border-gray-100 rounded-xl p-3 space-y-2">
+            <div
+              key={pkg.id}
+              className="border border-gray-100 rounded-xl p-3 space-y-2"
+            >
               <div className="flex items-center gap-2">
                 <Input
                   value={pkg.title}
@@ -600,7 +829,16 @@ export function CustomizeForm({
                   onClick={() => removePackage(pkg.id)}
                   className="shrink-0 w-9 h-9 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <polyline points="3 6 5 6 21 6" />
                     <path d="M19 6l-1 14H6L5 6" />
                     <path d="M10 11v6M14 11v6" />
@@ -610,7 +848,9 @@ export function CustomizeForm({
               </div>
               <textarea
                 value={pkg.description}
-                onChange={(e) => updatePackage(pkg.id, "description", e.target.value)}
+                onChange={(e) =>
+                  updatePackage(pkg.id, "description", e.target.value)
+                }
                 placeholder="Short description"
                 rows={2}
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 resize-none"
@@ -623,7 +863,12 @@ export function CustomizeForm({
           className="flex items-center gap-2 text-sm text-gray-600 mt-3 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path
+              d="M6 1v10M1 6h10"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
           </svg>
           Add service
         </button>
