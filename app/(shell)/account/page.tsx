@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { AccountTab } from "@/components/dashboard/AccountTab";
@@ -9,7 +9,7 @@ import { IgStats } from "@/components/dashboard/types";
 import { useDashboard } from "@/components/dashboard/DashboardContext";
 import { Toast } from "@/components/ui/Toast";
 
-export default function AccountPage() {
+function AccountPageInner() {
   const { sidebarCollapsed, setSidebarCollapsed } = useDashboard();
   const [handle, setHandle] = useState("");
   const [email, setEmail] = useState("");
@@ -100,5 +100,13 @@ export default function AccountPage() {
         />
       </div>
     </>
+  );
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense>
+      <AccountPageInner />
+    </Suspense>
   );
 }
