@@ -130,6 +130,7 @@ export interface CustomizeFormProps {
   onFeaturedPostsChange: (posts: any[]) => void;
   onPreviewClick: () => void;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
+  onProfilePicUploaded?: (url: string) => void;
 }
 
 export function CustomizeForm({
@@ -159,7 +160,43 @@ export function CustomizeForm({
   updateCollab,
   onPreviewClick,
   onThemeChange,
+  onProfilePicUploaded,
 }: CustomizeFormProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const form = new FormData();
+    form.append("image", file);
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const res = await fetch("/api/upload/profile-image", { method: "POST", body: form });
+      const data = await res.json();
+      if (!res.ok) {
+        setUploadError(data.error ?? "Upload failed");
+        return;
+      }
+      if (data.url) {
+        setProfilePic(data.url);
+        onProfilePicUploaded?.(data.url);
+        fetch("/api/analytics/draft", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profile_pic: data.url }),
+        }).catch(() => {});
+      }
+    } catch {
+      setUploadError("Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
   const [pronouns, setPronouns] = useState("she/her");
   const [languages, setLanguages] = useState("English");
   const [theme, setTheme] = useState("default");
@@ -188,27 +225,14 @@ export function CustomizeForm({
   });
   const [servicesVisible, setServicesVisible] = useState(true);
 
-  const [featuredIds, setFeaturedIds] = useState<string[]>(() => {
-    if ((featuredPosts?.length ?? 0) > 0)
-      return featuredPosts.map((p: any) => p.id);
-    if ((igPosts?.length ?? 0) > 0)
-      return igPosts.slice(0, 4).map((p: any) => p.id);
-    return [];
-  });
-
-  // Sync when real posts arrive after initial mount
-  useEffect(() => {
-    setFeaturedIds((prev) => {
-      const needsInit =
-        prev.length === 0 || prev.every((id) => id.startsWith("dummy_"));
-      if (!needsInit) return prev;
-      if ((featuredPosts?.length ?? 0) > 0)
-        return featuredPosts.map((p: any) => p.id);
-      if ((igPosts?.length ?? 0) > 0)
-        return igPosts.slice(0, 4).map((p: any) => p.id);
-      return prev;
-    });
-  }, [igPosts, featuredPosts]);
+  const [userFeaturedIds, setUserFeaturedIds] = useState<string[] | null>(null);
+  const featuredIds: string[] =
+    userFeaturedIds ??
+    ((featuredPosts?.length ?? 0) > 0
+      ? featuredPosts.map((p: { id: string }) => p.id)
+      : (igPosts?.length ?? 0) > 0
+        ? igPosts.slice(0, 4).map((p: { id: string }) => p.id)
+        : []);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [modalPosts, setModalPosts] = useState<any[]>([]);
@@ -255,7 +279,7 @@ export function CustomizeForm({
       : featuredIds.length >= 4
         ? featuredIds
         : [...featuredIds, id];
-    setFeaturedIds(next);
+    setUserFeaturedIds(next);
     const posts = next
       .map(
         (nid) =>
@@ -310,36 +334,40 @@ export function CustomizeForm({
         <div className="flex items-start gap-4">
           <div className="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden shrink-0">
             {profilePic ? (
-              <img
-                src={profilePic}
-                alt=""
-                className="w-full h-full object-cover"
-              />
+              <img src={profilePic} alt="" className="w-full h-full object-cover" />
             ) : null}
           </div>
-          {/* uncomment later */}
-          {/* <div>
-            <button className="flex items-center gap-2 border border-gray-200 bg-white text-sm font-medium text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-              Upload photo
+          <div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 border border-gray-200 bg-white text-sm font-medium text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              {uploading ? (
+                <div className="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+              )}
+              {uploading ? "Uploading…" : "Upload photo"}
             </button>
-            <p className="text-xs text-gray-400 mt-1.5">
-              JPG or PNG, square works best.
-            </p>
-          </div> */}
+            {uploadError ? (
+              <p className="text-xs text-red-500 mt-1.5">{uploadError}</p>
+            ) : (
+              <p className="text-xs text-gray-400 mt-1.5">JPG, PNG or WebP, square works best.</p>
+            )}
+          </div>
         </div>
 
         {/* 2-col: Display name + Username */}

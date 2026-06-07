@@ -10,13 +10,23 @@ import { NextRequest, NextResponse } from "next/server";
 export async function PUT(req: NextRequest) {
   try {
     const session = await getSession();
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
 
     const allowed = [
-      "display_name", "tagline", "pitch", "location", "niche_tags",
-      "available_for_collabs", "packages", "collabs", "posts", "display_email",
+      "display_name",
+      "tagline",
+      "pitch",
+      "location",
+      "niche_tags",
+      "available_for_collabs",
+      "packages",
+      "collabs",
+      "posts",
+      "profile_pic",
+      "display_email",
     ];
     const patch: Record<string, any> = {};
     for (const key of allowed) {

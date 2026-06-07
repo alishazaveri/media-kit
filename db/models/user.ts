@@ -6,6 +6,7 @@ export interface IUser extends Document {
   password_hash: string;
   username: string;
   plan_id?: mongoose.Types.ObjectId;
+  profile_image_url?: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -17,6 +18,7 @@ const UserSchema = new Schema<IUser>(
     password_hash: { type: String, required: true },
     username: { type: String, required: true, unique: true },
     plan_id: { type: Schema.Types.ObjectId, ref: "Plan" },
+    profile_image_url: { type: String },
   },
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );

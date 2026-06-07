@@ -34,6 +34,7 @@ export default function DashboardPage() {
   const [featuredPosts, setFeaturedPosts] = useState<any[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [publishedData, setPublishedData] = useState<Record<string, any>>({});
+  const [profilePicChanged, setProfilePicChanged] = useState(false);
 
   /* Profile state */
   const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -188,7 +189,7 @@ export default function DashboardPage() {
             : [],
           top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
         });
-        if (ig.profile_pic) setProfilePic(ig.profile_pic);
+        setProfilePic(draft.profile_pic ?? res.data?.profile_image_url ?? ig.profile_pic ?? null);
         if (ig.username) setHandle(ig.username);
         if (res.data?.username) setAppUsername(res.data.username);
 
@@ -207,7 +208,11 @@ export default function DashboardPage() {
         if (Array.isArray(draft.posts) && draft.posts.length) {
           setFeaturedPosts(draft.posts);
         }
-        setPublishedData(res.data?.published ?? {});
+        const published: Record<string, unknown> = res.data?.published ?? {};
+        setPublishedData(published);
+        if (draft.profile_pic && draft.profile_pic !== published.profile_pic) {
+          setProfilePicChanged(true);
+        }
       })
       .catch(() => {})
       .finally(() => setAnalyticsLoaded(true));
@@ -264,7 +269,9 @@ export default function DashboardPage() {
         packages,
         collabs,
         posts: featuredPosts,
+        profile_pic: profilePic,
       });
+      setProfilePicChanged(false);
       setPublishedThemeIdentifier(draftThemeIdentifier);
     } catch {
       /* silent */
@@ -326,7 +333,8 @@ export default function DashboardPage() {
 
   const hasUnpublishedChanges =
     analyticsLoaded &&
-    (hasUnpublishedTheme ||
+    (profilePicChanged ||
+      hasUnpublishedTheme ||
       Object.keys(currentDraft).some(
         (k) =>
           JSON.stringify(currentDraft[k as keyof typeof currentDraft]) !==
@@ -405,6 +413,7 @@ export default function DashboardPage() {
             setDraftThemeIdentifier(identifier);
             setTheme(themeData);
           }}
+          onProfilePicUploaded={() => setProfilePicChanged(true)}
         />
       </div>
     </>

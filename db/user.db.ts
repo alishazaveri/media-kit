@@ -15,6 +15,7 @@ type UserUpdateInput = Partial<{
   username: string;
   password_hash: string;
   plan_id: Types.ObjectId;
+  profile_image_url: string;
 }>;
 
 export async function createUser(data: UserCreateInput) {
