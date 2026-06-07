@@ -51,6 +51,7 @@ interface Props {
   onFeaturedPostsChange: (posts: any[]) => void;
   theme?: ThemeData;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
+  onProfilePicUploaded?: (url: string) => void;
 }
 
 export function CustomizeTab(props: Props) {
@@ -193,6 +194,7 @@ export function CustomizeTab(props: Props) {
     onFeaturedPostsChange,
     onPreviewClick: () => setShowPreview(true),
     onThemeChange,
+    onProfilePicUploaded: props.onProfilePicUploaded,
   };
 
   return (

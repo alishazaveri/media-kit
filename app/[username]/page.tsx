@@ -66,7 +66,7 @@ export default async function PublishedProfilePage(props: {
         handle={ig.username ?? username}
         tagline={published.tagline ?? ig.biography}
         location={published.location}
-        profilePic={ig.profile_pic ?? null}
+        profilePic={published.profile_pic ?? (user as any).profile_image_url ?? ig.profile_pic ?? null}
         stats={{
           followers: ig.followers_count ?? null,
           avgViews: ig.impressions_30d || null,
