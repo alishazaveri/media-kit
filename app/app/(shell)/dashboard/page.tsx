@@ -209,7 +209,7 @@ export default function DashboardPage() {
           setFeaturedPosts(draft.posts);
         }
         const published: Record<string, unknown> = res.data?.published ?? {};
-        setPublishedData(published);
+        setPublishedData({ display_email: "", ...published });
         if (draft.profile_pic && draft.profile_pic !== published.profile_pic) {
           setProfilePicChanged(true);
         }
@@ -264,6 +264,7 @@ export default function DashboardPage() {
         display_name: displayName,
         tagline,
         location,
+        display_email: displayEmail,
         niche_tags: nicheTags,
         available_for_collabs: availableForCollabs,
         packages,
