@@ -54,7 +54,7 @@ export default function PrivacyPage() {
             />
           </Link>
           <Link
-            href="/terms"
+            href="/o/terms"
             className="text-sm text-gray-400 hover:text-gray-700 transition-colors"
           >
             Terms &amp; Conditions →
@@ -264,13 +264,13 @@ export default function PrivacyPage() {
           <p className="text-xs text-gray-400">© 2026 Kloot</p>
           <div className="flex items-center gap-6">
             <Link
-              href="/data-deletion"
+              href="/o/data-deletion"
               className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
             >
               Data Deletion
             </Link>
             <Link
-              href="/terms"
+              href="/o/terms"
               className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
             >
               Terms &amp; Conditions

@@ -120,7 +120,7 @@ export function SignupStep({
 
           <p className="text-center text-sm text-gray-400 mt-6">
             By continuing you agree to our{" "}
-            <a href="/terms" className="underline hover:text-gray-600">
+            <a href="/o/terms" className="underline hover:text-gray-600">
               Terms & Privacy
             </a>
             .
@@ -129,7 +129,7 @@ export function SignupStep({
           <p className="text-center text-sm text-gray-500 mt-4">
             Already have an account?{" "}
             <a
-              href="/login"
+              href="/app/login"
               className="text-primary font-semibold hover:underline"
             >
               Sign in

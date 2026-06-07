@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { type Collaboration, type Package } from "./types";
+import { buildPackageMailto } from "./mailtoLink";
 
 const TESTIMONIALS = [
   {
@@ -31,20 +32,22 @@ const TESTIMONIALS = [
 export function PartnerSection({
   sortedCollabs,
   visiblePackages,
-  turnaround,
+  // turnaround,
   nicheTags,
   tagline,
   name,
+  email,
   primaryColor,
   accentColor,
   secondaryColor,
 }: {
   sortedCollabs: Collaboration[];
   visiblePackages: Package[];
-  turnaround: string;
+  // turnaround: string;
   nicheTags: string[];
   tagline?: string;
   name: string;
+  email?: string;
   primaryColor: string;
   accentColor: string;
   secondaryColor: string;
@@ -102,55 +105,72 @@ export function PartnerSection({
           {/* Packages list */}
           {visiblePackages.length > 0 && (
             <div className="mb-16">
-              <p className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase mb-10">
+              <p
+                className="text-lg font-bold tracking-[0.2em] text-gray-400 uppercase mb-10"
+                style={{ color: accentColor }}
+              >
                 Partnership Architecture
               </p>
               <div>
                 {visiblePackages.map(({ id, title, description, price }, i) => (
                   <div key={id} className=" ">
                     <div className="border-t border-gray-200/80" />
-                    <div className="group flex flex-col md:flex-row items-start md:items-center justify-between py-8 hover:bg-surface/60 transition-colors px-2 md:px-4">
-                      <div className="min-w-0">
-                        <h4 className="font-display text-2xl md:text-3xl font-bold">
-                          {title}
-                        </h4>
-                        <p className="text-gray-500 text-sm">{description}</p>
+                    <div className="group flex flex-row md:flex-row items-start md:items-center justify-between py-8 hover:bg-surface/60 transition-colors px-2 md:px-4 gap-6">
+                      <div className="flex flex-col md:flex-row items-start md:items-center justify-between  hover:bg-surface/60 transition-colors w-full ">
+                        <div className="min-w-0">
+                          <h4 className="font-display text-2xl md:text-3xl font-bold">
+                            {title}
+                          </h4>
+                          <p className="text-gray-500 text-sm">{description}</p>
+                        </div>
+                        <div className="flex items-center justify-between w-full md:w-max gap-6 mt-4 md:mt-0 shrink-0">
+                          <span className="text-xs font-semibold text-gray-400 hidden md:inline">
+                            {/* {turnaround || "Custom timeline"} delivery */}
+                          </span>
+                          {price && (
+                            <p
+                              className="font-display text-3xl md:text-4xl font-black text-brand-accent transition-transform group-hover:scale-110"
+                              style={{ color: accentColor }}
+                            >
+                              {price || ""}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between w-full md:w-max gap-6 mt-4 md:mt-0 shrink-0">
-                        <span className="text-xs font-semibold text-gray-400 hidden md:inline">
-                          {turnaround || "Custom timeline"} delivery
-                        </span>
-                        <p
-                          className="font-display text-3xl md:text-4xl font-black text-brand-accent transition-transform group-hover:scale-110"
-                          style={{ color: accentColor }}
+                      <a
+                        href={
+                          email
+                            ? buildPackageMailto(
+                                email,
+                                name,
+                                title,
+                                price || "—",
+                              )
+                            : undefined
+                        }
+                        className="w-12 h-12 rounded-full border-1 flex items-center justify-center hover:border-[var(--accent)] hover:text-white transition-colors shrink-0 text-[var(--accent)] hover:bg-[var(--accent)]"
+                        style={
+                          {
+                            "--accent": accentColor,
+                            borderColor: `${accentColor}80`,
+                          } as React.CSSProperties
+                        }
+                      >
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
                         >
-                          {price || "—"}
-                        </p>
-                        <button
-                          className="w-12 h-12 rounded-full border-1  flex items-center justify-center hover:border-[var(--accent)] hover:text-white transition-colors shrink-0 text-[var(--accent)] hover:bg-[var(--accent)] "
-                          style={
-                            {
-                              "--accent": accentColor,
-                              borderColor: `${accentColor}80`,
-                            } as React.CSSProperties
-                          }
-                        >
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M7 17L17 7M17 7H7M17 7v10"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </button>
-                      </div>
+                          <path
+                            d="M7 17L17 7M17 7H7M17 7v10"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </a>
                     </div>
                   </div>
                 ))}
@@ -300,12 +320,12 @@ export function PartnerSection({
                   ceramics, long walks, Korean indie pop.{" "}
                   {/* [DUMMY: no hobbies field] */}
                 </p>
-                <p className="text-sm text-gray-700">
+                {/* <p className="text-sm text-gray-700">
                   <span className="font-bold">Response time:</span>{" "}
                   {turnaround
                     ? `Within ${turnaround} on weekdays.`
                     : "Within 24h on weekdays."}
-                </p>
+                </p> */}
               </div>
             </div>
           </div>

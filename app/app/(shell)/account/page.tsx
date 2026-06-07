@@ -58,7 +58,7 @@ function AccountPageInner() {
 
   const handleLogout = async () => {
     await axios.post("/api/auth/logout").catch(() => {});
-    window.location.href = "/login";
+    window.location.href = "/app/login";
   };
 
   return (

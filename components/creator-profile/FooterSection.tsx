@@ -1,12 +1,16 @@
+import { buildMailto } from "./mailtoLink";
+
 export function FooterSection({
   handle,
   name,
+  email,
   primaryColor,
   accentColor,
   secondaryColor,
 }: {
   handle: string;
   name: string;
+  email?: string;
   primaryColor: string;
   accentColor: string;
   secondaryColor: string;
@@ -42,7 +46,7 @@ export function FooterSection({
             />
           </svg>
           <a
-            href={`mailto:hello@${handle || "creator"}.com`}
+            href={email ? buildMailto(email, name) : undefined}
             className="font-black text-gray-900 transition-colors hover:text-[var(--accent)] break-all"
             style={
               {
@@ -52,17 +56,17 @@ export function FooterSection({
               } as React.CSSProperties
             }
           >
-            hello@{handle || "creator"}.com {/* [DUMMY: no email field] */}
+            {email || `hello@${handle || "creator"}.com`}
           </a>
         </div>
-        <div className="flex items-center justify-center gap-2 text-sm text-gray-400 flex-wrap">
+        {/* <div className="flex items-center justify-center gap-2 text-sm text-gray-400 flex-wrap">
           <span>Booking via form or email</span>
           <span className="text-gray-300">•</span>
           <span>Manager: Lina Park · lina@hellostudio.co</span>{" "}
-          {/* [DUMMY: no manager field] */}
+         
           <span className="text-gray-300">•</span>
-          <span>WhatsApp on request</span> {/* [DUMMY] */}
-        </div>
+          <span>WhatsApp on request</span>
+        </div> */}
       </div>
       <div className="max-w-7xl mx-auto mt-16 pt-6 border-t border-gray-100 text-center">
         <p className="text-xs text-gray-400">

@@ -11,7 +11,7 @@ export default function ClaimBar() {
   const handleClaim = () => {
     const url = username
       ? `/onboarding?username=${encodeURIComponent(username)}`
-      : "/onboarding";
+      : "/app/onboarding";
     router.push(url);
     // setUsername("");
   };

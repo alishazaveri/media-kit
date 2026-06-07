@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     } catch (analyticsErr) {
       console.error("[Callback] Analytics fetch failed:", analyticsErr);
       return NextResponse.redirect(
-        `${config.PUBLIC_URL}/onboarding?error=analytics_failed`,
+        `${config.PUBLIC_URL}/app/onboarding?error=analytics_failed`,
       );
     }
 
@@ -113,8 +113,8 @@ export async function GET(request: NextRequest) {
     } else {
       const hasPlan = await isLinkActive(userId).catch(() => false);
       successRedirect = hasPlan
-        ? `${config.PUBLIC_URL}/dashboard`
-        : `${config.PUBLIC_URL}/onboarding?connected=true`;
+        ? `${config.PUBLIC_URL}/app/dashboard`
+        : `${config.PUBLIC_URL}/app/onboarding?connected=true`;
     }
     return NextResponse.redirect(successRedirect);
   } catch (err) {

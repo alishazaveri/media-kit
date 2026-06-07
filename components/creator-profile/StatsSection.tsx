@@ -183,22 +183,22 @@ export function StatsSection({
               Impact Metrics
             </h2>
           </div>
-          <div>
+          <div className="flex flex-row md:flex-col gap-0">
             {bigStats.map(({ value, label, blue }, i) => (
               <div
                 key={label}
                 style={{ opacity: 1, transform: "none" }}
-                className="mb-10 cursor-default"
+                className="flex-1 md:flex-none mb-0 md:mb-10 cursor-default px-4 md:px-0 first:pl-0 last:pr-0 border-r border-[#1d293d]/10 last:border-r-0 md:border-r-0"
               >
-                <div className="font-display text-6xl md:text-7xl font-extrabold tracking-tighter leading-none transition-transform hover:translate-x-2">
+                <div className="font-display text-4xl min-[425px]:text-5xl md:text-7xl font-extrabold tracking-tighter leading-none transition-transform hover:translate-x-2">
                   <span style={{ color: i > 0 ? "#1d293d" : accentColor }}>
                     {value}
                   </span>
                 </div>
-                <p className="text-xs font-bold uppercase tracking-widest mt-2 text-[#1d293d]/70">
+                <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest mt-2 text-[#1d293d]/70">
                   {label}
                 </p>
-                <div className="w-full h-px bg-[#1d293d]/10 mt-5"></div>
+                <div className="hidden md:block w-full h-px bg-[#1d293d]/10 mt-5"></div>
               </div>
             ))}
           </div>

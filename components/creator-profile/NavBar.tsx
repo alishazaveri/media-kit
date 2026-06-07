@@ -1,10 +1,16 @@
+import { buildMailto } from "./mailtoLink";
+
 export function NavBar({
   initials,
+  name,
+  email,
   primaryColor,
   accentColor,
   secondaryColor,
 }: {
   initials: string;
+  name: string;
+  email: string;
   primaryColor: string;
   accentColor: string;
   secondaryColor: string;
@@ -44,9 +50,12 @@ export function NavBar({
             </a>
           ))}
         </div>
-        <button className="bg-gray-900 text-white text-xs font-bold tracking-[.1rem]  rounded-full hover:bg-gray-700 transition-colors px-4 py-2 text-[11px]">
+        <a
+          href={email ? buildMailto(email, name) : undefined}
+          className="bg-gray-900 text-white text-xs font-bold tracking-[.1rem] rounded-full hover:bg-gray-700 transition-colors px-4 py-2 text-[11px]"
+        >
           CONTACT
-        </button>
+        </a>
       </div>
     </nav>
   );

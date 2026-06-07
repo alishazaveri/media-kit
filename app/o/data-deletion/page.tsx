@@ -22,7 +22,7 @@ export default function DataDeletionPage() {
             />
           </Link>
           <Link
-            href="/privacy"
+            href="/o/privacy"
             className="text-sm text-gray-400 hover:text-gray-700 transition-colors"
           >
             Privacy Policy →
@@ -70,7 +70,7 @@ export default function DataDeletionPage() {
                     <>
                       Go to{" "}
                       <Link
-                        href="/login"
+                        href="/app/login"
                         className="text-primary hover:underline"
                       >
                         kloot.io/login
@@ -87,7 +87,7 @@ export default function DataDeletionPage() {
                       Click your profile picture in the top-right corner, then
                       select{" "}
                       <Link
-                        href="/account"
+                        href="/app/account"
                         className="text-primary hover:underline"
                       >
                         Account
@@ -171,7 +171,7 @@ export default function DataDeletionPage() {
               This page is required for compliance with data protection
               regulations and platform policies (e.g. Meta). For more
               information on how we handle your data, please review our{" "}
-              <Link href="/privacy" className="text-primary hover:underline">
+              <Link href="/o/privacy" className="text-primary hover:underline">
                 Privacy Policy
               </Link>
               .
@@ -186,13 +186,13 @@ export default function DataDeletionPage() {
           <p className="text-xs text-gray-400">© 2026 Kloot</p>
           <div className="flex items-center gap-6">
             <Link
-              href="/privacy"
+              href="/o/privacy"
               className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href="/terms"
+              href="/o/terms"
               className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
             >
               Terms

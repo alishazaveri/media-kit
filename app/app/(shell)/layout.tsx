@@ -13,7 +13,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = async () => {
     await axios.post("/api/auth/logout").catch(() => {});
-    window.location.href = "/login";
+    window.location.href = "/app/login";
   };
 
   return (

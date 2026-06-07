@@ -62,6 +62,7 @@ function Input({
   placeholder,
   readOnly,
   className = "",
+  type,
 }: {
   value: string;
   onChange?: (v: string) => void;
@@ -69,6 +70,7 @@ function Input({
   placeholder?: string;
   readOnly?: boolean;
   className?: string;
+  type?: string;
 }) {
   return (
     <input
@@ -77,6 +79,7 @@ function Input({
       onBlur={onBlur}
       placeholder={placeholder}
       readOnly={readOnly}
+      type={type}
       className={`w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 ${readOnly ? "bg-gray-50 text-gray-500 cursor-default" : "bg-white"} ${className}`}
     />
   );
@@ -92,6 +95,8 @@ export interface CustomizeFormProps {
   setTagline: (v: string) => void;
   location: string;
   setLocation: (v: string) => void;
+  displayEmail: string;
+  setDisplayEmail: (v: string) => void;
   availableForCollabs: boolean;
   setAvailableForCollabs: (v: boolean) => void;
   nicheTags: string[];
@@ -137,6 +142,8 @@ export function CustomizeForm({
   setTagline,
   location,
   setLocation,
+  displayEmail,
+  setDisplayEmail,
   nicheTags,
   setNicheTags,
   igPosts,
@@ -154,7 +161,6 @@ export function CustomizeForm({
   onThemeChange,
 }: CustomizeFormProps) {
   const [pronouns, setPronouns] = useState("she/her");
-  const [displayEmail, setDisplayEmail] = useState("");
   const [languages, setLanguages] = useState("English");
   const [theme, setTheme] = useState("default");
 
@@ -375,21 +381,21 @@ export function CustomizeForm({
         {/* 2-col: Display email + Languages */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>Display email</Label>
+            <Label>Contact email</Label>
             <Input
               value={displayEmail}
               onChange={setDisplayEmail}
               placeholder="hi@you.com"
             />
           </div>
-          <div>
+          {/* <div>
             <Label>Languages</Label>
             <Input
               value={languages}
               onChange={setLanguages}
               placeholder="English"
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Bio */}
@@ -803,9 +809,9 @@ export function CustomizeForm({
           <p className="font-semibold text-gray-900">Services &amp; rates</p>
           <Toggle checked={servicesVisible} onChange={setServicesVisible} />
         </div>
-        <p className="text-xs text-gray-400 mb-4">
+        {/* <p className="text-xs text-gray-400 mb-4">
           Toggle visibility on your page.
-        </p>
+        </p> */}
         <div className="space-y-3">
           {packages.map((pkg) => (
             <div
@@ -822,8 +828,8 @@ export function CustomizeForm({
                 <Input
                   value={pkg.price}
                   onChange={(v) => updatePackage(pkg.id, "price", v)}
-                  placeholder="$0"
-                  className="!w-24"
+                  placeholder="₹0"
+                  className="!w-28"
                 />
                 <button
                   onClick={() => removePackage(pkg.id)}
@@ -860,7 +866,7 @@ export function CustomizeForm({
         </div>
         <button
           onClick={addPackage}
-          className="flex items-center gap-2 text-sm text-gray-600 mt-3 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 text-sm text-gray-600 mt-3 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors w-full"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path

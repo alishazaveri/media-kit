@@ -42,6 +42,7 @@ export default function DashboardPage() {
   const [appUsername, setAppUsername] = useState("");
   const [tagline, setTagline] = useState("");
   const [location, setLocation] = useState("India");
+  const [displayEmail, setDisplayEmail] = useState("");
   const [availableForCollabs, setAvailableForCollabs] = useState(true);
   const [nicheTags, setNicheTags] = useState<string[]>([]);
 
@@ -50,24 +51,24 @@ export default function DashboardPage() {
     {
       id: 1,
       title: "Instagram Reel",
-      description: "Single Instagram Reel with full rights",
-      price: "$2,500",
+      description: "Single Instagram Reel",
+      price: "₹2,500",
       popular: false,
     },
     {
       id: 2,
       title: "Instagram Story",
       description: "Story series (3–5 frames)",
-      price: "$800",
+      price: "₹800",
       popular: false,
     },
-    {
-      id: 3,
-      title: "YouTube Video",
-      description: "Dedicated or integrated video",
-      price: "$5,000",
-      popular: true,
-    },
+    // {
+    //   id: 3,
+    //   title: "YouTube Video",
+    //   description: "Dedicated or integrated video",
+    //   price: "$5,000",
+    //   popular: true,
+    // },
     {
       id: 4,
       title: "Campaign Bundle",
@@ -194,6 +195,7 @@ export default function DashboardPage() {
         setDisplayName(draft.display_name ?? ig.name ?? "");
         setTagline(draft.tagline ?? ig.tagline ?? ig.biography ?? "");
         setLocation(draft.location ?? "India");
+        if (draft.display_email) setDisplayEmail(draft.display_email);
         if (Array.isArray(draft.niche_tags) && draft.niche_tags.length)
           setNicheTags(draft.niche_tags);
         if (typeof draft.available_for_collabs === "boolean")
@@ -222,6 +224,7 @@ export default function DashboardPage() {
           display_name: displayName,
           tagline,
           location,
+          display_email: displayEmail,
           niche_tags: nicheTags,
           available_for_collabs: availableForCollabs,
           packages,
@@ -236,6 +239,7 @@ export default function DashboardPage() {
     displayName,
     tagline,
     location,
+    displayEmail,
     nicheTags,
     availableForCollabs,
     packages,
@@ -272,7 +276,13 @@ export default function DashboardPage() {
   const addPackage = () =>
     setPackages((p) => [
       ...p,
-      { id: Date.now(), title: "", description: "", price: "", popular: false },
+      {
+        id: Date.now(),
+        title: "",
+        description: "",
+        price: "₹",
+        popular: false,
+      },
     ]);
   const removePackage = (id: number) =>
     setPackages((p) => p.filter((x) => x.id !== id));
@@ -305,6 +315,7 @@ export default function DashboardPage() {
     display_name: displayName,
     tagline,
     location,
+    display_email: displayEmail,
     niche_tags: nicheTags,
     available_for_collabs: availableForCollabs,
     packages,
@@ -363,6 +374,8 @@ export default function DashboardPage() {
           setTagline={setTagline}
           location={location}
           setLocation={setLocation}
+          displayEmail={displayEmail}
+          setDisplayEmail={setDisplayEmail}
           availableForCollabs={availableForCollabs}
           setAvailableForCollabs={setAvailableForCollabs}
           nicheTags={nicheTags}

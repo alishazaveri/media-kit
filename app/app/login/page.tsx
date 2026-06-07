@@ -13,9 +13,9 @@ function redirectAfterLogin(
   status: OnboardingStatus,
   router: ReturnType<typeof useRouter>,
 ) {
-  router.push("/dashboard");
+  router.push("/app/dashboard");
   // if (status.hasPlan) {
-  //   router.push(status.hasInstagram ? "/dashboard" : "/account");
+  //   router.push(status.hasInstagram ? "/app/dashboard" : "/app/account");
   // } else if (!status.hasInstagram) {
   //   router.push("/onboarding?step=connect");
   // } else {
@@ -59,7 +59,7 @@ export default function LoginPage() {
           />
         </a>
         <a
-          href="/onboarding"
+          href="/app/onboarding"
           className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
         >
           Sign up
@@ -129,7 +129,7 @@ export default function LoginPage() {
           <p className="text-center text-sm text-gray-500 mt-6">
             Don&apos;t have an account?{" "}
             <a
-              href="/onboarding"
+              href="/app/onboarding"
               className="text-primary font-semibold hover:underline"
             >
               Sign up

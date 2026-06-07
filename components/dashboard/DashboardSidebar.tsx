@@ -64,10 +64,10 @@ function BillingIcon({ active }: { active: boolean }) {
 }
 
 export const NAV_ITEMS = [
-  { id: "customize", label: "Customize", Icon: CustomizeIcon, href: "/dashboard" },
-  { id: "account", label: "Account", Icon: AccountIcon, href: "/account" },
+  { id: "customize", label: "Customize", Icon: CustomizeIcon, href: "/app/dashboard" },
+  { id: "account", label: "Account", Icon: AccountIcon, href: "/app/account" },
   // Uncomment later
-  // { id: "plan", label: "Plan & billing", Icon: BillingIcon, href: "/plan" },
+  // { id: "plan", label: "Plan & billing", Icon: BillingIcon, href: "/app/plan" },
 ];
 
 interface Props {

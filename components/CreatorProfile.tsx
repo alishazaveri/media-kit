@@ -41,6 +41,7 @@ export interface CreatorProfileProps {
   deliverables?: string[];
   turnaround?: string;
   theme?: ThemeData;
+  email?: string;
 }
 
 export function CreatorProfile({
@@ -59,23 +60,23 @@ export function CreatorProfile({
       id: 1,
       title: "Instagram Reel",
       description: "Single Instagram Reel with full rights",
-      price: "$2,500",
+      price: "₹2,500",
       popular: false,
     },
     {
       id: 2,
       title: "Instagram Story",
       description: "Story series (3–5 frames)",
-      price: "$800",
+      price: "₹800",
       popular: false,
     },
-    {
-      id: 3,
-      title: "YouTube Video",
-      description: "Dedicated or integrated video",
-      price: "$5,000",
-      popular: true,
-    },
+    // {
+    //   id: 3,
+    //   title: "YouTube Video",
+    //   description: "Dedicated or integrated video",
+    //   price: "$5,000",
+    //   popular: true,
+    // },
     {
       id: 4,
       title: "Campaign Bundle",
@@ -144,8 +145,9 @@ export function CreatorProfile({
     "UGC Content",
     "Product Photography",
   ],
-  turnaround = "7-10 days",
+  // turnaround = "7-10 days",z
   theme,
+  email = "",
 }: CreatorProfileProps) {
   const nameParts = name.trim().split(/\s+/);
   const firstName = nameParts[0] || "";
@@ -171,6 +173,8 @@ export function CreatorProfile({
     <div className="font-sans min-h-screen bg-white">
       <NavBar
         initials={initials}
+        name={name}
+        email={email}
         primaryColor={primaryColor}
         accentColor={accentColor}
         secondaryColor={secondaryColor}
@@ -186,6 +190,7 @@ export function CreatorProfile({
         profilePic={profilePic}
         availableForCollabs={availableForCollabs}
         nicheTags={nicheTags}
+        email={email}
         primaryColor={primaryColor}
         accentColor={accentColor}
         secondaryColor={secondaryColor}
@@ -214,10 +219,11 @@ export function CreatorProfile({
       <PartnerSection
         sortedCollabs={sortedCollabs}
         visiblePackages={visiblePackages}
-        turnaround={turnaround}
+        // turnaround={turnaround}
         nicheTags={nicheTags}
         tagline={tagline}
         name={name}
+        email={email}
         primaryColor={primaryColor}
         accentColor={accentColor}
         secondaryColor={secondaryColor}
@@ -225,6 +231,7 @@ export function CreatorProfile({
       <FooterSection
         handle={handle}
         name={name}
+        email={email}
         primaryColor={primaryColor}
         accentColor={accentColor}
         secondaryColor={secondaryColor}

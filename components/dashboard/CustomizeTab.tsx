@@ -17,6 +17,8 @@ interface Props {
   setTagline: (v: string) => void;
   location: string;
   setLocation: (v: string) => void;
+  displayEmail: string;
+  setDisplayEmail: (v: string) => void;
   availableForCollabs: boolean;
   setAvailableForCollabs: (v: boolean) => void;
   nicheTags: string[];
@@ -66,6 +68,8 @@ export function CustomizeTab(props: Props) {
     setTagline,
     location,
     setLocation,
+    displayEmail,
+    setDisplayEmail,
     availableForCollabs,
     setAvailableForCollabs,
     nicheTags,
@@ -103,6 +107,7 @@ export function CustomizeTab(props: Props) {
     handle,
     tagline,
     location,
+    email: displayEmail,
     profilePic,
     stats: igStats,
     insights: igInsights,
@@ -148,6 +153,7 @@ export function CustomizeTab(props: Props) {
     handle,
     tagline,
     location,
+    displayEmail,
     profilePic,
     availableForCollabs,
     nicheTags,
@@ -168,6 +174,8 @@ export function CustomizeTab(props: Props) {
     setTagline,
     location,
     setLocation,
+    displayEmail,
+    setDisplayEmail,
     availableForCollabs,
     setAvailableForCollabs,
     nicheTags,
@@ -218,7 +226,7 @@ export function CustomizeTab(props: Props) {
               </svg>
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto">
             <ProfilePreview {...previewProps} theme={theme} />
           </div>
         </div>

@@ -45,7 +45,7 @@ export default function TermsPage() {
             />
           </Link>
           <Link
-            href="/privacy"
+            href="/o/privacy"
             className="text-sm text-gray-400 hover:text-gray-700 transition-colors"
           >
             Privacy Policy →
@@ -245,7 +245,7 @@ export default function TermsPage() {
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <p className="text-xs text-gray-400">© 2026 Kloot</p>
           <Link
-            href="/privacy"
+            href="/o/privacy"
             className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
           >
             Privacy Policy

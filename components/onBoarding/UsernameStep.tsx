@@ -170,7 +170,7 @@ export function UsernameStep({
         <p className="text-sm text-gray-400 mt-6">
           Already have an account?{" "}
           <a
-            href="/login"
+            href="/app/login"
             className="text-primary font-semibold hover:underline"
           >
             Sign in

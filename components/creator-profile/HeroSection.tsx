@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import { buildMailto } from "./mailtoLink";
+
 interface HeroSectionProps {
   firstName: string;
   lastName: string;
@@ -9,6 +14,7 @@ interface HeroSectionProps {
   profilePic?: string | null;
   availableForCollabs: boolean;
   nicheTags: string[];
+  email?: string;
 }
 
 export function HeroSection({
@@ -22,177 +28,201 @@ export function HeroSection({
   profilePic,
   availableForCollabs,
   nicheTags,
+  email,
   primaryColor,
   accentColor,
-  secondaryColor,
 }: HeroSectionProps & {
   primaryColor: string;
   accentColor: string;
   secondaryColor: string;
 }) {
+  const [imgError, setImgError] = useState(false);
+
   return (
-    <section className="" style={{ backgroundColor: primaryColor }}>
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-end gap-10 pt-4 md:pt-20 px-6 pb-20 ">
-        {/* Photo */}
-        <div className="relative shrink-0">
-          <div className="relative w-[300px] md:w-80 aspect-[4/5] bg-white rounded-[3rem] shadow-2xl overflow-hidden ring-8 ring-white/60">
-            {profilePic ? (
-              <img
-                src={profilePic}
-                alt={name}
-                width={800}
-                height={1024}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-200 text-7xl font-black text-amber-500">
-                {initial}
-              </div>
-            )}
-          </div>
-          {/* {availableForCollabs && (
-            <div
-              className="absolute bottom-6 -right-2 md:bottom-8 md:-right-3 text-white text-sm font-bold px-4 py-2 md:px-5 md:py-2.5 rounded-full shadow-xl whitespace-nowrap"
-              style={{ backgroundColor: accentColor }}
-            >
-              Open for Q3 
-            </div>
-          )} */}
-        </div>
-
-        {/* Info */}
-        <div className="flex-1 mb-2 flex md:items-start items-start flex-col">
-          {/* Available row */}
-          {nicheTags.length > 0 && (
-            <div className="flex items-center gap-3 mb-5 flex-wrap">
+    <section style={{ backgroundColor: primaryColor }}>
+      <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
+        <div className="relative grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10 lg:gap-12 items-center">
+          {/* Photo */}
+          <div className="md:col-span-5">
+            <div className="relative mx-auto w-72 md:w-full md:max-w-[16rem] lg:max-w-[22rem]">
               <div
-                className="h-px w-6 sm:w-10 lg:w-16 shrink-0  block"
-                style={{ backgroundColor: accentColor }}
-              />
-              {/* <span
-              className="text-xs font-bold tracking-[0.25em] uppercase"
-              style={{ color: accentColor }}
-            >
-              {availableForCollabs
-                ? "Available for Collab"
-                : "Not Currently Available"}
-            </span> */}
-
-              <span
-                className="md:text-xs text-[11px] font-bold tracking-[0.25em] uppercase"
+                className="absolute inset-0 rounded-[2.25rem]"
                 style={{
-                  color: accentColor,
+                  backgroundColor: accentColor,
+                  transform: "rotate(-4deg)",
                 }}
-              >
-                {nicheTags.join(" • ")}
-              </span>
-
-              <div
-                className="h-px w-6 sm:w-10 lg:w-16 shrink-0"
-                style={{ backgroundColor: accentColor }}
               />
-
-              {/* <a
-              className="text-sm text-gray-500 md:block hidden"
-              href={`https://www.instagram.com/${handle}/`}
-              target="__blank"
-            >
-              @{handle || "yourhandle"}
-            </a> */}
+              <div className="relative aspect-[4/5] rounded-[2.25rem] overflow-hidden ring-1 ring-black/10 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.35)]">
+                {profilePic && !imgError ? (
+                  <img
+                    src={profilePic}
+                    alt={name}
+                    width={800}
+                    height={1024}
+                    className="h-full w-full object-cover"
+                    onError={() => setImgError(true)}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-200 text-7xl font-black text-amber-500">
+                    {initial}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
 
-          {/* Name */}
-          <h1
-            className="text-5xl md:text-8xl font-black leading-[0.85] mb-5 flex items-center gap-3 flex-wrap tracking-[-0.05em]"
-            style={{ fontFamily: "Outfit,ui-sans-serif,system-ui,sans-serif" }}
-          >
-            <span className="text-gray-900">{firstName || "Creator"}</span>
-            {lastName && <span style={{ color: accentColor }}>{lastName}</span>}
-          </h1>
+          {/* Info */}
+          <div className="md:col-span-7 space-y-6">
+            {/* Available badge + niche tags */}
+            <div className="flex flex-wrap items-center  mb-3">
+              {/* {availableForCollabs && (
+                <span
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.22em]"
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${accentColor} 15%, transparent)`,
+                    color: accentColor,
+                  }}
+                >
+                  <span
+                    className="size-1.5 rounded-full animate-pulse"
+                    style={{ backgroundColor: accentColor }}
+                  />
+                  Available Worldwide
+                </span>
+              )} */}
+              {nicheTags.map((tag, i) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center "
+                  style={{ color: accentColor }}
+                >
+                  <span
+                    className="text-xs font-bold uppercase"
+                    style={{ color: accentColor }}
+                  >
+                    {tag}
+                  </span>
+                  {i < nicheTags.length - 1 && (
+                    <span
+                      className="text-lg text-gray-300 px-3"
+                      style={{ color: accentColor }}
+                    >
+                      •
+                    </span>
+                  )}
+                </span>
+              ))}
+            </div>
 
-          {/* Tagline */}
-          <p className="text-lg text-gray-600 leading-relaxed mb-6 max-w-xl whitespace-pre-line">
-            {tagline || "Your tagline will appear here"}
-          </p>
-
-          {/* Tags */}
-          <div className="flex items-center gap-2.5 flex-wrap mb-6 text-xs">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1d293d]/5 text-[#1d293d]/80 ">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <rect
-                  x="2"
-                  y="2"
-                  width="20"
-                  height="20"
-                  rx="5"
-                  stroke="#374151"
-                  strokeWidth="1.5"
-                />
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="4"
-                  stroke="#374151"
-                  strokeWidth="1.5"
-                />
-                <circle cx="17.5" cy="6.5" r="1.5" fill="#374151" />
-              </svg>
-              @{handle || "yourhandle"}
-            </span>
-
-            {location && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1d293d]/5 text-[#1d293d]/80  text-xs">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="#374151">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                </svg>
-                {location}
+            {/* Name */}
+            <h1
+              className="font-black tracking-[-0.04em] leading-[0.82] block text-6xl md:text-8xl lg:text-[7rem] relative"
+              style={{
+                fontFamily: "Outfit,ui-sans-serif,system-ui,sans-serif",
+              }}
+            >
+              <span className="block text-3xl min-[425px]:text-4xl md:text-5xl lg:text-[5.5rem] text-gray-900/30">
+                Hi, I&apos;m
               </span>
+              <span className="block text-5xl min-[425px]:text-6xl md:text-6xl lg:text-[7rem] text-gray-900">
+                {firstName || "Creator"}{" "}
+                {lastName && (
+                  <span
+                    className="relative z-10"
+                    style={{ color: accentColor }}
+                  >
+                    {lastName}
+                  </span>
+                )}
+              </span>
+            </h1>
+
+            {/* Tagline */}
+            {tagline && (
+              <p className="text-base md:text-xl text-gray-600 font-medium max-w-2xl leading-relaxed whitespace-pre-line">
+                {tagline}
+              </p>
             )}
 
-            {/* [DUMMY: no languages field yet] */}
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1d293d]/5 text-[#1d293d]/80  text-xs">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M5 8l6 6M4 14l6-6 2-3M2 5h7M10 2v3M22 22l-5-10-5 10M14 18h6"
-                  stroke="#374151"
-                  strokeWidth="1.5"
+            {/* Meta pills */}
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-black/5 text-gray-700">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                />
-              </svg>
-              EN · FR · KR
-            </span>
-          </div>
+                >
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                </svg>
+                @{handle || "yourhandle"}
+              </span>
 
-          {/* CTA buttons */}
-          <div className="flex flex-row items-stretch  gap-3 sm:gap-4">
-            <button
-              style={
-                {
-                  "--primary": primaryColor,
-                  "--secondary": secondaryColor,
-                  "--accent": accentColor,
-                  "--accent-shadow": `color-mix(in srgb, ${accentColor} 75%, black)`,
-                  backgroundColor: accentColor,
-                } as React.CSSProperties
-              }
-              className="group inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-bold text-sm shadow-[0_8px_0_var(--accent-shadow)] hover:translate-y-0.5 hover:shadow-[0_4px_0_var(--accent-shadow)] active:translate-y-1 active:shadow-none transition-all"
-            >
-              Work With Me
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M7 17L17 7M17 7H7M17 7v10"
-                  stroke="white"
+              {location && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-black/5 text-gray-700">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                  </svg>
+                  {location}
+                </span>
+              )}
+
+              {/* <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-black/5 text-gray-700">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1m15 20-5-10-5 10M14 18h6" />
+                </svg>
+                EN · FR · KR
+              </span> */}
+            </div>
+
+            {/* CTA */}
+            <div className="flex flex-wrap gap-3 pt-2">
+              <a
+                href={email ? buildMailto(email, name) : undefined}
+                className="group inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-bold text-sm transition-all hover:translate-y-0.5 active:translate-y-1"
+                style={
+                  {
+                    backgroundColor: accentColor,
+                    boxShadow: `0 8px 0 color-mix(in srgb, ${accentColor} 65%, black)`,
+                  } as React.CSSProperties
+                }
+              >
+                Work With Me
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            {/* <button className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface border border-[#1d293d]/10 text-[#1d293d] font-bold text-sm hover:bg-mint-pill transition-colors">
-              Contact
-            </button> */}
+                  className="group-hover:rotate-45 transition-transform"
+                >
+                  <path d="M7 7h10v10M7 17 17 7" />
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
       </div>

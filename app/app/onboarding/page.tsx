@@ -29,7 +29,7 @@ function OnboardingContent() {
       setStep("connect");
       return;
     }
-    if (searchParams.get("connected") === "true") { router.push("/dashboard"); return; }
+    if (searchParams.get("connected") === "true") { router.push("/app/dashboard"); return; }
     const stepParam = searchParams.get("step");
     if (stepParam === "connect") setStep("connect");
     // else if (stepParam === "activate") setStep("activate");
@@ -55,7 +55,7 @@ function OnboardingContent() {
         <ConnectStep userId={userId} externalError={connectError} />
       )}
       {/* step === "activate" && (
-        <ActivateStep onNext={() => router.push("/dashboard")} />
+        <ActivateStep onNext={() => router.push("/app/dashboard")} />
       ) */}
     </div>
   );

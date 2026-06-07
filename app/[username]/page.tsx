@@ -109,6 +109,7 @@ export default async function PublishedProfilePage(props: {
         }
         turnaround={published.turnaround ?? "7-10 days"}
         theme={theme}
+        email={published.display_email ?? ""}
       />
     </main>
   );
