@@ -39,12 +39,12 @@ export function HeroSection({
   const [imgError, setImgError] = useState(false);
 
   return (
-    <section style={{ backgroundColor: primaryColor }}>
+    <section id="hero" style={{ backgroundColor: primaryColor }}>
       <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
         <div className="relative grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10 lg:gap-12 items-center">
           {/* Photo */}
           <div className="md:col-span-5">
-            <div className="relative mx-auto w-72 md:w-full md:max-w-[16rem] lg:max-w-[22rem]">
+            <div className="relative mx-auto w-[200px] min-[375px]:w-72 md:w-full md:max-w-[16rem] lg:max-w-[22rem]">
               <div
                 className="absolute inset-0 rounded-[2.25rem]"
                 style={{
@@ -72,7 +72,7 @@ export function HeroSection({
           </div>
 
           {/* Info */}
-          <div className="md:col-span-7 space-y-6">
+          <div className="md:col-span-7 space-y-6 md:mx-0 mx-auto">
             {/* Available badge + niche tags */}
             <div className="flex flex-wrap items-center  mb-3">
               {/* {availableForCollabs && (

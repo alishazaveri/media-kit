@@ -94,8 +94,6 @@ export function WorkSection({
           },
         ];
 
-  console.log({ cardData });
-
   return (
     <section
       id="work"

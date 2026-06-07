@@ -4,6 +4,7 @@ import { useState } from "react";
 import { IgStats } from "./types";
 import { formatCount } from "./utils";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import Button from "@/components/reusable/Button";
 
 interface Props {
   email: string;
@@ -178,12 +179,9 @@ export function AccountTab({ email, appUsername, handle, igStats, onLogout, onCo
           )}
         </div>
 
-        <button
-          onClick={onLogout}
-          className="w-full border border-red-200 text-red-500 font-semibold py-4 rounded-2xl hover:bg-red-50 transition-colors text-base"
-        >
+        <Button variant="danger" size="lg" onClick={onLogout} fullWidth className="rounded-2xl">
           Log out
-        </button>
+        </Button>
       </div>
     </div>
   );

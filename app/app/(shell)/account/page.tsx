@@ -74,6 +74,7 @@ function AccountPageInner() {
         appUsername={appUsername}
         profilePic={profilePic}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onLogout={handleLogout}
       />
       <div className="flex-1 overflow-hidden">
         <AccountTab

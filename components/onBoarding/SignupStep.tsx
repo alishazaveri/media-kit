@@ -3,6 +3,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { OnboardingNav } from "./OnboardingNav";
+import Button from "@/components/reusable/Button";
 
 export function SignupStep({
   onNext,
@@ -109,13 +110,9 @@ export function SignupStep({
               </p>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
-            >
+            <Button type="submit" variant="primary" size="lg" loading={loading} fullWidth className="rounded-xl">
               {loading ? "Creating account…" : "Continue"}
-            </button>
+            </Button>
           </form>
 
           <p className="text-center text-sm text-gray-400 mt-6">

@@ -33,9 +33,15 @@ export default async function PublishedProfilePage(props: {
   ]);
 
   const themeIdentifier = (customization as any)?.theme_identifier;
-  const resolved = themeIdentifier ? getThemeByIdentifier(themeIdentifier) : undefined;
+  const resolved = themeIdentifier
+    ? getThemeByIdentifier(themeIdentifier)
+    : undefined;
   const theme = resolved
-    ? { accent_color: resolved.accent_color, base_color: resolved.base_color, contrast_color: resolved.contrast_color }
+    ? {
+        accent_color: resolved.accent_color,
+        base_color: resolved.base_color,
+        contrast_color: resolved.contrast_color,
+      }
     : undefined;
 
   const published: Record<string, any> =
@@ -47,7 +53,8 @@ export default async function PublishedProfilePage(props: {
 
   const ig: Record<string, any> = (insight as any)?.data ?? {};
 
-  const postCount = ig.post_count || (Array.isArray(ig.posts) ? ig.posts.length : 0);
+  const postCount =
+    ig.post_count || (Array.isArray(ig.posts) ? ig.posts.length : 0);
   const engagementRate =
     ig.followers_count && postCount
       ? +(
@@ -57,8 +64,6 @@ export default async function PublishedProfilePage(props: {
         ).toFixed(1)
       : null;
 
-  console.log({ userData });
-
   return (
     <main className="min-h-screen ">
       <CreatorProfile
@@ -66,7 +71,12 @@ export default async function PublishedProfilePage(props: {
         handle={ig.username ?? username}
         tagline={published.tagline ?? ig.biography}
         location={published.location}
-        profilePic={published.profile_pic ?? (user as any).profile_image_url ?? ig.profile_pic ?? null}
+        profilePic={
+          published.profile_pic ??
+          (user as any).profile_image_url ??
+          ig.profile_pic ??
+          null
+        }
         stats={{
           followers: ig.followers_count ?? null,
           avgViews: ig.impressions_30d || null,
@@ -110,6 +120,7 @@ export default async function PublishedProfilePage(props: {
         turnaround={published.turnaround ?? "7-10 days"}
         theme={theme}
         email={published.display_email ?? ""}
+        servicesVisible={published.services_visible !== false}
       />
     </main>
   );

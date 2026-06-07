@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { OnboardingNav } from "./OnboardingNav";
+import Button from "@/components/reusable/Button";
 
 type CheckState = "idle" | "checking" | "available" | "unavailable" | "invalid";
 
@@ -78,7 +79,7 @@ export function UsernameStep({
         </div> */}
 
         {/* Heading */}
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-3 leading-tight">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 text-center mb-3 leading-tight">
           Claim your <span className="text-primary">kloot</span> link
         </h1>
         <p className="text-gray-500 text-center mb-10 text-md">
@@ -88,7 +89,7 @@ export function UsernameStep({
         {/* Input */}
         <div className="w-full max-w-md">
           <div
-            className={`flex items-center bg-white border rounded-2xl px-5 py-3 gap-3 shadow-sm transition-all ${
+            className={`flex items-center bg-white border rounded-2xl px-5 py-3 gap-3 shadow-sm transition-all border  ${
               checkState === "available"
                 ? "border-primary/40"
                 : checkState === "unavailable" || checkState === "invalid"
@@ -123,19 +124,18 @@ export function UsernameStep({
               spellCheck={false}
               className="flex-1 min-w-0 text-sm font-medium text-primary placeholder:text-primaryBF outline-none bg-transparent"
             />
-            <button
+            <Button
+              variant="primary"
+              size="sm"
+              loading={checkState === "checking"}
+              disabled={!canProceed}
               onClick={() =>
                 canProceed && onNext(username.trim().toLowerCase())
               }
-              disabled={!canProceed}
-              className="shrink-0 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
+              className="shrink-0 rounded-xl"
             >
-              {checkState === "checking" ? (
-                <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              ) : (
-                "Claim"
-              )}
-            </button>
+              Claim
+            </Button>
           </div>
 
           {(checkState === "unavailable" || checkState === "invalid") &&
@@ -144,20 +144,21 @@ export function UsernameStep({
                 {errorMsg}
               </p>
             )}
-          {checkState === "available" && (
-            <p className="mt-2 text-xs text-primary font-medium pl-1 flex items-center gap-1">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path
-                  d="M2 6L4.5 8.5L10 3"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              kloot.io/{username.trim()} is available
-            </p>
-          )}
+
+          <p
+            className={`mt-2 text-xs text-primary font-medium pl-1 flex items-center gap-1 ${checkState === "available" ? "visible" : "invisible"}`}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M2 6L4.5 8.5L10 3"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            kloot.io/{username.trim()} is available
+          </p>
         </div>
 
         {/* Steps */}

@@ -27,6 +27,7 @@ export async function PUT(req: NextRequest) {
       "posts",
       "profile_pic",
       "display_email",
+      "services_visible",
     ];
     const patch: Record<string, any> = {};
     for (const key of allowed) {

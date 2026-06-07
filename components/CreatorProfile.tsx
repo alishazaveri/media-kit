@@ -42,6 +42,7 @@ export interface CreatorProfileProps {
   turnaround?: string;
   theme?: ThemeData;
   email?: string;
+  servicesVisible?: boolean;
 }
 
 export function CreatorProfile({
@@ -148,6 +149,7 @@ export function CreatorProfile({
   // turnaround = "7-10 days",z
   theme,
   email = "",
+  servicesVisible = true,
 }: CreatorProfileProps) {
   const nameParts = name.trim().split(/\s+/);
   const firstName = nameParts[0] || "";
@@ -162,8 +164,6 @@ export function CreatorProfile({
     (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0),
   );
   const visiblePackages = packages.slice(0, 4);
-
-  console.log({ theme });
 
   const primaryColor = theme?.base_color ?? "#fff4ef";
   const accentColor = theme?.accent_color ?? "#ff7350";
@@ -218,7 +218,7 @@ export function CreatorProfile({
       />
       <PartnerSection
         sortedCollabs={sortedCollabs}
-        visiblePackages={visiblePackages}
+        visiblePackages={servicesVisible ? visiblePackages : []}
         // turnaround={turnaround}
         nicheTags={nicheTags}
         tagline={tagline}

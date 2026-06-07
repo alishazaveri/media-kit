@@ -5,6 +5,7 @@ import { ProfilePreview } from "@/components/ProfilePreview";
 import { CustomizeForm } from "./CustomizeForm";
 import { Package, Collaboration, IgStats, IgInsights } from "./types";
 import { type ThemeData } from "@/components/CreatorProfile";
+import Button from "@/components/reusable/Button";
 
 interface Props {
   profilePic: string | null;
@@ -19,6 +20,8 @@ interface Props {
   setLocation: (v: string) => void;
   displayEmail: string;
   setDisplayEmail: (v: string) => void;
+  servicesVisible: boolean;
+  setServicesVisible: (v: boolean) => void;
   availableForCollabs: boolean;
   setAvailableForCollabs: (v: boolean) => void;
   nicheTags: string[];
@@ -54,6 +57,9 @@ interface Props {
   theme?: ThemeData;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
   onProfilePicUploaded?: (url: string) => void;
+  publishing?: boolean;
+  hasUnpublishedChanges?: boolean;
+  onPublish?: () => void;
 }
 
 export function CustomizeTab(props: Props) {
@@ -71,6 +77,8 @@ export function CustomizeTab(props: Props) {
     setLocation,
     displayEmail,
     setDisplayEmail,
+    servicesVisible,
+    setServicesVisible,
     availableForCollabs,
     setAvailableForCollabs,
     nicheTags,
@@ -97,6 +105,9 @@ export function CustomizeTab(props: Props) {
     onFeaturedPostsChange,
     theme,
     onThemeChange,
+    publishing = false,
+    hasUnpublishedChanges = false,
+    onPublish,
   } = props;
 
   const [showPreview, setShowPreview] = useState(false);
@@ -121,6 +132,7 @@ export function CustomizeTab(props: Props) {
     restrictedIndustries,
     deliverables,
     turnaround,
+    servicesVisible,
     theme,
   };
 
@@ -161,6 +173,7 @@ export function CustomizeTab(props: Props) {
     packages,
     collabs,
     turnaround,
+    servicesVisible,
     featuredPosts,
     theme,
   ]);
@@ -177,6 +190,8 @@ export function CustomizeTab(props: Props) {
     setLocation,
     displayEmail,
     setDisplayEmail,
+    servicesVisible,
+    setServicesVisible,
     availableForCollabs,
     setAvailableForCollabs,
     nicheTags,
@@ -203,36 +218,92 @@ export function CustomizeTab(props: Props) {
     onPreviewClick: () => setShowPreview(true),
     onThemeChange,
     onProfilePicUploaded: props.onProfilePicUploaded,
+    onSectionFocus: (sectionId: string) => {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: "SCROLL_TO_SECTION", sectionId },
+        "*",
+      );
+    },
   };
 
   return (
     <>
-      {/* Mobile full-screen preview modal */}
-      {showPreview && (
-        <div className="fixed inset-0 z-50 bg-gray-100 flex flex-col lg:hidden">
-          <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100 shrink-0">
+      {/* Mobile bottom drawer preview */}
+      <div
+        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${showPreview ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+      >
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/40"
+          onClick={() => setShowPreview(false)}
+        />
+
+        {/* Drawer */}
+        <div
+          className={`absolute inset-x-0 bottom-0 h-[91%] bg-white rounded-t-3xl flex flex-col shadow-2xl transition-transform duration-300 ease-out ${showPreview ? "translate-y-0" : "translate-y-full"}`}
+        >
+          {/* Drag handle */}
+          <div className="shrink-0 flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1 rounded-full bg-gray-200" />
+          </div>
+
+          <div className="flex items-center justify-between px-6 pb-3 border-b border-gray-100 shrink-0">
             <p className="text-xs font-semibold text-primary tracking-widest uppercase">
               Live Preview
             </p>
-            <button
-              onClick={() => setShowPreview(false)}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path
-                  d="M1 1L13 13M13 1L1 13"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
+
+            <div className="flex items-center gap-2">
+              {onPublish && (
+                <Button
+                  variant="primary"
+                  size="xs"
+                  onClick={onPublish}
+                  disabled={publishing || !hasUnpublishedChanges}
+                  loading={publishing}
+                  icon={
+                    !publishing && (
+                      <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                        <polyline points="17 21 17 13 7 13 7 21" />
+                        <polyline points="7 3 7 8 15 8" />
+                      </svg>
+                    )
+                  }
+                  className="rounded-lg font-bold"
+                >
+                  {publishing ? "Saving…" : "Publish"}
+                </Button>
+              )}
+              <button
+                onClick={() => setShowPreview(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M1 1L13 13M13 1L1 13"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
+
           <div className="flex-1 overflow-y-auto">
             <ProfilePreview {...previewProps} theme={theme} />
           </div>
         </div>
-      )}
+      </div>
 
       <div className="h-full flex justify-center overflow-hidden bg-muted/30]">
         <div className="flex w-full max-w-[1920px] overflow-hidden">
@@ -247,10 +318,55 @@ export function CustomizeTab(props: Props) {
                   <div className="w-3 h-3 rounded-full bg-amber-400" />
                   <div className="w-3 h-3 rounded-full bg-green-400" />
                 </div>
-                <div className="flex-1 bg-white border border-gray-200 rounded-md px-3 py-1 text-xs text-gray-400">
-                  kloot.io/{appUsername || "yourhandle"}
+                <div
+                  className={`flex-1  border border-gray-200 rounded-md px-3 py-1 text-xs text-gray-400 ${hasUnpublishedChanges ? "bg-amber-50" : "bg-white"}`}
+                >
+                  <span
+                    className={`text-xs ${hasUnpublishedChanges ? " text-amber-700" : ""}`}
+                  >
+                    {hasUnpublishedChanges && "Draft ·"}{" "}
+                    <a
+                      href={`/${appUsername}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      kloot.io/{appUsername}
+                    </a>
+                  </span>
                 </div>
+                {onPublish && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={onPublish}
+                    disabled={publishing || !hasUnpublishedChanges}
+                    loading={publishing}
+                    icon={
+                      !publishing && (
+                        <svg
+                          width="11"
+                          height="11"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                          <polyline points="17 21 17 13 7 13 7 21" />
+                          <polyline points="7 3 7 8 15 8" />
+                        </svg>
+                      )
+                    }
+                    className="shrink-0 font-bold"
+                  >
+                    {publishing ? "Saving…" : "Publish"}
+                  </Button>
+                )}
               </div>
+
               <iframe
                 ref={iframeRef}
                 src="/preview"

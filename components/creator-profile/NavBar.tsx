@@ -52,7 +52,8 @@ export function NavBar({
         </div>
         <a
           href={email ? buildMailto(email, name) : undefined}
-          className="bg-gray-900 text-white text-xs font-bold tracking-[.1rem] rounded-full hover:bg-gray-700 transition-colors px-4 py-2 text-[11px]"
+          className=" text-white text-xs font-bold tracking-[.1rem] rounded-full hover:bg-gray-700 transition-colors px-4 py-2 text-[11px]"
+          style={{ backgroundColor: secondaryColor }}
         >
           CONTACT
         </a>

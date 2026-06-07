@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 function CustomizeIcon({ active }: { active: boolean }) {
   return (
@@ -64,7 +66,12 @@ function BillingIcon({ active }: { active: boolean }) {
 }
 
 export const NAV_ITEMS = [
-  { id: "customize", label: "Customize", Icon: CustomizeIcon, href: "/app/dashboard" },
+  {
+    id: "customize",
+    label: "Customize",
+    Icon: CustomizeIcon,
+    href: "/app/dashboard",
+  },
   { id: "account", label: "Account", Icon: AccountIcon, href: "/app/account" },
   // Uncomment later
   // { id: "plan", label: "Plan & billing", Icon: BillingIcon, href: "/app/plan" },
@@ -77,15 +84,35 @@ interface Props {
 
 export function DashboardSidebar({ onLogout, collapsed }: Props) {
   const pathname = usePathname();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   return (
+    <>
+    {showLogoutModal && (
+      <ConfirmModal
+        title="Log out?"
+        description="You'll need to sign in again to access your dashboard."
+        confirmLabel="Log out"
+        cancelLabel="Cancel"
+        onConfirm={() => { setShowLogoutModal(false); onLogout(); }}
+        onCancel={() => setShowLogoutModal(false)}
+      />
+    )}
     <aside
       className={`hidden lg:flex shrink-0 bg-[#f8f8f8] flex-col transition-all duration-200 ${
         collapsed ? "w-16" : "w-56"
       }`}
     >
-      <div className={`py-5 flex items-center shrink-0 ${collapsed ? "justify-center px-0" : "px-5"}`}>
-        {!collapsed && (
+      <div
+        className={`py-5 flex items-center shrink-0 ${collapsed ? "justify-center px-0" : "px-5"}`}
+      >
+        {collapsed ? (
+          <img
+            src="/assets/images/logo/logo-k-transparent.png"
+            alt="Kloot"
+            className="h-6 w-auto object-contain"
+          />
+        ) : (
           <img
             src="/assets/images/logo/logo-transparent-slim.png"
             alt="Kloot"
@@ -119,7 +146,7 @@ export function DashboardSidebar({ onLogout, collapsed }: Props) {
 
       <div className={`pb-5 border-t border-gray-100 pt-4 px-2`}>
         <button
-          onClick={onLogout}
+          onClick={() => setShowLogoutModal(true)}
           title={collapsed ? "Log out" : undefined}
           className={`w-full flex items-center py-2.5 rounded-xl text-sm text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors ${
             collapsed ? "justify-center px-0" : "gap-3 px-3"
@@ -138,5 +165,6 @@ export function DashboardSidebar({ onLogout, collapsed }: Props) {
         </button>
       </div>
     </aside>
+    </>
   );
 }

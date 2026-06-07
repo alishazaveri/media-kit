@@ -25,6 +25,7 @@ export default function PlanPage() {
         appUsername={appUsername}
         profilePic={profilePic}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onLogout={async () => { await axios.post("/api/auth/logout").catch(() => {}); window.location.href = "/app/login"; }}
       />
       <div className="flex-1 overflow-hidden">
         <PlanTab />

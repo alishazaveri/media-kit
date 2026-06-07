@@ -3,6 +3,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { OnboardingNav } from "./OnboardingNav";
+import Button from "@/components/reusable/Button";
 
 export function ConnectStep({
   userId,
@@ -106,12 +107,9 @@ export function ConnectStep({
               {externalError || error}
             </div>
           )}
-          <button
-            onClick={handleConnect}
-            className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-4 rounded-2xl text-base transition-colors"
-          >
+          <Button variant="primary" size="lg" onClick={handleConnect} fullWidth className="rounded-2xl">
             Connect Instagram
-          </button>
+          </Button>
           <p className="text-center text-sm text-gray-400 mt-4">
             We never post or message on your behalf.
           </p>

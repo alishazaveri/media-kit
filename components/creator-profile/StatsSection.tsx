@@ -183,19 +183,19 @@ export function StatsSection({
               Impact Metrics
             </h2>
           </div>
-          <div className="flex flex-row md:flex-col gap-0">
+          <div className="flex flex-wrap min-[400px]:flex-nowrap md:flex-col gap-y-4 min-[400px]:gap-y-0">
             {bigStats.map(({ value, label, blue }, i) => (
               <div
                 key={label}
                 style={{ opacity: 1, transform: "none" }}
-                className="flex-1 md:flex-none mb-0 md:mb-10 cursor-default px-4 md:px-0 first:pl-0 last:pr-0 border-r border-[#1d293d]/10 last:border-r-0 md:border-r-0"
+                className="flex-1 min-w-[42%] min-[400px]:min-w-0 md:flex-none mb-0 md:mb-10 cursor-default min-[400px]:px-4 md:px-0 min-[400px]:first:pl-0 min-[400px]:last:pr-0 min-[400px]:border-r border-[#1d293d]/10 last:border-r-0 md:border-r-0"
               >
-                <div className="font-display text-4xl min-[425px]:text-5xl md:text-7xl font-extrabold tracking-tighter leading-none transition-transform hover:translate-x-2">
+                <div className="font-display text-3xl min-[425px]:text-4xl md:text-7xl font-extrabold tracking-tighter leading-none transition-transform hover:translate-x-2">
                   <span style={{ color: i > 0 ? "#1d293d" : accentColor }}>
                     {value}
                   </span>
                 </div>
-                <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest mt-2 text-[#1d293d]/70">
+                <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest mt-2 text-[#1d293d]/70">
                   {label}
                 </p>
                 <div className="hidden md:block w-full h-px bg-[#1d293d]/10 mt-5"></div>

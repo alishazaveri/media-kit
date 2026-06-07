@@ -8,7 +8,9 @@ import { DashboardContext } from "@/components/dashboard/DashboardContext";
 import { DashboardSidebar, NAV_ITEMS } from "@/components/dashboard/DashboardSidebar";
 
 export default function ShellLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => typeof window !== "undefined" && window.innerWidth <= 1100,
+  );
   const pathname = usePathname();
 
   const handleLogout = async () => {

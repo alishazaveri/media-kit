@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Button from "@/components/reusable/Button";
 
 export default function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
 
   const links = [
     { label: "Steps", href: "#steps" },
@@ -40,18 +43,22 @@ export default function Nav() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2 ml-auto shrink-0">
-            <a
-              href="/app/login"
-              className="hidden md:inline-flex text-sm font-semibold text-gray-700 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-400 transition-colors"
+            <Button
+              variant="default"
+              size="md"
+              onClick={() => router.push("/app/login")}
+              className="hidden md:inline-flex rounded-xl"
             >
               Login
-            </a>
-            <a
-              href="/app/onboarding"
-              className="bg-primary hover:bg-primary-hover text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors"
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => router.push("/app/onboarding")}
+              className="rounded-xl"
             >
               Claim
-            </a>
+            </Button>
             {/* Hamburger */}
             <button
               className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5"
@@ -85,18 +92,22 @@ export default function Nav() {
               </a>
             ))}
             <div className="flex items-center gap-2 pt-2 border-t border-gray-100 mt-1">
-              <a
-                href="/app/login"
-                className="flex-1 text-center text-sm font-semibold text-gray-700 px-4 py-2 rounded-xl border border-gray-200"
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => router.push("/app/login")}
+                className="flex-1 rounded-xl"
               >
                 Login
-              </a>
-              <a
-                href="/app/onboarding"
-                className="flex-1 text-center bg-primary text-white text-sm font-bold px-4 py-2 rounded-xl"
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => router.push("/app/onboarding")}
+                className="flex-1 rounded-xl"
               >
                 Claim
-              </a>
+              </Button>
             </div>
           </div>
         )}

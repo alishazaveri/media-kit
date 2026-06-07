@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import Button from "@/components/reusable/Button";
 
 type OnboardingStatus = {
   hasInstagram: boolean;
@@ -117,13 +118,16 @@ export default function LoginPage() {
               </p>
             )}
 
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3.5 rounded-xl flex items-center justify-center transition-colors disabled:opacity-60"
+              variant="primary"
+              size="lg"
+              loading={loading}
+              fullWidth
+              className="rounded-xl"
             >
               {loading ? "Logging in…" : "Log in"}
-            </button>
+            </Button>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">

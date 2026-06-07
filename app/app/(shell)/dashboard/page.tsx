@@ -13,11 +13,13 @@ import {
 import { type ThemeData } from "@/components/CreatorProfile";
 import { getThemeByIdentifier } from "@/constants/themes";
 import { useDashboard } from "@/components/dashboard/DashboardContext";
+import { Toast } from "@/components/ui/Toast";
 
 export default function DashboardPage() {
   const { sidebarCollapsed, setSidebarCollapsed } = useDashboard();
 
   const [analyticsLoaded, setAnalyticsLoaded] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [igStats, setIgStats] = useState<IgStats>({
     followers: null,
     avgViews: null,
@@ -44,6 +46,7 @@ export default function DashboardPage() {
   const [tagline, setTagline] = useState("");
   const [location, setLocation] = useState("India");
   const [displayEmail, setDisplayEmail] = useState("");
+  const [servicesVisible, setServicesVisible] = useState(true);
   const [availableForCollabs, setAvailableForCollabs] = useState(true);
   const [nicheTags, setNicheTags] = useState<string[]>([]);
 
@@ -189,7 +192,12 @@ export default function DashboardPage() {
             : [],
           top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
         });
-        setProfilePic(draft.profile_pic ?? res.data?.profile_image_url ?? ig.profile_pic ?? null);
+        setProfilePic(
+          draft.profile_pic ??
+            res.data?.profile_image_url ??
+            ig.profile_pic ??
+            null,
+        );
         if (ig.username) setHandle(ig.username);
         if (res.data?.username) setAppUsername(res.data.username);
 
@@ -197,6 +205,8 @@ export default function DashboardPage() {
         setTagline(draft.tagline ?? ig.tagline ?? ig.biography ?? "");
         setLocation(draft.location ?? "India");
         if (draft.display_email) setDisplayEmail(draft.display_email);
+        if (typeof draft.services_visible === "boolean")
+          setServicesVisible(draft.services_visible);
         if (Array.isArray(draft.niche_tags) && draft.niche_tags.length)
           setNicheTags(draft.niche_tags);
         if (typeof draft.available_for_collabs === "boolean")
@@ -230,6 +240,7 @@ export default function DashboardPage() {
           tagline,
           location,
           display_email: displayEmail,
+          services_visible: servicesVisible,
           niche_tags: nicheTags,
           available_for_collabs: availableForCollabs,
           packages,
@@ -245,6 +256,7 @@ export default function DashboardPage() {
     tagline,
     location,
     displayEmail,
+    servicesVisible,
     nicheTags,
     availableForCollabs,
     packages,
@@ -288,7 +300,7 @@ export default function DashboardPage() {
         id: Date.now(),
         title: "",
         description: "",
-        price: "₹",
+        price: "",
         popular: false,
       },
     ]);
@@ -324,6 +336,7 @@ export default function DashboardPage() {
     tagline,
     location,
     display_email: displayEmail,
+    services_visible: servicesVisible,
     niche_tags: nicheTags,
     available_for_collabs: availableForCollabs,
     packages,
@@ -344,6 +357,13 @@ export default function DashboardPage() {
 
   return (
     <>
+      {copied && (
+        <Toast
+          message="Copied!"
+          type="success"
+          onClose={() => setCopied(false)}
+        />
+      )}
       <DashboardTopBar
         appUsername={appUsername}
         profilePic={profilePic}
@@ -351,25 +371,97 @@ export default function DashboardPage() {
         hasUnpublishedChanges={hasUnpublishedChanges}
         onPublish={handlePublish}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onLogout={async () => { await axios.post("/api/auth/logout").catch(() => {}); window.location.href = "/app/login"; }}
       />
 
       {/* Mobile draft strip */}
-      {hasUnpublishedChanges && (
-        <div className="lg:hidden bg-amber-50 border-b border-amber-100 px-4 py-2 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-          <span className="text-xs text-amber-700">
-            Draft ·{" "}
-            <a
-              href={`/${appUsername}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:underline"
+      {/* <div
+        className={` border border-gray-200  px-3 py-1 text-xs text-gray-400 ${hasUnpublishedChanges ? "bg-amber-50" : "bg-white"}`}
+      >
+        <span
+          className={`text-xs ${hasUnpublishedChanges ? " text-amber-700" : ""}`}
+        >
+          {hasUnpublishedChanges && "Draft ·"}{" "}
+          <a
+            href={`/${appUsername}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
+          >
+            kloot.io/{appUsername}
+          </a>
+        </span>
+      </div> */}
+      <div className="sm:hidden flex items-center gap-2 bg-gray-50 border border-gray-200 px-6 py-2 w-full ">
+        <span
+          className={`w-2 h-2 rounded-full shrink-0 ${hasUnpublishedChanges ? "bg-amber-400" : "bg-green-400"}`}
+        />
+        <a
+          href={`/${appUsername}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-gray-600 flex-1 hover:text-primary transition-colors truncate"
+        >
+          kloot.io/{appUsername}
+        </a>
+
+        <div className="flex flex-row gap-3 items-center">
+          {hasUnpublishedChanges ? (
+            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded shrink-0">
+              DRAFT
+            </span>
+          ) : (
+            <span className="text-[10px] font-bold text-green-700 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded shrink-0">
+              LIVE
+            </span>
+          )}
+          <button
+            onClick={() =>
+              navigator.clipboard
+                .writeText(`${process.env.NEXT_PUBLIC_APP_URL}/${appUsername}`)
+                .then(() => setCopied(true))
+            }
+            className="text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+            title="Copy link"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              kloot.io/{appUsername}
-            </a>
-          </span>
+              <rect x="9" y="9" width="13" height="13" rx="2" />
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+            </svg>
+          </button>
+          <a
+            href={`/${appUsername}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+            title="Open live"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+          </a>
         </div>
-      )}
+      </div>
 
       <div className="flex-1 overflow-hidden">
         <CustomizeTab
@@ -385,6 +477,8 @@ export default function DashboardPage() {
           setLocation={setLocation}
           displayEmail={displayEmail}
           setDisplayEmail={setDisplayEmail}
+          servicesVisible={servicesVisible}
+          setServicesVisible={setServicesVisible}
           availableForCollabs={availableForCollabs}
           setAvailableForCollabs={setAvailableForCollabs}
           nicheTags={nicheTags}
@@ -415,6 +509,9 @@ export default function DashboardPage() {
             setTheme(themeData);
           }}
           onProfilePicUploaded={() => setProfilePicChanged(true)}
+          publishing={publishing}
+          hasUnpublishedChanges={hasUnpublishedChanges}
+          onPublish={handlePublish}
         />
       </div>
     </>

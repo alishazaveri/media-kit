@@ -1,5 +1,7 @@
 "use client";
 
+import Button from "@/components/reusable/Button";
+
 export function PlanTab() {
   return (
     <div className="h-full overflow-y-auto px-4 lg:px-6 py-5 pb-24 lg:pb-5">
@@ -21,9 +23,9 @@ export function PlanTab() {
               </p>
               <p className="text-sm text-gray-400 mt-0.5">Flexible billing</p>
             </div>
-            <button className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">
+            <Button variant="primary" size="sm" fullWidth className="rounded-xl">
               Switch
-            </button>
+            </Button>
           </div>
 
           <div className="bg-purple-50 rounded-2xl border-2 border-purple-300 p-5 flex flex-col gap-3 relative">
@@ -37,12 +39,9 @@ export function PlanTab() {
               </p>
               <p className="text-sm text-gray-400 mt-0.5">Save 27%</p>
             </div>
-            <button
-              disabled
-              className="w-full bg-white text-gray-400 font-semibold py-2.5 rounded-xl text-sm cursor-default border border-gray-200"
-            >
+            <Button variant="disabled" size="sm" fullWidth className="rounded-xl">
               Active plan
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -59,9 +58,9 @@ export function PlanTab() {
                 <p className="text-xs text-gray-400">Expires 04/28</p>
               </div>
             </div>
-            <button className="border border-primary text-primary text-sm font-semibold px-4 py-1.5 rounded-xl hover:bg-primary/5 transition-colors">
+            <Button variant="outline" size="sm" className="rounded-xl">
               Update
-            </button>
+            </Button>
           </div>
         </div>
       </div>

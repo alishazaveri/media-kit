@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Package, Collaboration, IgStats } from "./types";
 import { type ThemeData } from "@/components/CreatorProfile";
 import { THEMES } from "@/constants/themes";
+import Button from "@/components/reusable/Button";
 
 const POST_GRADIENTS = [
   "from-orange-300 to-rose-300",
@@ -97,6 +98,8 @@ export interface CustomizeFormProps {
   setLocation: (v: string) => void;
   displayEmail: string;
   setDisplayEmail: (v: string) => void;
+  servicesVisible: boolean;
+  setServicesVisible: (v: boolean) => void;
   availableForCollabs: boolean;
   setAvailableForCollabs: (v: boolean) => void;
   nicheTags: string[];
@@ -131,6 +134,7 @@ export interface CustomizeFormProps {
   onPreviewClick: () => void;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
   onProfilePicUploaded?: (url: string) => void;
+  onSectionFocus?: (sectionId: string) => void;
 }
 
 export function CustomizeForm({
@@ -145,6 +149,8 @@ export function CustomizeForm({
   setLocation,
   displayEmail,
   setDisplayEmail,
+  servicesVisible,
+  setServicesVisible,
   nicheTags,
   setNicheTags,
   igPosts,
@@ -161,10 +167,17 @@ export function CustomizeForm({
   onPreviewClick,
   onThemeChange,
   onProfilePicUploaded,
+  onSectionFocus,
 }: CustomizeFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [pendingDeleteCollab, setPendingDeleteCollab] = useState<number | null>(
+    null,
+  );
+  const [pendingDeletePackage, setPendingDeletePackage] = useState<
+    number | null
+  >(null);
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -174,7 +187,10 @@ export function CustomizeForm({
     setUploading(true);
     setUploadError(null);
     try {
-      const res = await fetch("/api/upload/profile-image", { method: "POST", body: form });
+      const res = await fetch("/api/upload/profile-image", {
+        method: "POST",
+        body: form,
+      });
       const data = await res.json();
       if (!res.ok) {
         setUploadError(data.error ?? "Upload failed");
@@ -223,8 +239,6 @@ export function CustomizeForm({
     locations: true,
     engagement: true,
   });
-  const [servicesVisible, setServicesVisible] = useState(true);
-
   const [userFeaturedIds, setUserFeaturedIds] = useState<string[] | null>(null);
   const featuredIds: string[] =
     userFeaturedIds ??
@@ -310,31 +324,49 @@ export function CustomizeForm({
   return (
     <div className="w-full lg:w-[520px] shrink-0 overflow-y-auto px-4 lg:px-6 py-5 space-y-4 pb-24 lg:pb-8">
       {/* Mobile preview button */}
-      <button
+      <Button
+        variant="default"
+        size="md"
         onClick={onPreviewClick}
-        className="lg:hidden w-full bg-white border border-gray-200 text-gray-700 font-semibold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors text-sm"
+        fullWidth
+        icon={
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M1 8C1 8 3.5 3 8 3C12.5 3 15 8 15 8C15 8 12.5 13 8 13C3.5 13 1 8 1 8Z"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            />
+            <circle
+              cx="8"
+              cy="8"
+              r="2"
+              stroke="currentColor"
+              strokeWidth="1.4"
+            />
+          </svg>
+        }
+        className="lg:hidden rounded-xl"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M1 8C1 8 3.5 3 8 3C12.5 3 15 8 15 8C15 8 12.5 13 8 13C3.5 13 1 8 1 8Z"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-          />
-          <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.4" />
-        </svg>
         Preview my page
-      </button>
+      </Button>
 
       {/* ── Profile ── */}
-      <section className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+      <section
+        className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4"
+        onFocus={() => onSectionFocus?.("hero")}
+      >
         <p className="font-semibold text-gray-900">Profile</p>
 
         {/* Photo upload */}
         <div className="flex items-start gap-4">
           <div className="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden shrink-0">
             {profilePic ? (
-              <img src={profilePic} alt="" className="w-full h-full object-cover" />
+              <img
+                src={profilePic}
+                alt=""
+                className="w-full h-full object-cover"
+              />
             ) : null}
           </div>
           <div>
@@ -345,27 +377,41 @@ export function CustomizeForm({
               className="hidden"
               onChange={handleImageUpload}
             />
-            <button
+            <Button
               type="button"
+              variant="default"
+              size="sm"
               disabled={uploading}
+              loading={uploading}
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 border border-gray-200 bg-white text-sm font-medium text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+              icon={
+                !uploading && (
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                )
+              }
+              className="rounded-xl"
             >
-              {uploading ? (
-                <div className="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-              )}
               {uploading ? "Uploading…" : "Upload photo"}
-            </button>
+            </Button>
             {uploadError ? (
               <p className="text-xs text-red-500 mt-1.5">{uploadError}</p>
             ) : (
-              <p className="text-xs text-gray-400 mt-1.5">JPG, PNG or WebP, square works best.</p>
+              <p className="text-xs text-gray-400 mt-1.5">
+                JPG, PNG or WebP, square works best.
+              </p>
             )}
           </div>
         </div>
@@ -453,7 +499,10 @@ export function CustomizeForm({
       </section>
 
       {/* ── Theme ── */}
-      <section className="bg-white rounded-2xl border border-gray-100 p-5">
+      <section
+        className="bg-white rounded-2xl border border-gray-100 p-5"
+        onFocus={() => onSectionFocus?.("hero")}
+      >
         <p className="font-semibold text-gray-900 mb-4">Theme</p>
         <div className="grid grid-cols-4 gap-3">
           {THEMES.map((t) => (
@@ -495,7 +544,10 @@ export function CustomizeForm({
       </section>
 
       {/* ── Featured Instagram content ── */}
-      <section className="bg-white rounded-2xl border border-gray-100 p-5">
+      <section
+        className="bg-white rounded-2xl border border-gray-100 p-5"
+        onFocus={() => onSectionFocus?.("work")}
+      >
         <p className="font-semibold text-gray-900 mb-1">
           Featured Instagram content
         </p>
@@ -551,53 +603,58 @@ export function CustomizeForm({
         </div>
 
         {/* Open picker */}
-        <button
+        <Button
+          variant="default"
+          size="sm"
           onClick={() => {
             setDropdownOpen(true);
             fetchPosts();
           }}
-          className="w-full border border-gray-200 rounded-xl py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+          fullWidth
+          className="rounded-xl"
+          icon={
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect
+                x="1"
+                y="1"
+                width="5"
+                height="5"
+                rx="1.5"
+                stroke="currentColor"
+                strokeWidth="1.3"
+              />
+              <rect
+                x="8"
+                y="1"
+                width="5"
+                height="5"
+                rx="1.5"
+                stroke="currentColor"
+                strokeWidth="1.3"
+              />
+              <rect
+                x="1"
+                y="8"
+                width="5"
+                height="5"
+                rx="1.5"
+                stroke="currentColor"
+                strokeWidth="1.3"
+              />
+              <rect
+                x="8"
+                y="8"
+                width="5"
+                height="5"
+                rx="1.5"
+                stroke="currentColor"
+                strokeWidth="1.3"
+              />
+            </svg>
+          }
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <rect
-              x="1"
-              y="1"
-              width="5"
-              height="5"
-              rx="1.5"
-              stroke="currentColor"
-              strokeWidth="1.3"
-            />
-            <rect
-              x="8"
-              y="1"
-              width="5"
-              height="5"
-              rx="1.5"
-              stroke="currentColor"
-              strokeWidth="1.3"
-            />
-            <rect
-              x="1"
-              y="8"
-              width="5"
-              height="5"
-              rx="1.5"
-              stroke="currentColor"
-              strokeWidth="1.3"
-            />
-            <rect
-              x="8"
-              y="8"
-              width="5"
-              height="5"
-              rx="1.5"
-              stroke="currentColor"
-              strokeWidth="1.3"
-            />
-          </svg>
           {featuredIds.length > 0 ? "Change selection" : "Choose posts"}
-        </button>
+        </Button>
 
         {/* Post picker modal */}
         {dropdownOpen && (
@@ -723,7 +780,11 @@ export function CustomizeForm({
 
               {/* Modal footer */}
               <div className="px-5 py-4 border-t border-gray-100 shrink-0">
-                <button
+                <Button
+                  variant="primary"
+                  size="md"
+                  fullWidth
+                  className="rounded-2xl"
                   onClick={() => {
                     setDropdownOpen(false);
                     const selectedPosts = featuredIds
@@ -740,10 +801,9 @@ export function CustomizeForm({
                       body: JSON.stringify({ posts: selectedPosts }),
                     }).catch(() => {});
                   }}
-                  className="w-full bg-primary text-white font-semibold py-3 rounded-2xl text-sm"
                 >
                   Done — {featuredIds.length} selected
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -751,15 +811,92 @@ export function CustomizeForm({
       </section>
 
       {/* ── Brands you've worked with ── */}
-      <section className="bg-white rounded-2xl border border-gray-100 p-5">
+      <section
+        className="bg-white rounded-2xl border border-gray-100 p-5"
+        onFocus={() => onSectionFocus?.("partner")}
+      >
         <div className="flex items-center justify-between mb-4">
           <p className="font-semibold text-gray-900">
             Brands you&apos;ve worked with
           </p>
-          <button
-            onClick={addCollab}
-            className="flex items-center gap-1.5 text-sm text-gray-600 border border-gray-200 bg-white px-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors"
-          >
+        </div>
+        <div className="space-y-2">
+          {collabs.map((c) => (
+            <div key={c.id} className="flex items-center gap-2 min-h-[44px]">
+              {pendingDeleteCollab !== c.id ? (
+                <>
+                  <Input
+                    value={c.brand}
+                    onChange={(v) => updateCollab(c.id, "brand", v)}
+                    placeholder="Brand name"
+                  />
+
+                  <button
+                    onClick={() => setPendingDeleteCollab(c.id)}
+                    className="shrink-0 w-9 h-9 flex items-center justify-center text-gray-400 hover:text-red-500 focus:outline-none focus:ring-0 transition-colors cursor-pointer"
+                    type="button"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                      <path d="M9 6V4h6v2" />
+                    </svg>
+                  </button>
+                </>
+              ) : (
+                <div className="w-full flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5">
+                  <span className="flex-1 text-sm text-red-700 truncate">
+                    Remove &ldquo;{c.brand || "this brand"}&rdquo;?
+                  </span>
+
+                  <Button
+                    variant="danger"
+                    size="xs"
+                    onClick={() => {
+                      removeCollab(c.id);
+                      setPendingDeleteCollab(null);
+                    }}
+                    className="shrink-0 rounded-lg"
+                  >
+                    Remove
+                  </Button>
+
+                  <button
+                    onClick={() => setPendingDeleteCollab(null)}
+                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors cursor-pointer"
+                    type="button"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <path
+                        d="M1 1l8 8M9 1L1 9"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <Button
+          variant="default"
+          size="sm"
+          onClick={addCollab}
+          fullWidth
+          className="rounded-xl mt-3"
+          icon={
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path
                 d="M6 1v10M1 6h10"
@@ -768,40 +905,10 @@ export function CustomizeForm({
                 strokeLinecap="round"
               />
             </svg>
-            Add
-          </button>
-        </div>
-        <div className="space-y-2">
-          {collabs.map((c) => (
-            <div key={c.id} className="flex items-center gap-2">
-              <Input
-                value={c.brand}
-                onChange={(v) => updateCollab(c.id, "brand", v)}
-                placeholder="Brand name"
-              />
-              <button
-                onClick={() => removeCollab(c.id)}
-                className="shrink-0 w-9 h-9 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6l-1 14H6L5 6" />
-                  <path d="M10 11v6M14 11v6" />
-                  <path d="M9 6V4h6v2" />
-                </svg>
-              </button>
-            </div>
-          ))}
-        </div>
+          }
+        >
+          Add service
+        </Button>
       </section>
 
       {/* ── Analytics on your page ── */}
@@ -832,8 +939,11 @@ export function CustomizeForm({
       </section> */}
 
       {/* ── Services & rates ── */}
-      <section className="bg-white rounded-2xl border border-gray-100 p-5">
-        <div className="flex items-center justify-between mb-1">
+      <section
+        className="bg-white rounded-2xl border border-gray-100 p-5"
+        onFocus={() => onSectionFocus?.("partner")}
+      >
+        <div className="flex items-center justify-between mb-4">
           <p className="font-semibold text-gray-900">Services &amp; rates</p>
           <Toggle checked={servicesVisible} onChange={setServicesVisible} />
         </div>
@@ -841,71 +951,124 @@ export function CustomizeForm({
           Toggle visibility on your page.
         </p> */}
         <div className="space-y-3">
-          {packages.map((pkg) => (
-            <div
-              key={pkg.id}
-              className="border border-gray-100 rounded-xl p-3 space-y-2"
-            >
-              <div className="flex items-center gap-2">
-                <Input
-                  value={pkg.title}
-                  onChange={(v) => updatePackage(pkg.id, "title", v)}
-                  placeholder="Service name"
-                  className="flex-1"
-                />
+          {packages.map((pkg) => {
+            const isPending = pendingDeletePackage === pkg.id;
+            return (
+              <div
+                key={pkg.id}
+                className={`rounded-xl p-3 space-y-2 border transition-colors ${isPending ? "border-red-200 bg-red-50" : "border-gray-100"}`}
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <div className="flex md:flex-row flex-col md:items-center  gap-2 w-full">
+                    <Input
+                      value={pkg.title}
+                      onChange={(v) => updatePackage(pkg.id, "title", v)}
+                      placeholder="Service name"
+                      className="flex-1"
+                    />
+                    <Input
+                      value={pkg.price}
+                      onChange={(v) => updatePackage(pkg.id, "price", v)}
+                      placeholder="₹0"
+                      className="!w-28 md:block hidden"
+                    />
+                  </div>
+                  {isPending ? (
+                    <div className="flex md:items-center gap-1.5 shrink-0">
+                      <Button
+                        variant="danger"
+                        size="xs"
+                        onClick={() => {
+                          removePackage(pkg.id);
+                          setPendingDeletePackage(null);
+                        }}
+                        className="rounded-lg"
+                      >
+                        Remove
+                      </Button>
+                      <button
+                        onPointerDown={(e) => {
+                          e.preventDefault();
+                          setPendingDeletePackage(null);
+                        }}
+                        className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors cursor-pointer"
+                      >
+                        <svg
+                          width="10"
+                          height="10"
+                          viewBox="0 0 10 10"
+                          fill="none"
+                        >
+                          <path
+                            d="M1 1l8 8M9 1L1 9"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setPendingDeletePackage(pkg.id)}
+                      className="shrink-0 w-9 h-9 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors outline-none focus:outline-none cursor-pointer"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14H6L5 6" />
+                        <path d="M10 11v6M14 11v6" />
+                        <path d="M9 6V4h6v2" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
                 <Input
                   value={pkg.price}
                   onChange={(v) => updatePackage(pkg.id, "price", v)}
                   placeholder="₹0"
-                  className="!w-28"
+                  className="md:hidden"
                 />
-                <button
-                  onClick={() => removePackage(pkg.id)}
-                  className="shrink-0 w-9 h-9 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6l-1 14H6L5 6" />
-                    <path d="M10 11v6M14 11v6" />
-                    <path d="M9 6V4h6v2" />
-                  </svg>
-                </button>
+                <textarea
+                  value={pkg.description}
+                  onChange={(e) =>
+                    updatePackage(pkg.id, "description", e.target.value)
+                  }
+                  placeholder="Short description"
+                  rows={2}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 resize-none bg-white"
+                />
               </div>
-              <textarea
-                value={pkg.description}
-                onChange={(e) =>
-                  updatePackage(pkg.id, "description", e.target.value)
-                }
-                placeholder="Short description"
-                rows={2}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm placeholder:text-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 resize-none"
-              />
-            </div>
-          ))}
+            );
+          })}
         </div>
-        <button
+        <Button
+          variant="default"
+          size="sm"
           onClick={addPackage}
-          className="flex items-center gap-2 text-sm text-gray-600 mt-3 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors w-full"
+          fullWidth
+          className="rounded-xl mt-3"
+          icon={
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M6 1v10M1 6h10"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          }
         >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path
-              d="M6 1v10M1 6h10"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
           Add service
-        </button>
+        </Button>
       </section>
     </div>
   );

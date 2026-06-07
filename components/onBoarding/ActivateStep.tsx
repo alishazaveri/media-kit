@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { OnboardingNav } from "./OnboardingNav";
+import Button from "@/components/reusable/Button";
 
 const FEATURES = [
   "Your unique kloot.io/username link",
@@ -101,14 +102,32 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
     <div className="min-h-[100dvh] bg-[#FAF7F2] flex flex-col lg:h-[100dvh] lg:overflow-hidden">
       <OnboardingNav currentStep={4} />
 
-      {/* Mobile preview modal */}
-      {showPreview && (
-        <div className="fixed inset-0 z-50 bg-[#FAF7F2] flex flex-col">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0">
-            <p className="text-sm font-semibold text-gray-700">Live preview</p>
+      {/* Mobile bottom drawer preview */}
+      <div
+        className={`fixed inset-0 z-50 transition-opacity duration-300 ${showPreview ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+      >
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/40"
+          onClick={() => setShowPreview(false)}
+        />
+
+        {/* Drawer */}
+        <div
+          className={`absolute inset-x-0 bottom-0 h-[85%] bg-white rounded-t-3xl flex flex-col shadow-2xl transition-transform duration-300 ease-out ${showPreview ? "translate-y-0" : "translate-y-full"}`}
+        >
+          {/* Drag handle */}
+          <div className="shrink-0 flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1 rounded-full bg-gray-200" />
+          </div>
+
+          <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-100 shrink-0">
+            <p className="text-xs font-semibold text-gray-700 tracking-widest uppercase">
+              Live Preview
+            </p>
             <button
               onClick={() => setShowPreview(false)}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500"
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path
@@ -120,6 +139,7 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
               </svg>
             </button>
           </div>
+
           <iframe
             ref={mobileIframeRef}
             src="/preview"
@@ -127,7 +147,7 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
             onLoad={() => sendToIframe(mobileIframeRef)}
           />
         </div>
-      )}
+      </div>
 
       <div className="flex flex-col items-center gap-8 px-6 py-8 max-w-6xl mx-auto w-full flex-1 min-h-0">
         {/* Left — pricing */}
@@ -179,20 +199,26 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
             </ul>
 
             {/* Mobile: preview button */}
-            <button
+            <Button
+              variant="default"
+              size="md"
               onClick={() => setShowPreview(true)}
-              className=" w-full border border-gray-200 text-gray-600 font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm"
+              fullWidth
+              className="rounded-xl"
             >
               Preview my page
-            </button>
+            </Button>
 
             <div>
-              <button
+              <Button
+                variant="primary"
+                size="lg"
                 onClick={onNext}
-                className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-4 rounded-xl text-base transition-colors"
+                fullWidth
+                className="rounded-xl"
               >
                 Pay $9 &amp; activate
-              </button>
+              </Button>
               <p className="text-center text-xs text-gray-400 mt-3">
                 Secure checkout. Money-back guarantee.
               </p>
