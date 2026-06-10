@@ -1,11 +1,13 @@
 import { put, del } from "@vercel/blob";
 import { NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
+import heicConvert from "heic-convert";
 import { requireSession } from "@/lib/session";
 import { updateUser } from "@/db/user.db";
 import { getUserData } from "@/db/user_data.db";
 
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_DIMENSION = 1200; // px
 
 function isVercelBlobUrl(url: unknown): url is string {
   return typeof url === "string" && url.includes(".public.blob.vercel-storage.com");
@@ -26,11 +28,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No image provided" }, { status: 400 });
   }
 
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return NextResponse.json(
-      { error: "Invalid file type. Allowed: jpeg, png, webp, gif" },
-      { status: 400 }
-    );
+  if (file.type && !file.type.startsWith("image/")) {
+    return NextResponse.json({ error: "File must be an image" }, { status: 400 });
   }
 
   if (file.size > MAX_SIZE_BYTES) {
@@ -40,8 +39,35 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const ext = file.type.split("/")[1];
-  const filename = `profile-images/${session.userId}-${Date.now()}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const name = (file.name ?? "").toLowerCase();
+  const isHeic =
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    name.endsWith(".heic") ||
+    name.endsWith(".heif");
+
+  // heic-convert handles HEIC/HEIF since sharp doesn't bundle libheif.
+  // For all other formats sharp handles conversion + EXIF rotation.
+  const inputBuffer = isHeic
+    ? Buffer.from(
+        await heicConvert({
+          buffer: buffer as unknown as ArrayBuffer,
+          format: "JPEG",
+          quality: 1,
+        })
+      )
+    : buffer;
+
+  const jpeg = await sharp(inputBuffer)
+    .rotate()
+    .flatten({ background: { r: 255, g: 255, b: 255 } })
+    .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 85, mozjpeg: true })
+    .toBuffer();
+
+  const filename = `profile-images/${session.userId}-${Date.now()}.jpg`;
 
   // Read existing draft/published URLs before uploading
   const userData = await getUserData(session.userId, "profile");
@@ -49,7 +75,10 @@ export async function POST(request: NextRequest) {
   const oldDraftPic = record?.draft_data?.profile_pic;
   const publishedPic = record?.published_data?.profile_pic;
 
-  const blob = await put(filename, file, { access: "public" });
+  const blob = await put(filename, jpeg, {
+    access: "public",
+    contentType: "image/jpeg",
+  });
 
   await updateUser(session.userId, { profile_image_url: blob.url });
 

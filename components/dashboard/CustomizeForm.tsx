@@ -373,7 +373,7 @@ export function CustomizeForm({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
+              accept="image/*"
               className="hidden"
               onChange={handleImageUpload}
             />
