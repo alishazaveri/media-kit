@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
@@ -8,9 +8,11 @@ import { DashboardContext } from "@/components/dashboard/DashboardContext";
 import { DashboardSidebar, NAV_ITEMS } from "@/components/dashboard/DashboardSidebar";
 
 export default function ShellLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    () => typeof window !== "undefined" && window.innerWidth <= 1100,
-  );
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (window.innerWidth <= 1100) setSidebarCollapsed(true);
+  }, []);
   const pathname = usePathname();
 
   const handleLogout = async () => {
