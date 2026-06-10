@@ -4,7 +4,7 @@ import sharp from "sharp";
 import heicConvert from "heic-convert";
 import { requireSession } from "@/lib/session";
 import { updateUser } from "@/db/user.db";
-import { getUserData } from "@/db/user_data.db";
+import { getUserData, mergeDraftData } from "@/db/user_data.db";
 
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 const MAX_DIMENSION = 1200; // px
@@ -80,12 +80,36 @@ export async function POST(request: NextRequest) {
     contentType: "image/jpeg",
   });
 
-  await updateUser(session.userId, { profile_image_url: blob.url });
-
   // Delete the previous draft blob only if it wasn't the published image
   if (isVercelBlobUrl(oldDraftPic) && oldDraftPic !== publishedPic) {
     del(oldDraftPic).catch(() => {});
   }
 
   return NextResponse.json({ url: blob.url });
+}
+
+export async function DELETE() {
+  let session;
+  try {
+    session = await requireSession();
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userData = await getUserData(session.userId, "profile");
+  const record = userData as { draft_data?: Record<string, unknown>; published_data?: Record<string, unknown> } | null;
+  const draftPic = record?.draft_data?.profile_pic;
+  const publishedPic = record?.published_data?.profile_pic;
+
+  // Delete the draft blob from storage unless it's also the published image
+  if (isVercelBlobUrl(draftPic) && draftPic !== publishedPic) {
+    del(draftPic).catch(() => {});
+  }
+
+  await Promise.all([
+    updateUser(session.userId, { profile_image_url: "" }),
+    mergeDraftData(session.userId, "profile", { profile_pic: null }),
+  ]);
+
+  return NextResponse.json({ ok: true });
 }

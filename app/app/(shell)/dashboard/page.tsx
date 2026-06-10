@@ -192,11 +192,12 @@ export default function DashboardPage() {
             : [],
           top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
         });
+        // If draft.profile_pic is explicitly null it means the user removed it — don't fall back.
+        // Only fall back to profile_image_url / ig pic when the draft has never set a pic.
         setProfilePic(
-          draft.profile_pic ??
-            res.data?.profile_image_url ??
-            ig.profile_pic ??
-            null,
+          "profile_pic" in draft
+            ? (draft.profile_pic ?? null)
+            : (res.data?.profile_image_url ?? ig.profile_pic ?? null),
         );
         if (ig.username) setHandle(ig.username);
         if (res.data?.username) setAppUsername(res.data.username);
@@ -220,7 +221,7 @@ export default function DashboardPage() {
         }
         const published: Record<string, unknown> = res.data?.published ?? {};
         setPublishedData({ display_email: "", services_visible: true, ...published });
-        if (draft.profile_pic && draft.profile_pic !== published.profile_pic) {
+        if ((draft.profile_pic ?? null) !== (published.profile_pic ?? null)) {
           setProfilePicChanged(true);
         }
       })

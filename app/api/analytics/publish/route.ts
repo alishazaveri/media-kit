@@ -2,6 +2,7 @@ import { del } from "@vercel/blob";
 import { getSession } from "@/lib/session";
 import { publishUserData } from "@/services/user_data.service";
 import { getUserData } from "@/db/user_data.db";
+import { updateUser } from "@/db/user.db";
 import { NextResponse } from "next/server";
 
 function isVercelBlobUrl(url: unknown): url is string {
@@ -21,6 +22,9 @@ export async function POST() {
     const newDraftPic = record?.draft_data?.profile_pic;
 
     const published = await publishUserData(session.userId, "profile");
+
+    // Sync profile_image_url on the User model to match what was just published
+    await updateUser(session.userId, { profile_image_url: (newDraftPic as string) ?? "" });
 
     // Delete old published blob now that it's been replaced
     if (isVercelBlobUrl(oldPublishedPic) && oldPublishedPic !== newDraftPic) {
