@@ -84,7 +84,7 @@ function AccountPageInner() {
           igStats={igStats}
           onLogout={handleLogout}
           onConnectInstagram={async () => {
-            const res = await axios.get("/api/auth/instagram/connect?returnTo=/account");
+            const res = await axios.get("/api/auth/instagram/connect?returnTo=/app/account");
             window.location.href = res.data.url;
           }}
           onDisconnectInstagram={async () => {
