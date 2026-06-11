@@ -34,6 +34,7 @@ export default function DashboardPage() {
   });
   const [igPosts] = useState<any[]>([]);
   const [featuredPosts, setFeaturedPosts] = useState<any[]>([]);
+  const [campaignPosts, setCampaignPosts] = useState<any[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [publishedData, setPublishedData] = useState<Record<string, any>>({});
   const [profilePicChanged, setProfilePicChanged] = useState(false);
@@ -219,8 +220,11 @@ export default function DashboardPage() {
         if (Array.isArray(draft.posts) && draft.posts.length) {
           setFeaturedPosts(draft.posts);
         }
+        if (Array.isArray(draft.campaign_posts) && draft.campaign_posts.length) {
+          setCampaignPosts(draft.campaign_posts);
+        }
         const published: Record<string, unknown> = res.data?.published ?? {};
-        setPublishedData({ display_email: "", services_visible: true, ...published });
+        setPublishedData({ display_email: "", services_visible: true, campaign_posts: [], ...published });
         if ((draft.profile_pic ?? null) !== (published.profile_pic ?? null)) {
           setProfilePicChanged(true);
         }
@@ -284,6 +288,7 @@ export default function DashboardPage() {
         packages,
         collabs,
         posts: featuredPosts,
+        campaign_posts: campaignPosts,
         profile_pic: profilePic,
       });
       setProfilePicChanged(false);
@@ -344,6 +349,7 @@ export default function DashboardPage() {
     packages,
     collabs,
     posts: featuredPosts,
+    campaign_posts: campaignPosts,
   };
   const hasUnpublishedTheme = draftThemeIdentifier !== publishedThemeIdentifier;
 
@@ -505,6 +511,8 @@ export default function DashboardPage() {
           updateCollab={updateCollab}
           featuredPosts={featuredPosts}
           onFeaturedPostsChange={setFeaturedPosts}
+          campaignPosts={campaignPosts}
+          onCampaignPostsChange={setCampaignPosts}
           theme={theme}
           onThemeChange={(identifier, themeData) => {
             setDraftThemeIdentifier(identifier);

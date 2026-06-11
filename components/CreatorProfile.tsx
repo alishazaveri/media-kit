@@ -32,6 +32,7 @@ export interface CreatorProfileProps {
   stats?: Stats;
   insights?: AudienceInsights;
   posts?: PostItem[];
+  campaignPosts?: PostItem[];
   availableForCollabs?: boolean;
   nicheTags?: string[];
   packages?: Package[];
@@ -54,6 +55,7 @@ export function CreatorProfile({
   stats = {},
   insights = {},
   posts,
+  campaignPosts,
   availableForCollabs = true,
   nicheTags = ["Lifestyle", "Wellness", "Beauty", "Travel"],
   packages = [
@@ -211,6 +213,7 @@ export function CreatorProfile({
       /> */}
       <WorkSection
         posts={posts}
+        campaignPosts={campaignPosts}
         handle={handle}
         primaryColor={primaryColor}
         accentColor={accentColor}

@@ -98,6 +98,11 @@ export default async function PublishedProfilePage(props: {
               ? ig.posts.slice(0, 4)
               : []
         }
+        campaignPosts={
+          Array.isArray(published.campaign_posts) && published.campaign_posts.length > 0
+            ? published.campaign_posts
+            : undefined
+        }
         availableForCollabs={published.available_for_collabs ?? true}
         nicheTags={
           Array.isArray(published.niche_tags) ? published.niche_tags : []

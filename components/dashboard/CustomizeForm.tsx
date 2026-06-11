@@ -131,6 +131,8 @@ export interface CustomizeFormProps {
   ) => void;
   featuredPosts: any[];
   onFeaturedPostsChange: (posts: any[]) => void;
+  campaignPosts: any[];
+  onCampaignPostsChange: (posts: any[]) => void;
   onPreviewClick: () => void;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
   onProfilePicUploaded?: (url: string | null) => void;
@@ -156,6 +158,8 @@ export function CustomizeForm({
   igPosts,
   featuredPosts,
   onFeaturedPostsChange,
+  campaignPosts,
+  onCampaignPostsChange,
   packages,
   addPackage,
   removePackage,
@@ -267,7 +271,7 @@ export function CustomizeForm({
         ? igPosts.slice(0, 4).map((p: { id: string }) => p.id)
         : []);
 
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [openModal, setOpenModal] = useState<null | "featured" | "campaign">(null);
   const [modalPosts, setModalPosts] = useState<any[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -306,6 +310,13 @@ export function CustomizeForm({
     }
   }
 
+  const [userCampaignIds, setUserCampaignIds] = useState<string[] | null>(null);
+  const campaignIds: string[] =
+    userCampaignIds ??
+    ((campaignPosts?.length ?? 0) > 0
+      ? campaignPosts.map((p: { id: string }) => p.id)
+      : []);
+
   function togglePost(id: string) {
     const next = featuredIds.includes(id)
       ? featuredIds.filter((x) => x !== id)
@@ -321,6 +332,23 @@ export function CustomizeForm({
       )
       .filter(Boolean);
     onFeaturedPostsChange(posts);
+  }
+
+  function toggleCampaignPost(id: string) {
+    const next = campaignIds.includes(id)
+      ? campaignIds.filter((x) => x !== id)
+      : campaignIds.length >= 4
+        ? campaignIds
+        : [...campaignIds, id];
+    setUserCampaignIds(next);
+    const posts = next
+      .map(
+        (nid) =>
+          modalPosts.find((p: any) => p.id === nid) ??
+          campaignPosts.find((p: any) => p.id === nid),
+      )
+      .filter(Boolean);
+    onCampaignPostsChange(posts);
   }
 
   function syncNicheTags() {
@@ -644,209 +672,212 @@ export function CustomizeForm({
         <Button
           variant="default"
           size="sm"
-          onClick={() => {
-            setDropdownOpen(true);
-            fetchPosts();
-          }}
+          onClick={() => { setOpenModal("featured"); fetchPosts(); }}
           fullWidth
           className="rounded-xl"
           icon={
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect
-                x="1"
-                y="1"
-                width="5"
-                height="5"
-                rx="1.5"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
-              <rect
-                x="8"
-                y="1"
-                width="5"
-                height="5"
-                rx="1.5"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
-              <rect
-                x="1"
-                y="8"
-                width="5"
-                height="5"
-                rx="1.5"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
-              <rect
-                x="8"
-                y="8"
-                width="5"
-                height="5"
-                rx="1.5"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
+              <rect x="1" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+              <rect x="8" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+              <rect x="1" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+              <rect x="8" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
             </svg>
           }
         >
           {featuredIds.length > 0 ? "Change selection" : "Choose posts"}
         </Button>
+      </section>
 
-        {/* Post picker modal */}
-        {dropdownOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/40 backdrop-blur-sm"
-            onClick={() => setDropdownOpen(false)}
-          >
-            <div
-              className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-sm max-h-[85vh] flex flex-col shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
-                <div>
-                  <p className="font-semibold text-gray-900">Choose posts</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {featuredIds.length} of 4 selected
-                  </p>
-                </div>
-                <button
-                  onClick={() => setDropdownOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
-                >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path
-                      d="M1 1l10 10M11 1L1 11"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </button>
+      {/* ── Campaign showcase ── */}
+      <section
+        className="bg-white rounded-2xl border border-gray-100 p-5"
+        onFocus={() => onSectionFocus?.("work")}
+      >
+        <p className="font-semibold text-gray-900 mb-1">Previous campaigns</p>
+        <p className="text-xs text-gray-400 mb-3">
+          Up to 4 posts from your brand campaigns.
+        </p>
+
+        <div className="grid grid-cols-4 gap-2 mb-3">
+          {Array.from({ length: 4 }, (_, i) => {
+            const post = campaignPosts[i] ?? null;
+            const thumb = post
+              ? (post.thumbnail_url ??
+                (post.media_type === "IMAGE" || post.media_type === "CAROUSEL_ALBUM"
+                  ? post.media_url
+                  : null))
+              : null;
+            return post ? (
+              <div key={i} className="relative rounded-2xl overflow-hidden aspect-square ring-2 ring-primary ring-offset-1">
+                {thumb ? (
+                  <img src={thumb} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`} />
+                )}
+                <span className="absolute top-1.5 right-1.5 bg-gray-900/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md">
+                  {mediaTypeLabel(post.media_type)}
+                </span>
+                <span className="absolute bottom-1 left-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white">
+                  {i + 1}
+                </span>
               </div>
+            ) : (
+              <div key={i} className="rounded-2xl aspect-square bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center">
+                <span className="text-gray-300 text-sm font-medium">{i + 1}</span>
+              </div>
+            );
+          })}
+        </div>
 
-              {/* Max reached banner */}
-              {featuredIds.length >= 4 && (
-                <div className="mx-5 mt-4 shrink-0 bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 text-xs text-center text-primary font-medium">
-                  4 posts selected — deselect one to swap
+        <Button
+          variant="default"
+          size="sm"
+          onClick={() => { setOpenModal("campaign"); fetchPosts(); }}
+          fullWidth
+          className="rounded-xl"
+          icon={
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="1" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+              <rect x="8" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+              <rect x="1" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+              <rect x="8" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+            </svg>
+          }
+        >
+          {campaignIds.length > 0 ? "Change selection" : "Choose posts"}
+        </Button>
+      </section>
+
+      {/* Shared post picker modal */}
+      {openModal !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setOpenModal(null)}
+        >
+          <div
+            className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-sm max-h-[85vh] flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
+              <div>
+                <p className="font-semibold text-gray-900">
+                  {openModal === "campaign" ? "Campaign posts" : "Choose posts"}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {(openModal === "campaign" ? campaignIds : featuredIds).length} of 4 selected
+                </p>
+              </div>
+              <button
+                onClick={() => setOpenModal(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+
+            {(openModal === "campaign" ? campaignIds : featuredIds).length >= 4 && (
+              <div className="mx-5 mt-4 shrink-0 bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 text-xs text-center text-primary font-medium">
+                4 posts selected — deselect one to swap
+              </div>
+            )}
+
+            <div ref={scrollContainerRef} className="overflow-y-auto flex-1 p-4" onScroll={handleScroll}>
+              <div className="grid grid-cols-3 gap-2">
+                {modalLoading
+                  ? Array.from({ length: 9 }, (_, i) => (
+                      <div key={i} className="rounded-2xl aspect-square bg-gray-100 animate-pulse" />
+                    ))
+                  : modalPosts.map((post, i) => {
+                      const activeIds = openModal === "campaign" ? campaignIds : featuredIds;
+                      const thumb =
+                        post.thumbnail_url ??
+                        (post.media_type === "IMAGE" || post.media_type === "CAROUSEL_ALBUM"
+                          ? post.media_url
+                          : null);
+                      const selected = activeIds.includes(post.id);
+                      const dimmed = activeIds.length >= 4 && !selected;
+                      return (
+                        <button
+                          key={post.id}
+                          onClick={() =>
+                            openModal === "campaign"
+                              ? toggleCampaignPost(post.id)
+                              : togglePost(post.id)
+                          }
+                          className={`relative rounded-2xl overflow-hidden aspect-square transition-all
+                            ${selected ? "ring-2 ring-primary ring-offset-1" : ""}
+                            ${dimmed ? "cursor-not-allowed" : "cursor-pointer"}
+                          `}
+                        >
+                          {thumb ? (
+                            <img src={thumb} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`} />
+                          )}
+                          <span className="absolute top-1.5 right-1.5 bg-gray-900/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md">
+                            {mediaTypeLabel(post.media_type)}
+                          </span>
+                          {selected && (
+                            <span className="absolute bottom-1.5 left-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                                <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+              </div>
+              {!modalLoading && modalPosts.length === 0 && (
+                <p className="text-center text-sm text-gray-400 py-8">No posts found</p>
+              )}
+              {modalLoadingMore && (
+                <div className="flex justify-center py-3">
+                  <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
+            </div>
 
-              {/* Scrollable grid */}
-              <div
-                ref={scrollContainerRef}
-                className="overflow-y-auto flex-1 p-4"
-                onScroll={handleScroll}
-              >
-                <div className="grid grid-cols-3 gap-2">
-                  {modalLoading
-                    ? Array.from({ length: 9 }, (_, i) => (
-                        <div
-                          key={i}
-                          className="rounded-2xl aspect-square bg-gray-100 animate-pulse"
-                        />
-                      ))
-                    : modalPosts.length === 0
-                      ? null
-                      : modalPosts.map((post: any, i: number) => {
-                          const thumb =
-                            post.thumbnail_url ??
-                            (post.media_type === "IMAGE" ||
-                            post.media_type === "CAROUSEL_ALBUM"
-                              ? post.media_url
-                              : null);
-                          const selected = featuredIds.includes(post.id);
-                          const dimmed = featuredIds.length >= 4 && !selected;
-                          return (
-                            <button
-                              key={post.id}
-                              onClick={() => togglePost(post.id)}
-                              className={`relative rounded-2xl overflow-hidden aspect-square transition-all
-                              ${selected ? "ring-2 ring-primary ring-offset-1" : ""}
-                              ${dimmed ? "cursor-not-allowed" : "cursor-pointer"}
-                            `}
-                            >
-                              {thumb ? (
-                                <img
-                                  src={thumb}
-                                  alt=""
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div
-                                  className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`}
-                                />
-                              )}
-                              <span className="absolute top-1.5 right-1.5 bg-gray-900/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md">
-                                {mediaTypeLabel(post.media_type)}
-                              </span>
-                              {selected && (
-                                <span className="absolute bottom-1.5 left-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                                  <svg
-                                    width="10"
-                                    height="10"
-                                    viewBox="0 0 10 10"
-                                    fill="none"
-                                  >
-                                    <path
-                                      d="M2 5l2.5 2.5L8 3"
-                                      stroke="white"
-                                      strokeWidth="1.5"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                  </svg>
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
-                </div>
-                {!modalLoading && modalPosts.length === 0 && (
-                  <p className="text-center text-sm text-gray-400 py-8">
-                    No posts found
-                  </p>
-                )}
-                {modalLoadingMore && (
-                  <div className="flex justify-center py-3">
-                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  </div>
-                )}
-              </div>
-
-              {/* Modal footer */}
-              <div className="px-5 py-4 border-t border-gray-100 shrink-0">
-                <Button
-                  variant="primary"
-                  size="md"
-                  fullWidth
-                  className="rounded-2xl"
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    const selectedPosts = featuredIds
-                      .map(
-                        (id) =>
-                          modalPosts.find((p: any) => p.id === id) ??
-                          featuredPosts.find((p: any) => p.id === id),
-                      )
+            <div className="px-5 py-4 border-t border-gray-100 shrink-0">
+              <Button
+                variant="primary"
+                size="md"
+                fullWidth
+                className="rounded-2xl"
+                onClick={() => {
+                  if (openModal === "campaign") {
+                    setOpenModal(null);
+                    const selected = campaignIds
+                      .map((id) => modalPosts.find((p) => p.id === id) ?? campaignPosts.find((p) => p.id === id))
                       .filter(Boolean);
-                    onFeaturedPostsChange(selectedPosts);
+                    onCampaignPostsChange(selected);
                     fetch("/api/analytics/draft", {
                       method: "PUT",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ posts: selectedPosts }),
+                      body: JSON.stringify({ campaign_posts: selected }),
                     }).catch(() => {});
-                  }}
-                >
-                  Done — {featuredIds.length} selected
-                </Button>
-              </div>
+                  } else {
+                    setOpenModal(null);
+                    const selected = featuredIds
+                      .map((id) => modalPosts.find((p) => p.id === id) ?? featuredPosts.find((p) => p.id === id))
+                      .filter(Boolean);
+                    onFeaturedPostsChange(selected);
+                    fetch("/api/analytics/draft", {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ posts: selected }),
+                    }).catch(() => {});
+                  }
+                }}
+              >
+                Done — {(openModal === "campaign" ? campaignIds : featuredIds).length} selected
+              </Button>
             </div>
           </div>
-        )}
-      </section>
+        </div>
+      )}
 
       {/* ── Brands you've worked with ── */}
       <section

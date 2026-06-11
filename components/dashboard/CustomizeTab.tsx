@@ -54,6 +54,8 @@ interface Props {
   ) => void;
   featuredPosts: any[];
   onFeaturedPostsChange: (posts: any[]) => void;
+  campaignPosts: any[];
+  onCampaignPostsChange: (posts: any[]) => void;
   theme?: ThemeData;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
   onProfilePicUploaded?: (url: string) => void;
@@ -103,6 +105,8 @@ export function CustomizeTab(props: Props) {
     updateCollab,
     featuredPosts,
     onFeaturedPostsChange,
+    campaignPosts,
+    onCampaignPostsChange,
     theme,
     onThemeChange,
     publishing = false,
@@ -124,6 +128,7 @@ export function CustomizeTab(props: Props) {
     stats: igStats,
     insights: igInsights,
     posts: (featuredPosts?.length ?? 0) > 0 ? featuredPosts : igPosts,
+    campaignPosts: (campaignPosts?.length ?? 0) > 0 ? campaignPosts : undefined,
     availableForCollabs,
     nicheTags,
     packages,
@@ -175,6 +180,7 @@ export function CustomizeTab(props: Props) {
     turnaround,
     servicesVisible,
     featuredPosts,
+    campaignPosts,
     theme,
   ]);
 
@@ -215,6 +221,8 @@ export function CustomizeTab(props: Props) {
     updateCollab,
     featuredPosts,
     onFeaturedPostsChange,
+    campaignPosts,
+    onCampaignPostsChange,
     onPreviewClick: () => setShowPreview(true),
     onThemeChange,
     onProfilePicUploaded: props.onProfilePicUploaded,
