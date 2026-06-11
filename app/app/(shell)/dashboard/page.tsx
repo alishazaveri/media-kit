@@ -41,6 +41,7 @@ export default function DashboardPage() {
 
   /* Profile state */
   const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [publishedProfilePic, setPublishedProfilePic] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [handle, setHandle] = useState("");
   const [appUsername, setAppUsername] = useState("");
@@ -225,6 +226,9 @@ export default function DashboardPage() {
         }
         const published: Record<string, unknown> = res.data?.published ?? {};
         setPublishedData({ display_email: "", services_visible: true, campaign_posts: [], ...published });
+        setPublishedProfilePic(
+          (published.profile_pic as string | null) ?? res.data?.profile_image_url ?? ig.profile_pic ?? null,
+        );
         if ((draft.profile_pic ?? null) !== (published.profile_pic ?? null)) {
           setProfilePicChanged(true);
         }
@@ -291,6 +295,7 @@ export default function DashboardPage() {
         campaign_posts: campaignPosts,
         profile_pic: profilePic,
       });
+      setPublishedProfilePic(profilePic);
       setProfilePicChanged(false);
       setPublishedThemeIdentifier(draftThemeIdentifier);
     } catch {
@@ -374,7 +379,7 @@ export default function DashboardPage() {
       )}
       <DashboardTopBar
         appUsername={appUsername}
-        profilePic={profilePic}
+        profilePic={publishedProfilePic}
         publishing={publishing}
         hasUnpublishedChanges={hasUnpublishedChanges}
         onPublish={handlePublish}

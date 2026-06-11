@@ -49,7 +49,7 @@ function AccountPageInner() {
         avgReach: ig.reach_30d || null,
         growth: ig.follower_gain_30d || null,
       });
-      if (ig.profile_pic) setProfilePic(ig.profile_pic);
+      setProfilePic(res.data?.profile_image_url ?? ig.profile_pic ?? null);
       if (ig.username) setHandle(ig.username);
       if (res.data?.username) setAppUsername(res.data.username);
       if (res.data?.email) setEmail(res.data.email);
