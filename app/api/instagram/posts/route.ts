@@ -7,6 +7,45 @@ const GRAPH = "https://graph.instagram.com/v21.0";
 const FIELDS =
   "id,caption,media_type,media_product_type,thumbnail_url,media_url,permalink,timestamp,like_count,comments_count";
 
+// Valid metrics per Instagram Graph API error response
+const REEL_METRICS = "views,reach,saved,shares,total_interactions";
+const FEED_METRICS = "impressions,reach,saved,shares,total_interactions";
+
+const getMetric = (data: any[], name: string): number =>
+  data.find((m: any) => m.name === name)?.values?.[0]?.value ?? 0;
+
+async function fetchInsights(
+  mediaId: string,
+  isReel: boolean,
+  token: string,
+): Promise<Record<string, number>> {
+  try {
+    const res = await axios.get(`${GRAPH}/${mediaId}/insights`, {
+      params: {
+        metric: isReel ? REEL_METRICS : FEED_METRICS,
+        access_token: token,
+      },
+    });
+    const ins: any[] = res.data.data ?? [];
+    return {
+      // `impressions` holds the primary view metric: plays for reels, impressions for feed
+      impressions: getMetric(ins, isReel ? "views" : "impressions"),
+      reach: getMetric(ins, "reach"),
+      saved: getMetric(ins, "saved"),
+      shares: getMetric(ins, "shares"),
+      total_interactions: getMetric(ins, "total_interactions"),
+    };
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      console.warn(`[posts/insights] ${mediaId} failed:`, {
+        status: err.response?.status,
+        data: err.response?.data,
+      });
+    }
+    return {};
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession();
@@ -30,7 +69,23 @@ export async function GET(req: NextRequest) {
     const nextCursor: string | null =
       res.data.paging?.next ? (res.data.paging.cursors?.after ?? null) : null;
 
-    return NextResponse.json({ posts, nextCursor });
+    // Fetch insights for all posts in parallel; per-post failures are logged but don't block
+    const insightsResults = await Promise.allSettled(
+      posts.map((p) =>
+        // media_product_type is "REELS" (with S) from the API
+        fetchInsights(p.id, p.media_product_type === "REELS", token),
+      ),
+    );
+
+    const enrichedPosts = posts.map((post, i) => {
+      const insights =
+        insightsResults[i].status === "fulfilled"
+          ? (insightsResults[i] as PromiseFulfilledResult<Record<string, number>>).value
+          : {};
+      return { ...post, ...insights };
+    });
+
+    return NextResponse.json({ posts: enrichedPosts, nextCursor });
   } catch (err) {
     console.error("GET /api/instagram/posts:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

@@ -294,11 +294,11 @@ export async function fetchAndSaveInstagramAnalytics(
     mediaList.map((post: any) => {
       // Reels support `plays` but NOT `impressions`.
       // Images/Carousels/Videos support `impressions` but NOT `plays`.
-      const isReel = post.media_product_type === "REEL";
+      const isReel = post.media_product_type === "REELS";
       return axios.get(`${GRAPH}/${post.id}/insights`, {
         params: {
           metric: [
-            isReel ? "plays" : "impressions",
+            isReel ? "views" : "impressions",
             "reach",
             "saved",
             "shares",
@@ -333,7 +333,7 @@ export async function fetchAndSaveInstagramAnalytics(
       comments_count: post.comments_count ?? 0,
       // `impressions` holds the primary view metric for the post type:
       // plays for Reels, impressions for everything else.
-      impressions: getMetric(ins, isReel ? "plays" : "impressions"),
+      impressions: getMetric(ins, isReel ? "views" : "impressions"),
       reach: getMetric(ins, "reach"),
       saved: getMetric(ins, "saved"),
       shares: getMetric(ins, "shares"),
@@ -346,7 +346,7 @@ export async function fetchAndSaveInstagramAnalytics(
     .sort((a, b) => b.reach - a.reach)
     .slice(0, 5);
   const topReelsByEngagement = [...posts]
-    .filter((p) => p.media_type === "VIDEO" || p.media_product_type === "REEL")
+    .filter((p) => p.media_type === "VIDEO" || p.media_product_type === "REELS")
     .sort((a, b) => b.total_interactions - a.total_interactions)
     .slice(0, 5);
 

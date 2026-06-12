@@ -45,7 +45,7 @@ const DUMMY_CARDS: CardData[] = [
     built: "3 Reels · 1 Carousel · 6 Stories",
     metrics: [
       { value: "1.4M", label: "REACH" },
-      { value: "8.9%", label: "ENGAGEMENT" },
+      { value: "8.9%", label: "INTERACTIONS" },
       { value: "62K", label: "SITE VISITS" },
       { value: "+34%", label: "CONVERSIONS" },
     ],
@@ -99,7 +99,7 @@ const DUMMY_CARDS: CardData[] = [
     built: "4 Reels · lookbook shoot",
     metrics: [
       { value: "2.4M", label: "REACH" },
-      { value: "9.6%", label: "ENGAGEMENT" },
+      { value: "9.6%", label: "INTERACTIONS" },
       { value: "Sold out · 9d", label: "SELL-THROUGH" },
       { value: "1.2K posts", label: "UGC" },
     ],
@@ -137,7 +137,7 @@ function CollabCard({
   return (
     <div
       id={`receipts-card-${card.id}`}
-      className="bg-white rounded-2xl overflow-hidden flex flex-col sm:flex-row shadow-sm"
+      className="bg-white rounded-[32px] overflow-hidden flex flex-col sm:flex-row shadow-sm p-5"
       style={
         card.featured
           ? { border: `2px solid ${accentColor}40` }
@@ -147,38 +147,38 @@ function CollabCard({
       {/* Thumbnail */}
       {hasSlides && (
         <div
-          className={`group relative w-full sm:w-36 md:w-44 h-48 sm:h-auto shrink-0 sm:self-stretch ${permalink ? "cursor-pointer" : ""}`}
+          className={`group relative w-full sm:w-36 md:w-44 shrink-0 rounded-2xl overflow-hidden ${permalink ? "cursor-pointer" : ""}`}
+          style={{ aspectRatio: "3/4" }}
           onClick={() => {
             if (permalink)
               window.open(permalink, "_blank", "noopener,noreferrer");
           }}
         >
+          {/* Gradient base */}
+          <div
+            className={`w-full h-full bg-gradient-to-br ${GRADIENTS[card.gradientIdx]}`}
+          />
+
+          {/* Thumbnail image */}
           {displayThumb && (
             <img
               src={displayThumb}
               alt=""
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
             />
           )}
-          <div
-            className={`absolute inset-0 bg-gradient-to-br ${GRADIENTS[card.gradientIdx]} ${displayThumb ? "opacity-40" : ""}`}
-          />
 
           {/* Post type badge */}
           <div className="absolute top-3 left-3 z-10">
-            <span className="bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold tracking-wider px-2 py-1 rounded-full font-mono">
+            <span className="bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full font-mono">
               {displayType}
             </span>
           </div>
 
-          {/* Counter badge */}
-          <div className="absolute top-3 right-3 z-10">
-            <span className="bg-black/30 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full font-mono">
-              {activeIdx + 1}/{displayCount}
-            </span>
-          </div>
-
-          {/* Carousel arrows — appear on hover when multiple slides */}
+          {/* Carousel arrows */}
           {displayCount > 1 && (
             <>
               <button
@@ -190,13 +190,7 @@ function CollabCard({
                 aria-label="Previous post"
               >
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path
-                    d="M6.5 2L3.5 5l3 3"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                  <path d="M6.5 2L3.5 5l3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
               <button
@@ -208,34 +202,23 @@ function CollabCard({
                 aria-label="Next post"
               >
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path
-                    d="M3.5 2L6.5 5l-3 3"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                  <path d="M3.5 2L6.5 5l-3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
             </>
           )}
 
-          {/* Caption + dot indicator */}
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 z-10">
-            <p className="text-white text-[11px] font-medium leading-tight line-clamp-2">
-              {displayCaption}
-            </p>
-            <div className="flex gap-1 mt-2">
-              {Array.from({ length: displayCount }).map((_, i) => (
-                <div
-                  key={i}
-                  className="rounded-full h-1 bg-white transition-all duration-200"
-                  style={{
-                    width: i === activeIdx ? 16 : 6,
-                    opacity: i === activeIdx ? 1 : 0.4,
-                  }}
-                />
-              ))}
+          {/* Bottom overlay — caption left, counter right */}
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-4 z-10">
+            <div className="flex items-end justify-between gap-2">
+              <p className="text-white font-bold text-[11px] leading-tight line-clamp-2">
+                {displayCaption}
+              </p>
+              {displayCount > 1 && (
+                <p className="text-white/80 text-[10px] font-semibold shrink-0 font-mono">
+                  {activeIdx + 1}/{displayCount}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -351,8 +334,10 @@ function CollabCard({
           )}
         </div>
 
-        {/* Metrics 2×2 */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        {/* Metrics grid — 2×2 for 4 items, single row of 3 for 3 items */}
+        <div
+          className={`grid gap-2 mb-4 ${card.metrics.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}
+        >
           {card.metrics.map((m) => (
             <div key={m.label} className="bg-gray-50 rounded-xl p-3">
               <p className="font-black text-gray-900 text-base md:text-lg leading-none">
@@ -430,15 +415,9 @@ export function ReceiptsSection({
           permalink: p.permalink ?? null,
         }));
 
-        // Auto-compute metrics from selected posts
-        const totalLikes = rawPosts.reduce(
-          (s, p) => s + (p.like_count ?? 0),
-          0,
-        );
-        const totalComments = rawPosts.reduce(
-          (s, p) => s + (p.comments_count ?? 0),
-          0,
-        );
+        // Auto-compute metrics from selected posts using enriched insight data
+        const sum = (key: string) =>
+          rawPosts.reduce((s, p) => s + (p[key] ?? 0), 0);
         const fmtNum = (n: number) => {
           if (n >= 1_000_000)
             return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
@@ -446,11 +425,32 @@ export function ReceiptsSection({
             return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
           return String(n);
         };
+
+        const hasReels = rawPosts.some((p) => p.media_product_type === "REELS");
+        // `impressions` holds views for reels or impressions for feed (mapped in posts route)
+        const totalImpressions = sum("impressions");
+        const totalReach = sum("reach");
+        const totalInteractions = sum("total_interactions");
+
         const metrics: { value: string; label: string }[] = [];
-        if (totalLikes > 0)
-          metrics.push({ value: fmtNum(totalLikes), label: "LIKES" });
-        if (totalComments > 0)
-          metrics.push({ value: fmtNum(totalComments), label: "COMMENTS" });
+        if (totalImpressions > 0)
+          metrics.push({
+            value: fmtNum(totalImpressions),
+            label: hasReels ? "VIEWS" : "IMPRESSIONS",
+          });
+        if (totalReach > 0)
+          metrics.push({ value: fmtNum(totalReach), label: "REACH" });
+        if (totalInteractions > 0)
+          metrics.push({
+            value: fmtNum(totalInteractions),
+            label: "INTERACTIONS",
+          });
+        const engagementPct =
+          totalReach > 0 && totalInteractions > 0
+            ? parseFloat(((totalInteractions / totalReach) * 100).toFixed(1))
+            : 0;
+        if (engagementPct > 0)
+          metrics.push({ value: `${engagementPct}%`, label: "ENGAGEMENT" });
 
         // Build "built" string from explicit counts (user-editable), fall back to post detection
         const rc = c.reels_count ?? 0;
