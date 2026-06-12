@@ -2,8 +2,7 @@ import { getSession } from "@/lib/session";
 import { getUserById, updateUser } from "@/db/user.db";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-
-const SALT_ROUNDS = 12;
+import { SALT_ROUNDS } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {

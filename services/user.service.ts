@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import config from "@/lib/config";
+import { SALT_ROUNDS, DUMMY_HASH } from "@/lib/auth";
 import {
   createUser,
   getUserByEmail,
@@ -17,7 +18,6 @@ import {
 import { upsertCustomization } from "@/db/customization.db";
 import { initializeCreatorUserData } from "@/services/user_data.service";
 
-const SALT_ROUNDS = 12;
 const ACCESS_TOKEN_TTL = "15m";
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
@@ -76,7 +76,10 @@ export async function loginUser(identifier: string, password: string) {
   const user = isEmail
     ? await getUserByEmail(identifier)
     : await getUserByUsername(identifier);
-  if (!user) throw new Error("Invalid credentials");
+  if (!user) {
+    await bcrypt.compare(password, DUMMY_HASH); // timing-safe: same cost as a real compare
+    throw new Error("Invalid credentials");
+  }
 
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) throw new Error("Invalid credentials");
