@@ -49,4 +49,20 @@ export interface Collaboration {
   engagement?: string;
   reach?: string;
   conversions?: string;
+  industry?: string;
+  goal?: string;
+  built?: string;
+  metric1_value?: string;
+  metric1_label?: string;
+  metric2_value?: string;
+  metric2_label?: string;
+  metric3_value?: string;
+  metric3_label?: string;
+  metric4_value?: string;
+  metric4_label?: string;
+  postIds?: string[];
+  collabPosts?: any[];
+  reels_count?: number;
+  posts_count?: number;
+  stories_count?: number;
 }

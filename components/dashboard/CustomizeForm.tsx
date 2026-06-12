@@ -17,17 +17,6 @@ const POST_GRADIENTS = [
   "from-blue-200 to-indigo-300",
 ];
 
-const ANALYTICS_TOGGLES = [
-  { id: "followers", label: "Followers" },
-  { id: "views", label: "Views" },
-  { id: "growth", label: "Growth" },
-  { id: "shares", label: "Shares" },
-  { id: "audience_split", label: "Audience split" },
-  { id: "gender", label: "Gender" },
-  { id: "locations", label: "Locations" },
-  { id: "engagement", label: "Engagement" },
-];
-
 function Toggle({
   checked,
   onChange,
@@ -127,10 +116,12 @@ export interface CustomizeFormProps {
   updateCollab: (
     id: number,
     field: keyof Collaboration,
-    value: string | boolean,
+    value: string | boolean | number | any[],
   ) => void;
   featuredPosts: any[];
   onFeaturedPostsChange: (posts: any[]) => void;
+  receiptsVisible: boolean;
+  setReceiptsVisible: (v: boolean) => void;
   onPreviewClick: () => void;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
   onProfilePicUploaded?: (url: string) => void;
@@ -164,6 +155,8 @@ export function CustomizeForm({
   addCollab,
   removeCollab,
   updateCollab,
+  receiptsVisible,
+  setReceiptsVisible,
   onPreviewClick,
   onThemeChange,
   onProfilePicUploaded,
@@ -214,7 +207,6 @@ export function CustomizeForm({
   }
 
   const [pronouns, setPronouns] = useState("she/her");
-  const [languages, setLanguages] = useState("English");
   const [theme, setTheme] = useState("default");
 
   useEffect(() => {
@@ -227,18 +219,6 @@ export function CustomizeForm({
       .catch(() => {});
   }, []);
   const [nicheText, setNicheText] = useState(nicheTags.join(", "));
-  const [analyticsToggles, setAnalyticsToggles] = useState<
-    Record<string, boolean>
-  >({
-    followers: true,
-    views: true,
-    growth: true,
-    shares: false,
-    audience_split: true,
-    gender: false,
-    locations: true,
-    engagement: true,
-  });
   const [userFeaturedIds, setUserFeaturedIds] = useState<string[] | null>(null);
   const featuredIds: string[] =
     userFeaturedIds ??
@@ -247,6 +227,17 @@ export function CustomizeForm({
       : (igPosts?.length ?? 0) > 0
         ? igPosts.slice(0, 4).map((p: { id: string }) => p.id)
         : []);
+
+  const [expandedCollabId, setExpandedCollabId] = useState<number | null>(null);
+  const [collabPickerOpen, setCollabPickerOpen] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (expandedCollabId !== null) {
+      onSectionFocus?.(`receipts-card-${expandedCollabId}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expandedCollabId]);
+  const collabScrollRef = useRef<HTMLDivElement>(null);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [modalPosts, setModalPosts] = useState<any[]>([]);
@@ -810,107 +801,6 @@ export function CustomizeForm({
         )}
       </section>
 
-      {/* ── Brands you've worked with ── */}
-      <section
-        className="bg-white rounded-2xl border border-gray-100 p-5"
-        onFocus={() => onSectionFocus?.("partner")}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <p className="font-semibold text-gray-900">
-            Brands you&apos;ve worked with
-          </p>
-        </div>
-        <div className="space-y-2">
-          {collabs.map((c) => (
-            <div key={c.id} className="flex items-center gap-2 min-h-[44px]">
-              {pendingDeleteCollab !== c.id ? (
-                <>
-                  <Input
-                    value={c.brand}
-                    onChange={(v) => updateCollab(c.id, "brand", v)}
-                    placeholder="Brand name"
-                  />
-
-                  <button
-                    onClick={() => setPendingDeleteCollab(c.id)}
-                    className="shrink-0 w-9 h-9 flex items-center justify-center text-gray-400 hover:text-red-500 focus:outline-none focus:ring-0 transition-colors cursor-pointer"
-                    type="button"
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="3 6 5 6 21 6" />
-                      <path d="M19 6l-1 14H6L5 6" />
-                      <path d="M10 11v6M14 11v6" />
-                      <path d="M9 6V4h6v2" />
-                    </svg>
-                  </button>
-                </>
-              ) : (
-                <div className="w-full flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5">
-                  <span className="flex-1 text-sm text-red-700 truncate">
-                    Remove &ldquo;{c.brand || "this brand"}&rdquo;?
-                  </span>
-
-                  <Button
-                    variant="danger"
-                    size="xs"
-                    onClick={() => {
-                      removeCollab(c.id);
-                      setPendingDeleteCollab(null);
-                    }}
-                    className="shrink-0 rounded-lg"
-                  >
-                    Remove
-                  </Button>
-
-                  <button
-                    onClick={() => setPendingDeleteCollab(null)}
-                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors cursor-pointer"
-                    type="button"
-                  >
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                      <path
-                        d="M1 1l8 8M9 1L1 9"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-        <Button
-          variant="default"
-          size="sm"
-          onClick={addCollab}
-          fullWidth
-          className="rounded-xl mt-3"
-          icon={
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path
-                d="M6 1v10M1 6h10"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          }
-        >
-          Add service
-        </Button>
-      </section>
-
       {/* ── Analytics on your page ── */}
       {/* uncomment later */}
       {/* <section className="bg-white rounded-2xl border border-gray-100 p-5">
@@ -1070,6 +960,535 @@ export function CustomizeForm({
           Add service
         </Button>
       </section>
+
+      {/* ── Past collabs ── */}
+      <section className="bg-white rounded-2xl border border-gray-100 p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="font-semibold text-gray-900">Past collabs</p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Showcase verified campaign results on your page.
+            </p>
+          </div>
+          <Toggle checked={receiptsVisible} onChange={setReceiptsVisible} />
+        </div>
+
+        <div className="space-y-2">
+          {collabs.map((c) => {
+            const isExpanded = expandedCollabId === c.id;
+            const isPendingDelete = pendingDeleteCollab === c.id;
+            const selectedPosts: any[] = c.collabPosts ?? [];
+            const selectedThumbs = selectedPosts.map(
+              (p) =>
+                p.thumbnail_url ??
+                (p.media_type === "IMAGE" || p.media_type === "CAROUSEL_ALBUM"
+                  ? p.media_url
+                  : null),
+            );
+
+            if (isPendingDelete) {
+              return (
+                <div
+                  key={c.id}
+                  className="flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5"
+                >
+                  <span className="flex-1 text-sm text-red-700 truncate">
+                    Remove &ldquo;{c.brand || "this collab"}&rdquo;?
+                  </span>
+                  <Button
+                    variant="danger"
+                    size="xs"
+                    onClick={() => {
+                      removeCollab(c.id);
+                      setPendingDeleteCollab(null);
+                      if (expandedCollabId === c.id) setExpandedCollabId(null);
+                    }}
+                    className="shrink-0 rounded-lg"
+                  >
+                    Remove
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setPendingDeleteCollab(null)}
+                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors cursor-pointer"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <path
+                        d="M1 1l8 8M9 1L1 9"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={c.id}
+                className="rounded-xl border border-gray-100 overflow-hidden"
+              >
+                {/* Collapsed header row */}
+                <div className="flex items-center gap-2.5 px-3 py-2.5">
+                  <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 shrink-0">
+                    {c.brand?.[0]?.toUpperCase() ?? "?"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {c.brand || "New collab"}
+                    </p>
+                    {c.industry && (
+                      <p className="text-xs text-gray-400 truncate">
+                        {c.industry}
+                      </p>
+                    )}
+                  </div>
+                  {/* Featured / TOP PERFORMER toggle */}
+                  <button
+                    type="button"
+                    title={
+                      c.featured
+                        ? "Remove Top Performer badge"
+                        : "Mark as Top Performer"
+                    }
+                    onClick={() => updateCollab(c.id, "featured", !c.featured)}
+                    className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
+                      c.featured
+                        ? "bg-amber-50 text-amber-500"
+                        : "text-gray-300 hover:text-amber-400"
+                    }`}
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill={c.featured ? "currentColor" : "none"}
+                      stroke="currentColor"
+                      strokeWidth={c.featured ? "0" : "1.8"}
+                    >
+                      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+                    </svg>
+                  </button>
+                  {/* Expand / collapse */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExpandedCollabId(isExpanded ? null : c.id)
+                    }
+                    className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                    >
+                      <path
+                        d="M6 9l6 6 6-6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  {/* Delete */}
+                  <button
+                    type="button"
+                    onClick={() => setPendingDeleteCollab(c.id)}
+                    className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-400 transition-colors cursor-pointer"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                      <path d="M9 6V4h6v2" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Expanded detail fields */}
+                {isExpanded && (
+                  <div
+                    className="border-t border-gray-50 px-3 pb-4 pt-3 space-y-3"
+                    onFocus={() => onSectionFocus?.(`receipts-card-${c.id}`)}
+                  >
+                    {/* Brand + Category */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Brand</Label>
+                        <Input
+                          value={c.brand}
+                          onChange={(v) => updateCollab(c.id, "brand", v)}
+                          placeholder="Brand name"
+                        />
+                      </div>
+                      <div>
+                        <Label>Category</Label>
+                        <Input
+                          value={c.industry ?? ""}
+                          onChange={(v) => updateCollab(c.id, "industry", v)}
+                          placeholder="e.g. Clean Beauty"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Goal */}
+                    <div>
+                      <Label>Campaign goal</Label>
+                      <Input
+                        value={c.goal ?? ""}
+                        onChange={(v) => updateCollab(c.id, "goal", v)}
+                        placeholder="e.g. Product launch awareness"
+                      />
+                    </div>
+
+                    {/* Content delivered — 3 number inputs */}
+                    <div>
+                      <Label>Content delivered</Label>
+                      <div className="flex gap-2">
+                        {(
+                          [
+                            { label: "Reels", field: "reels_count" },
+                            { label: "Posts", field: "posts_count" },
+                            { label: "Stories", field: "stories_count" },
+                          ] as const
+                        ).map(({ label, field }) => (
+                          <div key={field} className="flex-1">
+                            <p className="text-[11px] text-gray-400 mb-1 text-center">
+                              {label}
+                            </p>
+                            <input
+                              type="number"
+                              min={0}
+                              value={c[field] ?? 0}
+                              onChange={(e) =>
+                                updateCollab(
+                                  c.id,
+                                  field,
+                                  Math.max(0, Number(e.target.value)),
+                                )
+                              }
+                              className="w-full border border-gray-200 rounded-xl px-2 py-2 text-sm text-center font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Showcase posts */}
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 mb-2">
+                        Showcase posts{" "}
+                        <span className="text-gray-400 font-normal">
+                          ({selectedPosts.length}/10)
+                        </span>
+                      </p>
+                      <div className="grid grid-cols-5 gap-1.5 mb-2">
+                        {selectedThumbs.map((thumb, i) =>
+                          thumb ? (
+                            <div
+                              key={i}
+                              className="relative rounded-xl overflow-hidden aspect-square ring-1 ring-primary ring-offset-1"
+                            >
+                              <img
+                                src={thumb}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div
+                              key={i}
+                              className="rounded-xl aspect-square bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center"
+                            >
+                              <span className="text-gray-300 text-xs font-medium">
+                                {i + 1}
+                              </span>
+                            </div>
+                          ),
+                        )}
+                      </div>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        fullWidth
+                        className="rounded-xl"
+                        onClick={() => {
+                          setCollabPickerOpen(c.id);
+                          fetchPosts();
+                        }}
+                        icon={
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 14 14"
+                            fill="none"
+                          >
+                            <rect
+                              x="1"
+                              y="1"
+                              width="5"
+                              height="5"
+                              rx="1.5"
+                              stroke="currentColor"
+                              strokeWidth="1.3"
+                            />
+                            <rect
+                              x="8"
+                              y="1"
+                              width="5"
+                              height="5"
+                              rx="1.5"
+                              stroke="currentColor"
+                              strokeWidth="1.3"
+                            />
+                            <rect
+                              x="1"
+                              y="8"
+                              width="5"
+                              height="5"
+                              rx="1.5"
+                              stroke="currentColor"
+                              strokeWidth="1.3"
+                            />
+                            <rect
+                              x="8"
+                              y="8"
+                              width="5"
+                              height="5"
+                              rx="1.5"
+                              stroke="currentColor"
+                              strokeWidth="1.3"
+                            />
+                          </svg>
+                        }
+                      >
+                        {selectedPosts.length > 0
+                          ? "Change posts"
+                          : "Select posts"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <Button
+          variant="default"
+          size="sm"
+          onClick={addCollab}
+          fullWidth
+          className="rounded-xl mt-3"
+          icon={
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M6 1v10M1 6h10"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          }
+        >
+          Add collab
+        </Button>
+      </section>
+
+      {/* Collab post picker modal */}
+      {collabPickerOpen !== null &&
+        (() => {
+          const activeCollab = collabs.find((c) => c.id === collabPickerOpen);
+          const activeCollabPosts: any[] = activeCollab?.collabPosts ?? [];
+          return (
+            <div
+              className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/40 backdrop-blur-sm"
+              onClick={() => setCollabPickerOpen(null)}
+            >
+              <div
+                className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-sm max-h-[85vh] flex flex-col shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
+                  <div>
+                    <p className="font-semibold text-gray-900">
+                      {activeCollab?.brand || "Collab"} posts
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {activeCollabPosts.length} of 10 selected
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setCollabPickerOpen(null)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path
+                        d="M1 1l10 10M11 1L1 11"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                {activeCollabPosts.length >= 10 && (
+                  <div className="mx-5 mt-4 shrink-0 bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 text-xs text-center text-primary font-medium">
+                    10 posts selected — deselect one to swap
+                  </div>
+                )}
+
+                <div
+                  ref={collabScrollRef}
+                  className="overflow-y-auto flex-1 p-4"
+                  onScroll={() => {
+                    const el = collabScrollRef.current;
+                    if (!el || modalLoadingMore || !nextCursor) return;
+                    if (
+                      el.scrollTop + el.clientHeight >=
+                      el.scrollHeight - 80
+                    ) {
+                      fetchPosts(nextCursor);
+                    }
+                  }}
+                >
+                  <div className="grid grid-cols-3 gap-2">
+                    {modalLoading
+                      ? Array.from({ length: 9 }, (_, i) => (
+                          <div
+                            key={i}
+                            className="rounded-2xl aspect-square bg-gray-100 animate-pulse"
+                          />
+                        ))
+                      : modalPosts.map((post: any, i: number) => {
+                          const thumb =
+                            post.thumbnail_url ??
+                            (post.media_type === "IMAGE" ||
+                            post.media_type === "CAROUSEL_ALBUM"
+                              ? post.media_url
+                              : null);
+                          const selected = activeCollabPosts.some(
+                            (p: any) => p.id === post.id,
+                          );
+                          const dimmed =
+                            activeCollabPosts.length >= 10 && !selected;
+                          return (
+                            <button
+                              key={post.id}
+                              onClick={() => {
+                                const next = selected
+                                  ? activeCollabPosts.filter(
+                                      (p: any) => p.id !== post.id,
+                                    )
+                                  : activeCollabPosts.length >= 10
+                                    ? activeCollabPosts
+                                    : [...activeCollabPosts, post];
+                                updateCollab(
+                                  collabPickerOpen!,
+                                  "collabPosts",
+                                  next,
+                                );
+                                // Auto-populate Reels and Posts counts from selected media types
+                                updateCollab(
+                                  collabPickerOpen!,
+                                  "reels_count",
+                                  next.filter(
+                                    (p: any) => p.media_type === "VIDEO",
+                                  ).length,
+                                );
+                                updateCollab(
+                                  collabPickerOpen!,
+                                  "posts_count",
+                                  next.filter(
+                                    (p: any) =>
+                                      p.media_type === "IMAGE" ||
+                                      p.media_type === "CAROUSEL_ALBUM",
+                                  ).length,
+                                );
+                              }}
+                              className={`relative rounded-2xl overflow-hidden aspect-square transition-all
+                              ${selected ? "ring-2 ring-primary ring-offset-1" : ""}
+                              ${dimmed ? "cursor-not-allowed" : "cursor-pointer"}
+                            `}
+                            >
+                              {thumb ? (
+                                <img
+                                  src={thumb}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div
+                                  className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`}
+                                />
+                              )}
+                              <span className="absolute top-1.5 right-1.5 bg-gray-900/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md">
+                                {mediaTypeLabel(post.media_type)}
+                              </span>
+                              {selected && (
+                                <span className="absolute bottom-1.5 left-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                                  <svg
+                                    width="10"
+                                    height="10"
+                                    viewBox="0 0 10 10"
+                                    fill="none"
+                                  >
+                                    <path
+                                      d="M2 5l2.5 2.5L8 3"
+                                      stroke="white"
+                                      strokeWidth="1.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                  </div>
+                  {!modalLoading && modalPosts.length === 0 && (
+                    <p className="text-center text-sm text-gray-400 py-8">
+                      No posts found
+                    </p>
+                  )}
+                  {modalLoadingMore && (
+                    <div className="flex justify-center py-3">
+                      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="px-5 py-4 border-t border-gray-100 shrink-0">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    fullWidth
+                    className="rounded-2xl"
+                    onClick={() => setCollabPickerOpen(null)}
+                  >
+                    Done — {activeCollabPosts.length}/10 selected
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
     </div>
   );
 }

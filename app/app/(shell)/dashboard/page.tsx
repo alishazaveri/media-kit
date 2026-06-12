@@ -106,6 +106,7 @@ export default function DashboardPage() {
     "Product Photography",
   ]);
   const [turnaround] = useState("7-10 days");
+  const [receiptsVisible, setReceiptsVisible] = useState(true);
 
   /* Past collaborations */
   const [collabs, setCollabs] = useState<Collaboration[]>([
@@ -207,6 +208,8 @@ export default function DashboardPage() {
         if (draft.display_email) setDisplayEmail(draft.display_email);
         if (typeof draft.services_visible === "boolean")
           setServicesVisible(draft.services_visible);
+        if (typeof draft.receipts_visible === "boolean")
+          setReceiptsVisible(draft.receipts_visible);
         if (Array.isArray(draft.niche_tags) && draft.niche_tags.length)
           setNicheTags(draft.niche_tags);
         if (typeof draft.available_for_collabs === "boolean")
@@ -241,6 +244,7 @@ export default function DashboardPage() {
           location,
           display_email: displayEmail,
           services_visible: servicesVisible,
+          receipts_visible: receiptsVisible,
           niche_tags: nicheTags,
           available_for_collabs: availableForCollabs,
           packages,
@@ -257,6 +261,7 @@ export default function DashboardPage() {
     location,
     displayEmail,
     servicesVisible,
+    receiptsVisible,
     nicheTags,
     availableForCollabs,
     packages,
@@ -281,6 +286,7 @@ export default function DashboardPage() {
         available_for_collabs: availableForCollabs,
         packages,
         collabs,
+        receipts_visible: receiptsVisible,
         posts: featuredPosts,
         profile_pic: profilePic,
       });
@@ -325,7 +331,7 @@ export default function DashboardPage() {
   const updateCollab = (
     id: number,
     field: keyof Collaboration,
-    value: string | boolean,
+    value: string | boolean | number | any[],
   ) =>
     setCollabs((c) =>
       c.map((x) => (x.id === id ? { ...x, [field]: value } : x)),
@@ -337,6 +343,7 @@ export default function DashboardPage() {
     location,
     display_email: displayEmail,
     services_visible: servicesVisible,
+    receipts_visible: receiptsVisible,
     niche_tags: nicheTags,
     available_for_collabs: availableForCollabs,
     packages,
@@ -471,6 +478,7 @@ export default function DashboardPage() {
           setDisplayName={setDisplayName}
           appUsername={appUsername}
           handle={handle}
+          isInstagramConnected={!analyticsLoaded || Boolean(handle)}
           tagline={tagline}
           setTagline={setTagline}
           location={location}
@@ -503,6 +511,8 @@ export default function DashboardPage() {
           updateCollab={updateCollab}
           featuredPosts={featuredPosts}
           onFeaturedPostsChange={setFeaturedPosts}
+          receiptsVisible={receiptsVisible}
+          setReceiptsVisible={setReceiptsVisible}
           theme={theme}
           onThemeChange={(identifier, themeData) => {
             setDraftThemeIdentifier(identifier);

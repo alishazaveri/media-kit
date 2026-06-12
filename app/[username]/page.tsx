@@ -121,6 +121,7 @@ export default async function PublishedProfilePage(props: {
         theme={theme}
         email={published.display_email ?? ""}
         servicesVisible={published.services_visible !== false}
+        receiptsVisible={published.receipts_visible !== false}
       />
     </main>
   );

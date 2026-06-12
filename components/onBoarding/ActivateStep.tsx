@@ -6,13 +6,9 @@ import { OnboardingNav } from "./OnboardingNav";
 import Button from "@/components/reusable/Button";
 
 const FEATURES = [
-  "Your unique kloot.io/username link",
-  "Unlimited links & content blocks",
-  "Instagram auto-sync",
-  "4 customizable themes",
-  "Mobile-optimized creator page",
-  "Analytics & link insights",
-  "Priority support",
+  "Your unique kloot.io link",
+  "7 customizable themes",
+  "Weekly updating analytics & insights",
 ];
 
 export function ActivateStep({ onNext }: { onNext: () => void }) {
@@ -20,6 +16,7 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
   const [draft, setDraft] = useState<Record<string, any>>({});
   const [appUsername, setAppUsername] = useState<string | undefined>(undefined);
   const [showPreview, setShowPreview] = useState(false);
+  const [billing, setBilling] = useState<"monthly" | "yearly">("yearly");
 
   const desktopIframeRef = useRef<HTMLIFrameElement>(null);
   const mobileIframeRef = useRef<HTMLIFrameElement>(null);
@@ -127,7 +124,7 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
             </p>
             <button
               onClick={() => setShowPreview(false)}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path
@@ -160,16 +157,63 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
           </p>
 
           <div className="bg-white rounded-2xl border border-gray-200 p-7 flex flex-col gap-6">
-            {/* Price */}
-            <div>
-              <div className="flex items-end gap-1.5 mb-1">
-                <span className="text-5xl font-black text-gray-900">$9</span>
-                <span className="text-lg text-gray-400 mb-2">/month</span>
-              </div>
-              <p className="text-sm text-gray-400">
-                Billed monthly · 7-day free trial
-              </p>
+            {/* Billing toggle */}
+            <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
+              <button
+                onClick={() => setBilling("monthly")}
+                className={` cursor-pointer flex-1 text-sm font-semibold py-2 rounded-lg transition-all ${billing === "monthly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-400"}`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setBilling("yearly")}
+                className={` cursor-pointer flex-1 text-sm font-semibold py-2 rounded-lg transition-all flex items-center justify-center gap-2 ${billing === "yearly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-400"}`}
+              >
+                Yearly
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${billing === "yearly" ? "bg-primary/10 text-primary" : "bg-gray-200 text-gray-400"}`}
+                >
+                  −15%
+                </span>
+              </button>
             </div>
+
+            {/* Price */}
+            {billing === "monthly" ? (
+              <div>
+                <div className="flex items-end gap-1.5 mb-1">
+                  <span className="text-5xl font-black text-gray-900">₹49</span>
+                  <span className="text-lg text-gray-400 mb-2">/month</span>
+                </div>
+                <p className="text-sm text-gray-400">Billed monthly</p>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-end gap-2 mb-1">
+                  <span className="text-5xl font-black text-gray-900">₹42</span>
+                  <span className="text-lg text-gray-400 mb-2">/month</span>
+                  <span className="text-lg text-gray-300 line-through mb-2">
+                    ₹49
+                  </span>
+                </div>
+                <p className="text-sm text-gray-400">Billed annually at ₹499</p>
+                <div className="mt-2 inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-lg">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    className="shrink-0"
+                  >
+                    <path
+                      d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5l3.5-.5L8 2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  You save ₹89 a year
+                </div>
+              </div>
+            )}
 
             {/* Features */}
             <ul className="space-y-3">
@@ -209,20 +253,17 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
               Preview my page
             </Button>
 
-            <div>
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={onNext}
-                fullWidth
-                className="rounded-xl"
-              >
-                Pay $9 &amp; activate
-              </Button>
-              <p className="text-center text-xs text-gray-400 mt-3">
-                Secure checkout. Money-back guarantee.
-              </p>
-            </div>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={onNext}
+              fullWidth
+              className="rounded-xl"
+            >
+              {billing === "monthly"
+                ? "Pay ₹49 & activate"
+                : "Pay ₹499 & activate"}
+            </Button>
           </div>
         </div>
 

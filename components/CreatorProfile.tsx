@@ -5,6 +5,7 @@ import { HeroSection } from "./creator-profile/HeroSection";
 import { StatsSection } from "./creator-profile/StatsSection";
 import { AudienceSection } from "./creator-profile/AudienceSection";
 import { WorkSection } from "./creator-profile/WorkSection";
+import { ReceiptsSection } from "./creator-profile/ReceiptsSection";
 import { PartnerSection } from "./creator-profile/PartnerSection";
 import { FooterSection } from "./creator-profile/FooterSection";
 import type {
@@ -43,6 +44,7 @@ export interface CreatorProfileProps {
   theme?: ThemeData;
   email?: string;
   servicesVisible?: boolean;
+  receiptsVisible?: boolean;
 }
 
 export function CreatorProfile({
@@ -150,6 +152,7 @@ export function CreatorProfile({
   theme,
   email = "",
   servicesVisible = true,
+  receiptsVisible = true,
 }: CreatorProfileProps) {
   const nameParts = name.trim().split(/\s+/);
   const firstName = nameParts[0] || "";
@@ -216,6 +219,13 @@ export function CreatorProfile({
         accentColor={accentColor}
         secondaryColor={secondaryColor}
       />
+      {receiptsVisible && (
+        <ReceiptsSection
+          collabs={collabs}
+          accentColor={accentColor}
+          primaryColor={primaryColor}
+        />
+      )}
       <PartnerSection
         sortedCollabs={sortedCollabs}
         visiblePackages={servicesVisible ? visiblePackages : []}

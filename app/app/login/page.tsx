@@ -10,18 +10,18 @@ type OnboardingStatus = {
   hasPlan: boolean;
 };
 
+// uncomment later
 function redirectAfterLogin(
   status: OnboardingStatus,
   router: ReturnType<typeof useRouter>,
 ) {
-  router.push("/app/dashboard");
-  // if (status.hasPlan) {
-  //   router.push(status.hasInstagram ? "/app/dashboard" : "/app/account");
-  // } else if (!status.hasInstagram) {
-  //   router.push("/onboarding?step=connect");
-  // } else {
-  //   router.push("/onboarding?step=activate");
-  // }
+  if (!status.hasInstagram) {
+    router.push("/app/onboarding?step=connect");
+  } else if (!status.hasPlan) {
+    router.push("/app/onboarding?step=activate");
+  } else {
+    router.push("/app/dashboard");
+  }
 }
 
 export default function LoginPage() {

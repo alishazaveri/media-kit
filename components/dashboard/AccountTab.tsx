@@ -111,19 +111,21 @@ export function AccountTab({ email, appUsername, handle, igStats, onLogout, onCo
               </div>
             </div>
             {isConnected ? (
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => setShowDisconnectModal(true)}
-                className="border border-red-200 text-red-500 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-red-50 transition-colors"
               >
                 Disconnect
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={onConnectInstagram}
-                className="border border-gray-300 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-gray-50 transition-colors"
               >
                 Connect
-              </button>
+              </Button>
             )}
           </div>
         </div>

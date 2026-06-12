@@ -87,7 +87,7 @@ export function PartnerSection({
           }
         }
       `}</style>
-      <div className="py-8 md:py-10 border-b border-gray-200/60 overflow-hidden">
+      {/* <div className="py-8 md:py-10 border-b border-gray-200/60 overflow-hidden">
         <div className="ticker-scroll flex items-center gap-10 md:gap-16 whitespace-nowrap">
           {[...trustedBrands, ...trustedBrands].map((brand, i) => (
             <span
@@ -98,7 +98,7 @@ export function PartnerSection({
             </span>
           ))}
         </div>
-      </div>
+      </div> */}
 
       <div className="px-4 py-12 md:px-8 md:py-16">
         <div className="max-w-7xl mx-auto md:px-6 px-0 ">

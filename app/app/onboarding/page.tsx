@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { UsernameStep } from "@/components/onBoarding/UsernameStep";
 import { SignupStep } from "@/components/onBoarding/SignupStep";
 import { ConnectStep } from "@/components/onBoarding/ConnectStep";
-// import { ActivateStep } from "@/components/onBoarding/ActivateStep";
+import { ActivateStep } from "@/components/onBoarding/ActivateStep";
 
-type Step = "username" | "signup" | "connect"; // | "activate";
+type Step = "username" | "signup" | "connect" | "activate";
 
 function OnboardingContent() {
   const router = useRouter();
@@ -29,34 +29,50 @@ function OnboardingContent() {
       setStep("connect");
       return;
     }
-    if (searchParams.get("connected") === "true") { router.push("/app/dashboard"); return; }
+
+    // Instagram OAuth just completed — move to activate and update the URL
+    if (searchParams.get("connected") === "true") {
+      setStep("activate");
+      router.replace("/app/onboarding?step=activate");
+      return;
+    }
+
     const stepParam = searchParams.get("step");
-    if (stepParam === "connect") setStep("connect");
-    // else if (stepParam === "activate") setStep("activate");
+    if (stepParam === "connect") {
+      setStep("connect");
+    } else if (stepParam === "activate") {
+      setStep("activate");
+    }
+    // signup has no URL param — reloading lands back on username (default state)
   }, [searchParams]);
 
   return (
-    <div
-      className=""
-    >
+    <div>
       {step === "username" && (
         <UsernameStep
           prefill={prefillUsername}
-          onNext={(u) => { setClaimedUsername(u); setStep("signup"); }}
+          onNext={(u) => {
+            setClaimedUsername(u);
+            setStep("signup");
+          }}
         />
       )}
       {step === "signup" && (
         <SignupStep
           claimedUsername={claimedUsername}
-          onNext={(id) => { setUserId(id); setStep("connect"); }}
+          onNext={(id) => {
+            setUserId(id);
+            setStep("connect");
+            router.replace("/app/onboarding?step=connect");
+          }}
         />
       )}
       {step === "connect" && (
         <ConnectStep userId={userId} externalError={connectError} />
       )}
-      {/* step === "activate" && (
+      {step === "activate" && (
         <ActivateStep onNext={() => router.push("/app/dashboard")} />
-      ) */}
+      )}
     </div>
   );
 }

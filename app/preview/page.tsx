@@ -16,14 +16,7 @@ export default function PreviewPage() {
       } else if (e.data?.type === "SCROLL_TO_SECTION") {
         const el = document.getElementById(e.data.sectionId);
         if (el) {
-          const rect = el.getBoundingClientRect();
-          const visiblePx =
-            Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
-          const visibleRatio = Math.max(0, visiblePx) / rect.height;
-          console.log({ visibleRatio });
-          if (visibleRatio < 0.45) {
-            el.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       }
     };
