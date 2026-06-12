@@ -98,6 +98,7 @@ function AccountPageInner() {
             showToast("Account deleted");
             setTimeout(() => { window.location.href = "/"; }, 1500);
           }}
+          onPasswordChanged={() => showToast("Password updated")}
         />
       </div>
     </>

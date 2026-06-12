@@ -234,8 +234,15 @@ export default function DashboardPage() {
         }
         const published: Record<string, unknown> = res.data?.published ?? {};
         setPublishedData({
+          display_name: "",
+          tagline: "",
+          location: "India",
           display_email: "",
           services_visible: true,
+          receipts_visible: true,
+          available_for_collabs: true,
+          niche_tags: [],
+          posts: [],
           campaign_posts: [],
           ...published,
         });
