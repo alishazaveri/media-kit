@@ -15,7 +15,7 @@ export default function PlanPage() {
     axios.get("/api/analytics").then((res) => {
       if (res.data?.username) setAppUsername(res.data.username);
       const ig: Record<string, any> = res.data?.data?.data ?? {};
-      if (ig.profile_pic) setProfilePic(ig.profile_pic);
+      setProfilePic(res.data?.profile_image_url ?? ig.profile_pic ?? null);
     }).catch(() => {});
   }, []);
 

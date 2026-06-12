@@ -100,11 +100,10 @@ export function PartnerSection({
         </div>
       </div> */}
 
-      <div className="px-4 py-12 md:px-8 md:py-16">
+      {visiblePackages.length > 0 && <div className="px-4 py-12 md:px-8 md:py-16">
         <div className="max-w-7xl mx-auto md:px-6 px-0 ">
           {/* Packages list */}
-          {visiblePackages.length > 0 && (
-            <div className="mb-16">
+          <div className="mb-16">
               <p
                 className="text-lg font-bold tracking-[0.2em] text-gray-400 uppercase mb-10"
                 style={{ color: accentColor }}
@@ -177,7 +176,6 @@ export function PartnerSection({
                 <div className="border-t border-gray-200/80" />
               </div>
             </div>
-          )}
 
           {/* Testimonials */}
           {/* uncomment later */}
@@ -330,7 +328,7 @@ export function PartnerSection({
             </div>
           </div>
         </div>
-      </div>
+      </div>}
     </section>
   );
 }

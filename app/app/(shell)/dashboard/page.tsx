@@ -34,12 +34,16 @@ export default function DashboardPage() {
   });
   const [igPosts] = useState<any[]>([]);
   const [featuredPosts, setFeaturedPosts] = useState<any[]>([]);
+  const [campaignPosts, setCampaignPosts] = useState<any[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [publishedData, setPublishedData] = useState<Record<string, any>>({});
   const [profilePicChanged, setProfilePicChanged] = useState(false);
 
   /* Profile state */
   const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [publishedProfilePic, setPublishedProfilePic] = useState<string | null>(
+    null,
+  );
   const [displayName, setDisplayName] = useState("");
   const [handle, setHandle] = useState("");
   const [appUsername, setAppUsername] = useState("");
@@ -193,11 +197,12 @@ export default function DashboardPage() {
             : [],
           top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
         });
+        // If draft.profile_pic is explicitly null it means the user removed it — don't fall back.
+        // Only fall back to profile_image_url / ig pic when the draft has never set a pic.
         setProfilePic(
-          draft.profile_pic ??
-            res.data?.profile_image_url ??
-            ig.profile_pic ??
-            null,
+          "profile_pic" in draft
+            ? (draft.profile_pic ?? null)
+            : (res.data?.profile_image_url ?? ig.profile_pic ?? null),
         );
         if (ig.username) setHandle(ig.username);
         if (res.data?.username) setAppUsername(res.data.username);
@@ -221,9 +226,26 @@ export default function DashboardPage() {
         if (Array.isArray(draft.posts) && draft.posts.length) {
           setFeaturedPosts(draft.posts);
         }
+        if (
+          Array.isArray(draft.campaign_posts) &&
+          draft.campaign_posts.length
+        ) {
+          setCampaignPosts(draft.campaign_posts);
+        }
         const published: Record<string, unknown> = res.data?.published ?? {};
-        setPublishedData({ display_email: "", ...published });
-        if (draft.profile_pic && draft.profile_pic !== published.profile_pic) {
+        setPublishedData({
+          display_email: "",
+          services_visible: true,
+          campaign_posts: [],
+          ...published,
+        });
+        setPublishedProfilePic(
+          (published.profile_pic as string | null) ??
+            res.data?.profile_image_url ??
+            ig.profile_pic ??
+            null,
+        );
+        if ((draft.profile_pic ?? null) !== (published.profile_pic ?? null)) {
           setProfilePicChanged(true);
         }
       })
@@ -282,14 +304,17 @@ export default function DashboardPage() {
         tagline,
         location,
         display_email: displayEmail,
+        services_visible: servicesVisible,
         niche_tags: nicheTags,
         available_for_collabs: availableForCollabs,
         packages,
         collabs,
         receipts_visible: receiptsVisible,
         posts: featuredPosts,
+        campaign_posts: campaignPosts,
         profile_pic: profilePic,
       });
+      setPublishedProfilePic(profilePic);
       setProfilePicChanged(false);
       setPublishedThemeIdentifier(draftThemeIdentifier);
     } catch {
@@ -349,6 +374,7 @@ export default function DashboardPage() {
     packages,
     collabs,
     posts: featuredPosts,
+    campaign_posts: campaignPosts,
   };
   const hasUnpublishedTheme = draftThemeIdentifier !== publishedThemeIdentifier;
 
@@ -373,12 +399,15 @@ export default function DashboardPage() {
       )}
       <DashboardTopBar
         appUsername={appUsername}
-        profilePic={profilePic}
+        profilePic={publishedProfilePic}
         publishing={publishing}
         hasUnpublishedChanges={hasUnpublishedChanges}
         onPublish={handlePublish}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        onLogout={async () => { await axios.post("/api/auth/logout").catch(() => {}); window.location.href = "/app/login"; }}
+        onLogout={async () => {
+          await axios.post("/api/auth/logout").catch(() => {});
+          window.location.href = "/app/login";
+        }}
       />
 
       {/* Mobile draft strip */}
@@ -511,6 +540,8 @@ export default function DashboardPage() {
           updateCollab={updateCollab}
           featuredPosts={featuredPosts}
           onFeaturedPostsChange={setFeaturedPosts}
+          campaignPosts={campaignPosts}
+          onCampaignPostsChange={setCampaignPosts}
           receiptsVisible={receiptsVisible}
           setReceiptsVisible={setReceiptsVisible}
           theme={theme}
