@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
+import Link from "next/link";
 import Button from "@/components/reusable/Button";
+import { Toast } from "@/components/ui/Toast";
 
 type OnboardingStatus = {
   hasInstagram: boolean;
@@ -24,12 +26,16 @@ function redirectAfterLogin(
   }
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState(
+    searchParams.get("reset") === "1" ? "Password reset successfully. You can now log in." : ""
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,6 +56,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh bg-[#FAF7F2] flex flex-col">
+      {toast && <Toast message={toast} type="success" onClose={() => setToast("")} />}
       {/* Nav */}
       <nav className="px-6 py-4 flex items-center justify-between">
         <a href="/" className="flex items-center">
@@ -93,14 +100,9 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-widest">
-                  Password
-                </label>
-                <a href="#" className="text-xs text-primary hover:underline">
-                  Forgot password?
-                </a>
-              </div>
+              <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-widest mb-2">
+                Password
+              </label>
               <input
                 type="password"
                 placeholder="••••••••"
@@ -128,19 +130,29 @@ export default function LoginPage() {
             >
               {loading ? "Logging in…" : "Log in"}
             </Button>
+
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-gray-500 mt-6 flex items-center justify-center gap-2">
+            <Link href="/app/forgot-password" className="text-primary font-semibold hover:underline">
+              Forgot password?
+            </Link>
+            <span className="w-1 h-1 rounded-full bg-primary inline-block" />
             Don&apos;t have an account?{" "}
-            <a
-              href="/app/onboarding"
-              className="text-primary font-semibold hover:underline"
-            >
+            <Link href="/app/onboarding" className="text-primary font-semibold hover:underline">
               Sign up
-            </a>
+            </Link>
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

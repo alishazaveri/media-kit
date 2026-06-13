@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import config from "@/lib/config";
 import { SALT_ROUNDS, DUMMY_HASH } from "@/lib/auth";
+import { sendPasswordResetEmail } from "@/services/email.service";
 import {
   createUser,
   getUserByEmail,
@@ -21,7 +22,7 @@ import { initializeCreatorUserData } from "@/services/user_data.service";
 const ACCESS_TOKEN_TTL = "15m";
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
-const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
+const PASSWORD_RESET_TTL_MS = 10 * 60 * 1000;
 
 function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -151,7 +152,7 @@ export async function forgotPassword(email: string) {
     new Date(Date.now() + PASSWORD_RESET_TTL_MS)
   );
 
-  // TODO: send password reset email with resetToken
+  await sendPasswordResetEmail(user.email, resetToken);
   return { resetToken };
 }
 

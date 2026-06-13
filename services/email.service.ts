@@ -7,6 +7,6 @@ export async function sendPasswordResetEmail(to: string, resetToken: string) {
   return sendTemplateEmail({
     to,
     templateId: "password-reset",
-    variables: { reset_url },
+    variables: { reset_url, expires_in_minutes: 10 },
   });
 }
