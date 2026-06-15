@@ -97,6 +97,7 @@ export async function GET(request: NextRequest) {
     );
     try {
       await fetchAndSaveInstagramAnalytics(userId, account._id.toString());
+      await updateUser(userId, { last_data_refreshed_at: new Date() });
       console.log(
         "[Callback] Analytics fetch succeeded, redirecting to onboarding.",
       );

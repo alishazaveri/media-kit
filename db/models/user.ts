@@ -7,6 +7,8 @@ export interface IUser extends Document {
   username: string;
   plan_id?: mongoose.Types.ObjectId;
   profile_image_url?: string;
+  data_refresh_interval_hours: number;
+  last_data_refreshed_at?: Date;
   created_at: Date;
   updated_at: Date;
 }
@@ -19,6 +21,8 @@ const UserSchema = new Schema<IUser>(
     username: { type: String, required: true, unique: true },
     plan_id: { type: Schema.Types.ObjectId, ref: "Plan" },
     profile_image_url: { type: String },
+    data_refresh_interval_hours: { type: Number, default: 24 },
+    last_data_refreshed_at: { type: Date },
   },
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );
