@@ -69,7 +69,7 @@ export async function getUsersDueForRefresh() {
             {
               $subtract: [
                 now,
-                { $multiply: ["$data_refresh_interval_hours", 3600000] },
+                { $multiply: [{ $ifNull: ["$data_refresh_interval_hours", 24] }, 3600000] },
               ],
             },
           ],

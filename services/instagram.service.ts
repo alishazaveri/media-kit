@@ -2,7 +2,8 @@ import axios from "axios";
 import { getSocialChannelById } from "@/db/social_channel.db";
 import { getValidInstagramToken } from "@/services/social_channel.service";
 import { saveInsight } from "@/services/insight.service";
-import { linkInsightToUserData, getDraft, saveDraft } from "@/services/user_data.service";
+import { linkInsightToUserData, getDraft, saveDraft, refreshPostMediaUrls } from "@/services/user_data.service";
+import { getUserById, updateUser } from "@/db/user.db";
 import instagramConnect from "@/lib/instagramConnect";
 
 const GRAPH = "https://graph.instagram.com/v21.0";
@@ -405,6 +406,22 @@ export async function fetchAndSaveInstagramAnalytics(
   );
   await linkInsightToUserData(userId, "instagram", insight._id.toString());
   console.log("[Instagram Analytics] Saved insight successfully.");
+
+  // Refresh time-sensitive media URLs in stored draft/published posts
+  const urlMap = new Map(
+    posts.map((p) => [p.id, { media_url: p.media_url, thumbnail_url: p.thumbnail_url }]),
+  );
+  await refreshPostMediaUrls(userId, "profile", urlMap);
+
+  // Refresh profile_image_url on the User model if it's an Instagram CDN URL (not a user upload)
+  const freshProfilePic = profile.profile_picture_url as string | undefined;
+  if (freshProfilePic) {
+    const user = await getUserById(userId);
+    const current = (user as any)?.profile_image_url as string | undefined;
+    if (current && !current.includes(".public.blob.vercel-storage.com")) {
+      await updateUser(userId, { profile_image_url: freshProfilePic });
+    }
+  }
 
   // Seed draft_data on first-time setup (display_name not yet set by user)
   const existingDraft = await getDraft(userId, "instagram") as any;
