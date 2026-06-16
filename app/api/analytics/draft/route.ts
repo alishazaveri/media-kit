@@ -25,7 +25,6 @@ export async function PUT(req: NextRequest) {
       "packages",
       "collabs",
       "posts",
-      "campaign_posts",
       "profile_pic",
       "display_email",
       "services_visible",

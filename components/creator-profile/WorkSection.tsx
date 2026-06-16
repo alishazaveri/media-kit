@@ -134,21 +134,18 @@ function PostGrid({
 
 export function WorkSection({
   posts,
-  campaignPosts,
   handle,
   baseColor,
   accentColor,
   contrastColor,
 }: {
   posts?: PostItem[];
-  campaignPosts?: PostItem[];
   handle: string;
   baseColor: string;
   accentColor: string;
   contrastColor: string;
 }) {
   const featuredCardData = buildCardData(posts, true);
-  const campaignCardData = buildCardData(campaignPosts, false);
 
   return (
     <section
@@ -170,36 +167,12 @@ export function WorkSection({
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-10">
-        <div>
-          <p
-            className="text-xs font-bold tracking-[0.2em] uppercase mb-6"
-            style={{ color: accentColor }}
-          >
-            Featured Content
-          </p>
-          <PostGrid
-            cardData={featuredCardData}
-            handle={handle}
-            accentColor={accentColor}
-          />
-        </div>
-
-        {campaignCardData.length > 0 && (
-          <div>
-            <p
-              className="text-xs font-bold tracking-[0.2em] uppercase mb-6"
-              style={{ color: accentColor }}
-            >
-              Previous Campaigns
-            </p>
-            <PostGrid
-              cardData={campaignCardData}
-              handle={handle}
-              accentColor={accentColor}
-            />
-          </div>
-        )}
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <PostGrid
+          cardData={featuredCardData}
+          handle={handle}
+          accentColor={accentColor}
+        />
       </div>
     </section>
   );

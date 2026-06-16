@@ -6,7 +6,6 @@ import Button from "@/components/reusable/Button";
 import { ProfileSection } from "./customizeForm/ProfileSection";
 import { ThemeSection } from "./customizeForm/ThemeSection";
 import { FeaturedPostsSection } from "./customizeForm/FeaturedPostsSection";
-import { CampaignSection } from "./customizeForm/CampaignSection";
 import { PastCollabsSection } from "./customizeForm/PastCollabsSection";
 import { ServicesSection } from "./customizeForm/ServicesSection";
 
@@ -55,8 +54,6 @@ export interface CustomizeFormProps {
   ) => void;
   featuredPosts: any[];
   onFeaturedPostsChange: (posts: any[]) => void;
-  campaignPosts: any[];
-  onCampaignPostsChange: (posts: any[]) => void;
   receiptsVisible: boolean;
   setReceiptsVisible: (v: boolean) => void;
   onPreviewClick: () => void;
@@ -84,8 +81,6 @@ export function CustomizeForm({
   igPosts,
   featuredPosts,
   onFeaturedPostsChange,
-  campaignPosts,
-  onCampaignPostsChange,
   packages,
   addPackage,
   removePackage,
@@ -158,12 +153,6 @@ export function CustomizeForm({
         igPosts={igPosts}
         featuredPosts={featuredPosts}
         onFeaturedPostsChange={onFeaturedPostsChange}
-        onSectionFocus={onSectionFocus}
-      />
-
-      <CampaignSection
-        campaignPosts={campaignPosts}
-        onCampaignPostsChange={onCampaignPostsChange}
         onSectionFocus={onSectionFocus}
       />
 

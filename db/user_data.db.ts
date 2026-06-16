@@ -64,7 +64,7 @@ export async function refreshUserDataPostUrls(
   await connectDB();
   type PostRecord = { id: string; media_url?: string | null; thumbnail_url?: string | null; [key: string]: unknown };
   type CollabRecord = { collabPosts?: PostRecord[]; [key: string]: unknown };
-  type SectionData = { posts?: PostRecord[]; campaign_posts?: PostRecord[]; collabs?: CollabRecord[] };
+  type SectionData = { posts?: PostRecord[]; collabs?: CollabRecord[] };
   type DataRecord = { draft_data?: SectionData; published_data?: SectionData };
 
   const record = await UserData.findOne({ user_id: userId, platform }).lean() as DataRecord | null;
@@ -93,14 +93,10 @@ export async function refreshUserDataPostUrls(
 
   if (Array.isArray(draft.posts))
     updates["draft_data.posts"] = applyUrls(draft.posts);
-  if (Array.isArray(draft.campaign_posts))
-    updates["draft_data.campaign_posts"] = applyUrls(draft.campaign_posts);
   if (Array.isArray(draft.collabs))
     updates["draft_data.collabs"] = applyCollabUrls(draft.collabs);
   if (Array.isArray(published.posts))
     updates["published_data.posts"] = applyUrls(published.posts);
-  if (Array.isArray(published.campaign_posts))
-    updates["published_data.campaign_posts"] = applyUrls(published.campaign_posts);
   if (Array.isArray(published.collabs))
     updates["published_data.collabs"] = applyCollabUrls(published.collabs);
 

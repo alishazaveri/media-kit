@@ -55,13 +55,11 @@ interface Props {
   ) => void;
   featuredPosts: any[];
   onFeaturedPostsChange: (posts: any[]) => void;
-  campaignPosts: any[];
-  onCampaignPostsChange: (posts: any[]) => void;
   receiptsVisible: boolean;
   setReceiptsVisible: (v: boolean) => void;
   theme?: ThemeData;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
-  onProfilePicUploaded?: (url: string) => void;
+  onProfilePicUploaded?: (url: string | null) => void;
   publishing?: boolean;
   hasUnpublishedChanges?: boolean;
   onPublish?: () => void;
@@ -109,8 +107,6 @@ export function CustomizeTab(props: Props) {
     updateCollab,
     featuredPosts,
     onFeaturedPostsChange,
-    campaignPosts,
-    onCampaignPostsChange,
     receiptsVisible,
     setReceiptsVisible,
     theme,
@@ -134,7 +130,6 @@ export function CustomizeTab(props: Props) {
     stats: igStats,
     insights: igInsights,
     posts: (featuredPosts?.length ?? 0) > 0 ? featuredPosts : igPosts,
-    campaignPosts: (campaignPosts?.length ?? 0) > 0 ? campaignPosts : undefined,
     availableForCollabs,
     nicheTags,
     packages,
@@ -188,7 +183,6 @@ export function CustomizeTab(props: Props) {
     servicesVisible,
     receiptsVisible,
     featuredPosts,
-    campaignPosts,
     theme,
   ]);
 
@@ -229,8 +223,6 @@ export function CustomizeTab(props: Props) {
     updateCollab,
     featuredPosts,
     onFeaturedPostsChange,
-    campaignPosts,
-    onCampaignPostsChange,
     receiptsVisible,
     setReceiptsVisible,
     onPreviewClick: () => setShowPreview(true),

@@ -34,7 +34,6 @@ export default function DashboardPage() {
   });
   const [igPosts] = useState<any[]>([]);
   const [featuredPosts, setFeaturedPosts] = useState<any[]>([]);
-  const [campaignPosts, setCampaignPosts] = useState<any[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [publishedData, setPublishedData] = useState<Record<string, any>>({});
   const [profilePicChanged, setProfilePicChanged] = useState(false);
@@ -235,12 +234,6 @@ export default function DashboardPage() {
             })
             .catch(() => {});
         }
-        if (
-          Array.isArray(draft.campaign_posts) &&
-          draft.campaign_posts.length
-        ) {
-          setCampaignPosts(draft.campaign_posts);
-        }
         const published: Record<string, unknown> = res.data?.published ?? {};
         setPublishedData({
           display_name: "",
@@ -252,7 +245,6 @@ export default function DashboardPage() {
           available_for_collabs: true,
           niche_tags: [],
           posts: [],
-          campaign_posts: [],
           ...published,
         });
         setPublishedProfilePic(
@@ -327,7 +319,6 @@ export default function DashboardPage() {
         collabs,
         receipts_visible: receiptsVisible,
         posts: featuredPosts,
-        campaign_posts: campaignPosts,
         profile_pic: profilePic,
       });
       setPublishedProfilePic(profilePic);
@@ -390,7 +381,6 @@ export default function DashboardPage() {
     packages,
     collabs,
     posts: featuredPosts,
-    campaign_posts: campaignPosts,
   };
   const hasUnpublishedTheme = draftThemeIdentifier !== publishedThemeIdentifier;
 
@@ -556,8 +546,6 @@ export default function DashboardPage() {
           updateCollab={updateCollab}
           featuredPosts={featuredPosts}
           onFeaturedPostsChange={setFeaturedPosts}
-          campaignPosts={campaignPosts}
-          onCampaignPostsChange={setCampaignPosts}
           receiptsVisible={receiptsVisible}
           setReceiptsVisible={setReceiptsVisible}
           theme={theme}
