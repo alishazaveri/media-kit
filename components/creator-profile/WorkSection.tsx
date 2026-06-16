@@ -136,16 +136,16 @@ export function WorkSection({
   posts,
   campaignPosts,
   handle,
-  primaryColor,
+  baseColor,
   accentColor,
-  secondaryColor,
+  contrastColor,
 }: {
   posts?: PostItem[];
   campaignPosts?: PostItem[];
   handle: string;
-  primaryColor: string;
+  baseColor: string;
   accentColor: string;
-  secondaryColor: string;
+  contrastColor: string;
 }) {
   const featuredCardData = buildCardData(posts, true);
   const campaignCardData = buildCardData(campaignPosts, false);
@@ -154,14 +154,14 @@ export function WorkSection({
     <section
       id="work"
       className="py-12 md:py-20"
-      style={{ backgroundColor: secondaryColor }}
+      style={{ backgroundColor: contrastColor }}
     >
       <div className="max-w-7xl mx-auto px-4 md:px-8 mb-8 md:mb-10">
         <div className="flex items-end justify-between">
           <div>
             <h2
               className="font-black text-3xl md:text-5xl mb-2"
-              style={{ color: primaryColor }}
+              style={{ color: baseColor }}
             >
               The Visual Lab
             </h2>

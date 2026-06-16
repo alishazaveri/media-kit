@@ -4,14 +4,14 @@ import { fmt, type Stats } from "./types";
 
 export function StatsSection({
   stats,
-  primaryColor,
+  baseColor,
   accentColor,
-  secondaryColor,
+  contrastColor,
 }: {
   stats: Stats;
-  primaryColor: string;
+  baseColor: string;
   accentColor: string;
-  secondaryColor: string;
+  contrastColor: string;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
@@ -173,7 +173,7 @@ export function StatsSection({
       ref={sectionRef}
       id="stats"
       className="px-4 py-12 md:px-8 md:py-20"
-      style={{ backgroundColor: primaryColor }}
+      style={{ backgroundColor: baseColor }}
     >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 md:gap-12 md:items-start ">
         {/* Left: big numbers */}
@@ -215,7 +215,7 @@ export function StatsSection({
                 className={` text-xs font-bold px-3 py-1.5 rounded-full`}
                 style={{
                   color: accentColor,
-                  backgroundColor: `${primaryColor}`,
+                  backgroundColor: `${baseColor}`,
                 }}
               >
                 YTD +97% {/* [DUMMY: no YTD data] */}
@@ -288,7 +288,7 @@ export function StatsSection({
               <div
                 key={label}
                 className={`rounded-2xl  p-4 border border-[#1d293d]/5`}
-                style={{ backgroundColor: primaryColor }}
+                style={{ backgroundColor: baseColor }}
               >
                 <div className="flex items-center gap-2 text-muted text-[10px] font-bold uppercase tracking-[.1em]">
                   {icon}

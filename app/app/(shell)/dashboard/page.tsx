@@ -225,6 +225,15 @@ export default function DashboardPage() {
           setCollabs(draft.collabs);
         if (Array.isArray(draft.posts) && draft.posts.length) {
           setFeaturedPosts(draft.posts);
+        } else {
+          // No saved selection — auto-select the first 4 Instagram posts
+          fetch("/api/instagram/posts?limit=4")
+            .then((r) => r.json())
+            .then((data) => {
+              const posts: any[] = data.posts ?? [];
+              if (posts.length > 0) setFeaturedPosts(posts.slice(0, 4));
+            })
+            .catch(() => {});
         }
         if (
           Array.isArray(draft.campaign_posts) &&

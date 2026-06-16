@@ -7,9 +7,8 @@ const GRAPH = "https://graph.instagram.com/v21.0";
 const FIELDS =
   "id,caption,media_type,media_product_type,thumbnail_url,media_url,permalink,timestamp,like_count,comments_count";
 
-// Valid metrics per Instagram Graph API error response
-const REEL_METRICS = "views,reach,saved,shares,total_interactions";
-const FEED_METRICS = "impressions,reach,saved,shares,total_interactions";
+// Base metrics supported by all post types
+const BASE_METRICS = "reach,saved,shares,total_interactions";
 
 const getMetric = (data: any[], name: string): number =>
   data.find((m: any) => m.name === name)?.values?.[0]?.value ?? 0;
@@ -19,28 +18,37 @@ async function fetchInsights(
   isReel: boolean,
   token: string,
 ): Promise<Record<string, number>> {
+  // Primary view metric differs by type — reels use `views`, feed posts use `impressions`.
+  // Some post types (IGTV, older video formats) don't support either; we fall back to base
+  // metrics only so reach/interactions still come through.
+  const viewMetric = isReel ? "views" : "impressions";
+
+  const parse = (ins: any[], viewKey: string) => ({
+    impressions: getMetric(ins, viewKey),
+    reach: getMetric(ins, "reach"),
+    saved: getMetric(ins, "saved"),
+    shares: getMetric(ins, "shares"),
+    total_interactions: getMetric(ins, "total_interactions"),
+  });
+
   try {
     const res = await axios.get(`${GRAPH}/${mediaId}/insights`, {
-      params: {
-        metric: isReel ? REEL_METRICS : FEED_METRICS,
-        access_token: token,
-      },
+      params: { metric: `${viewMetric},${BASE_METRICS}`, access_token: token },
     });
-    const ins: any[] = res.data.data ?? [];
-    return {
-      // `impressions` holds the primary view metric: plays for reels, impressions for feed
-      impressions: getMetric(ins, isReel ? "views" : "impressions"),
-      reach: getMetric(ins, "reach"),
-      saved: getMetric(ins, "saved"),
-      shares: getMetric(ins, "shares"),
-      total_interactions: getMetric(ins, "total_interactions"),
-    };
+    return parse(res.data.data ?? [], viewMetric);
   } catch (err) {
-    if (axios.isAxiosError(err)) {
-      console.warn(`[posts/insights] ${mediaId} failed:`, {
-        status: err.response?.status,
-        data: err.response?.data,
-      });
+    // If the view metric isn't supported for this post type, retry with base metrics only
+    if (axios.isAxiosError(err) && err.response?.status === 400) {
+      try {
+        const res = await axios.get(`${GRAPH}/${mediaId}/insights`, {
+          params: { metric: BASE_METRICS, access_token: token },
+        });
+        return parse(res.data.data ?? [], viewMetric);
+      } catch (retryErr) {
+        console.warn(`[posts/insights] ${mediaId} retry failed:`, axios.isAxiosError(retryErr) ? retryErr.response?.data : retryErr);
+      }
+    } else {
+      console.warn(`[posts/insights] ${mediaId} failed:`, axios.isAxiosError(err) ? err.response?.data : err);
     }
     return {};
   }

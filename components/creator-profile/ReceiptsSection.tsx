@@ -113,11 +113,11 @@ const DUMMY_CARDS: CardData[] = [
 function CollabCard({
   card,
   accentColor,
-  primaryColor,
+  baseColor,
 }: {
   card: CardData;
   accentColor: string;
-  primaryColor: string;
+  baseColor: string;
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
 
@@ -190,7 +190,13 @@ function CollabCard({
                 aria-label="Previous post"
               >
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path d="M6.5 2L3.5 5l3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M6.5 2L3.5 5l3 3"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </button>
               <button
@@ -202,7 +208,13 @@ function CollabCard({
                 aria-label="Next post"
               >
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path d="M3.5 2L6.5 5l-3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M3.5 2L6.5 5l-3 3"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </button>
             </>
@@ -232,7 +244,7 @@ function CollabCard({
             {card.featured && (
               <div
                 className="flex items-center gap-1.5  text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full w-fit mb-2"
-                style={{ color: primaryColor, backgroundColor: accentColor }}
+                style={{ color: baseColor, backgroundColor: accentColor }}
               >
                 <svg
                   width="10"
@@ -395,11 +407,11 @@ function toPostType(mediaType?: string): string {
 export function ReceiptsSection({
   collabs,
   accentColor,
-  primaryColor,
+  baseColor,
 }: {
   collabs?: Collaboration[];
   accentColor: string;
-  primaryColor: string;
+  baseColor: string;
 }) {
   const hasCollabs = collabs && collabs.length > 0;
 
@@ -483,7 +495,11 @@ export function ReceiptsSection({
     : DUMMY_CARDS;
 
   return (
-    <section id="receipts" className="py-12 md:py-20 bg-[#f0f7f2]">
+    <section
+      id="receipts"
+      className="py-12 md:py-20 "
+      style={{ backgroundColor: baseColor }}
+    >
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 mb-8 md:mb-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -513,7 +529,7 @@ export function ReceiptsSection({
               key={card.id}
               card={card}
               accentColor={accentColor}
-              primaryColor={primaryColor}
+              baseColor={baseColor}
             />
           ))}
         </div>

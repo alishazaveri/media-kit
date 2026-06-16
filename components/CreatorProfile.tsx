@@ -170,9 +170,9 @@ export function CreatorProfile({
   );
   const visiblePackages = packages.slice(0, 4);
 
-  const primaryColor = theme?.base_color ?? "#fff4ef";
+  const baseColor = theme?.base_color ?? "#fff4ef";
   const accentColor = theme?.accent_color ?? "#ff7350";
-  const secondaryColor = theme?.contrast_color ?? "#1B1210";
+  const contrastColor = theme?.contrast_color ?? "#1B1210";
 
   return (
     <div className="font-sans min-h-screen bg-white">
@@ -180,9 +180,9 @@ export function CreatorProfile({
         initials={initials}
         name={name}
         email={email}
-        primaryColor={primaryColor}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
       />
       <HeroSection
         firstName={firstName}
@@ -196,37 +196,37 @@ export function CreatorProfile({
         availableForCollabs={availableForCollabs}
         nicheTags={nicheTags}
         email={email}
-        primaryColor={primaryColor}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
       />
       <StatsSection
         stats={stats}
-        primaryColor={primaryColor}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
       />
       {/* Uncomment later */}
       {/* <AudienceSection
         insights={insights}
         nicheTags={nicheTags}
-        primaryColor={primaryColor}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
       /> */}
       <WorkSection
         posts={posts}
         campaignPosts={campaignPosts}
         handle={handle}
-        primaryColor={primaryColor}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
       />
       {receiptsVisible && (
         <ReceiptsSection
           collabs={collabs}
           accentColor={accentColor}
-          primaryColor={primaryColor}
+          baseColor={baseColor}
         />
       )}
       <PartnerSection
@@ -237,17 +237,17 @@ export function CreatorProfile({
         tagline={tagline}
         name={name}
         email={email}
-        primaryColor={primaryColor}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
       />
       <FooterSection
         handle={handle}
         name={name}
         email={email}
-        primaryColor={primaryColor}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
       />
     </div>
   );

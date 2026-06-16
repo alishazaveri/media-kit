@@ -29,17 +29,17 @@ export function HeroSection({
   availableForCollabs,
   nicheTags,
   email,
-  primaryColor,
+  baseColor,
   accentColor,
 }: HeroSectionProps & {
-  primaryColor: string;
+  baseColor: string;
   accentColor: string;
-  secondaryColor: string;
+  contrastColor: string;
 }) {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <section id="hero" style={{ backgroundColor: primaryColor }}>
+    <section id="hero" style={{ backgroundColor: baseColor }}>
       <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
         <div className="relative grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10 lg:gap-12 items-center">
           {/* Photo */}

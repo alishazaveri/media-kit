@@ -37,9 +37,9 @@ export function PartnerSection({
   tagline,
   name,
   email,
-  primaryColor,
+  baseColor,
   accentColor,
-  secondaryColor,
+  contrastColor,
 }: {
   sortedCollabs: Collaboration[];
   visiblePackages: Package[];
@@ -48,9 +48,9 @@ export function PartnerSection({
   tagline?: string;
   name: string;
   email?: string;
-  primaryColor: string;
+  baseColor: string;
   accentColor: string;
-  secondaryColor: string;
+  contrastColor: string;
 }) {
   const [testimonialIdx, setTestimonialIdx] = useState(0);
   const t = TESTIMONIALS[testimonialIdx];
@@ -71,7 +71,7 @@ export function PartnerSection({
       : ["Curious", "Crafted", "Confident", "Playful", "Honest", "Sustainable"]; // [DUMMY vibe words]
 
   return (
-    <section id="partner" style={{ backgroundColor: primaryColor }}>
+    <section id="partner" style={{ backgroundColor: baseColor }}>
       {/* TRUSTED BY bar */}
       <style>{`
         @keyframes tickerX {
@@ -259,7 +259,7 @@ export function PartnerSection({
           {/* Hidden for now */}
           <div
             className="bg-[#DFF0EA] rounded-3xl p-6 md:p-10 hidden"
-            // style={{ backgroundColor: primaryColor }}
+            // style={{ backgroundColor: baseColor }}
           >
             <div className="flex flex-col md:flex-row gap-6 md:gap-10">
               <div className="md:w-56 shrink-0">

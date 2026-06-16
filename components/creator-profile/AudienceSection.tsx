@@ -4,12 +4,12 @@ function DonutChart({
   segments,
   centerPct,
   centerLabel,
-  secondaryColor,
+  contrastColor,
 }: {
   segments: { color: string; pct: number }[];
   centerPct: string;
   centerLabel: string;
-  secondaryColor: string;
+  contrastColor: string;
 }) {
   const outerR = 58,
     innerR = 38,
@@ -44,7 +44,7 @@ function DonutChart({
         x="68"
         y="63"
         textAnchor="middle"
-        fill={secondaryColor}
+        fill={contrastColor}
         style={{ fontSize: "19px", fontWeight: 900 }}
       >
         {centerPct}
@@ -92,15 +92,15 @@ function ProgressBar({
 export function AudienceSection({
   insights,
   nicheTags,
-  primaryColor,
+  baseColor,
   accentColor,
-  secondaryColor,
+  contrastColor,
 }: {
   insights: AudienceInsights;
   nicheTags: string[];
-  primaryColor: string;
+  baseColor: string;
   accentColor: string;
-  secondaryColor: string;
+  contrastColor: string;
 }) {
   const genderAgeData = insights.gender_age ?? [];
   const citiesData = insights.top_cities ?? [];
@@ -141,12 +141,12 @@ export function AudienceSection({
         {
           label: "Millennial (25–34)",
           pct: Math.round((millennial / ageTotal) * 100),
-          color: secondaryColor,
+          color: contrastColor,
         },
         {
           label: "Alpha (13–17)",
           pct: Math.round((alpha / ageTotal) * 100),
-          color: primaryColor,
+          color: baseColor,
         },
         {
           label: "35+",
@@ -156,8 +156,8 @@ export function AudienceSection({
       ].filter((g) => g.pct > 0)
     : [
         { label: "Gen Z (18–24)", pct: 54, color: accentColor },
-        { label: "Millennial (25–34)", pct: 31, color: secondaryColor },
-        { label: "Alpha (13–17)", pct: 9, color: primaryColor },
+        { label: "Millennial (25–34)", pct: 31, color: contrastColor },
+        { label: "Alpha (13–17)", pct: 9, color: baseColor },
         { label: "35+", pct: 6, color: "#D1D5DB" },
       ];
 
@@ -196,7 +196,7 @@ export function AudienceSection({
     <section
       id="audience"
       className="px-4 py-12 md:px-8 md:py-20"
-      style={{ backgroundColor: primaryColor }}
+      style={{ backgroundColor: baseColor }}
     >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 items-start">
         {/* Left: Audience DNA white card */}
@@ -207,7 +207,7 @@ export function AudienceSection({
             </h2>
             {/* <span
               className="text-xs font-bold px-3 py-1.5 rounded-full"
-              style={{ color: accentColor, backgroundColor: primaryColor }}
+              style={{ color: accentColor, backgroundColor: baseColor }}
             >
               2026 UPDATE 
             </span> */}
@@ -219,7 +219,7 @@ export function AudienceSection({
                 segments={ageGroups}
                 centerPct={`${dominant.pct}%`}
                 centerLabel={dominant.label.split(" ")[0]}
-                secondaryColor={secondaryColor}
+                contrastColor={contrastColor}
               />
             </div>
             <div className="space-y-2.5 flex-1">
@@ -249,20 +249,20 @@ export function AudienceSection({
               pct={femalePct}
               color={accentColor}
             />
-            <ProgressBar label="MALE" pct={malePct} color={secondaryColor} />
+            <ProgressBar label="MALE" pct={malePct} color={contrastColor} />
           </div>
 
           {/* [DUMMY: no device field] */}
           {/* <div className="space-y-4">
             <ProgressBar label="MOBILE" pct={94} color={accentColor} />
-            <ProgressBar label="DESKTOP" pct={6} color={secondaryColor} />
+            <ProgressBar label="DESKTOP" pct={6} color={contrastColor} />
           </div> */}
         </div>
 
         {/* Right: dark navy card */}
         <div
           className="shrink-0 rounded-3xl p-8 text-white md:w-1/2 w-full"
-          style={{ backgroundColor: secondaryColor }}
+          style={{ backgroundColor: contrastColor }}
         >
           <h2 className="font-display text-2xl md:text-3xl font-bold mb-6">
             Top Markets

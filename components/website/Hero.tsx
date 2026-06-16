@@ -324,7 +324,7 @@ function PhoneWithCards({ cardsVisible }: { cardsVisible: boolean }) {
           }}
         >
           <Image
-            src="/profile-dummy.png"
+            src="/profile-dummy-1.png"
             alt="Profile preview"
             fill
             sizes="310px"
@@ -354,7 +354,9 @@ function HeroDesktop() {
   // Stable 0 on server; updated to Date.now() after hydration so framer-motion
   // re-runs word animations on client navigations without causing an SSR mismatch.
   const [mountId, setMountId] = useState(0);
-  useEffect(() => { setMountId(Date.now()); }, []);
+  useEffect(() => {
+    setMountId(Date.now());
+  }, []);
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {

@@ -4,16 +4,16 @@ export function FooterSection({
   handle,
   name,
   email,
-  primaryColor,
+  baseColor,
   accentColor,
-  secondaryColor,
+  contrastColor,
 }: {
   handle: string;
   name: string;
   email?: string;
-  primaryColor: string;
+  baseColor: string;
   accentColor: string;
-  secondaryColor: string;
+  contrastColor: string;
 }) {
   return (
     <section className="bg-white px-4 pt-16 pb-10 md:px-8 md:pt-24">
@@ -35,12 +35,12 @@ export function FooterSection({
               width="20"
               height="16"
               rx="2"
-              stroke={secondaryColor}
+              stroke={contrastColor}
               strokeWidth="2"
             />
             <path
               d="M2 7l10 7 10-7"
-              stroke={secondaryColor}
+              stroke={contrastColor}
               strokeWidth="2"
               strokeLinecap="round"
             />
@@ -70,7 +70,7 @@ export function FooterSection({
       </div>
       <div className="max-w-7xl mx-auto mt-16 pt-6 border-t border-gray-100 text-center">
         <p className="text-xs text-gray-400">
-          © 2026 {name} Studio. Built with intention. {/* [DUMMY: copyright] */}
+          © {new Date().getFullYear()} Kloot X {name}.
         </p>
       </div>
     </section>

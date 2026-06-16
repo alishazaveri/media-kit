@@ -4,21 +4,21 @@ export function NavBar({
   initials,
   name,
   email,
-  primaryColor,
+  baseColor,
   accentColor,
-  secondaryColor,
+  contrastColor,
 }: {
   initials: string;
   name: string;
   email: string;
-  primaryColor: string;
+  baseColor: string;
   accentColor: string;
-  secondaryColor: string;
+  contrastColor: string;
 }) {
   return (
     <nav
       className={`sticky top-0 z-50 backdrop-blur-sm border-b border-gray-100 px-0 md:px-8 py-4 `}
-      style={{ backgroundColor: `${primaryColor}BF` }}
+      style={{ backgroundColor: `${baseColor}BF` }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
         <span className="font-black text-xl text-gray-900 tracking-[-0.05em]">
@@ -53,7 +53,7 @@ export function NavBar({
         <a
           href={email ? buildMailto(email, name) : undefined}
           className=" text-white text-xs font-bold tracking-[.1rem] rounded-full hover:bg-gray-700 transition-colors px-4 py-2 text-[11px]"
-          style={{ backgroundColor: secondaryColor }}
+          style={{ backgroundColor: contrastColor }}
         >
           CONTACT
         </a>
