@@ -19,6 +19,13 @@ function settled<T>(result: PromiseSettledResult<T>, label: string): T | null {
     return result.value;
   }
   const err = result.reason;
+  // Silently skip posts created before account was converted to professional
+  if (
+    axios.isAxiosError(err) &&
+    err.response?.data?.error?.error_subcode === 2108006
+  ) {
+    return null;
+  }
   console.warn(
     `[Instagram Analytics] "${label}" failed:`,
     axios.isAxiosError(err)
@@ -47,7 +54,6 @@ export async function fetchAndSaveInstagramAnalytics(
   if (!account) throw new Error("Social channel not found");
 
   const igUserId = account.platform_user_id;
-  console.log("[Instagram Analytics] igUserId:", igUserId);
 
   const now = Math.floor(Date.now() / 1000);
   const since30 = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000);
@@ -61,7 +67,7 @@ export async function fetchAndSaveInstagramAnalytics(
     access_token: token,
   });
 
-  // previous 30-day window for % change calculations
+  // Previous 30-day window for % change calculations
   const prevPeriodParams = (metric: string) => ({
     metric,
     period: "day",
@@ -70,27 +76,20 @@ export async function fetchAndSaveInstagramAnalytics(
     access_token: token,
   });
 
-  const lifetimeParams = (metric: string) => ({
-    metric,
-    period: "lifetime",
-    access_token: token,
-  });
-
-  console.log("[Instagram Analytics] Firing all API requests...");
-
   const [
     profileResult,
     reachResult,
-    impressionsResult,
+    viewsResult,
     profileViewsResult,
     followerCountResult,
     totalInteractionsResult,
     reachPrevResult,
     profileViewsPrevResult,
     followerCountPrevResult,
-    cityResult,
-    countryResult,
-    genderAgeResult,
+    demoCityResult,
+    demoCountryResult,
+    demoAgeResult,
+    demoGenderResult,
     mediaResult,
   ] = await Promise.allSettled([
     axios.get(`${GRAPH}/${igUserId}`, {
@@ -98,9 +97,7 @@ export async function fetchAndSaveInstagramAnalytics(
     }),
     // Current 30-day window
     axios.get(`${GRAPH}/${igUserId}/insights`, { params: dayParams("reach") }),
-    axios.get(`${GRAPH}/${igUserId}/insights`, {
-      params: dayParams("impressions"),
-    }),
+    axios.get(`${GRAPH}/${igUserId}/insights`, { params: dayParams("views") }),
     axios.get(`${GRAPH}/${igUserId}/insights`, {
       params: dayParams("profile_views"),
     }),
@@ -120,17 +117,21 @@ export async function fetchAndSaveInstagramAnalytics(
     axios.get(`${GRAPH}/${igUserId}/insights`, {
       params: prevPeriodParams("follower_count"),
     }),
-    // Lifetime audience (API limitation: no time-window support)
+    // Lifetime follower demographics — metric_type and timeframe are required by Meta's API
+    // Without them the endpoint silently returns data:[] instead of an error
     axios.get(`${GRAPH}/${igUserId}/insights`, {
-      params: lifetimeParams("audience_city"),
+      params: { metric: "follower_demographics", period: "lifetime", metric_type: "total_value", timeframe: "last_30_days", breakdown: "city", access_token: token },
     }),
     axios.get(`${GRAPH}/${igUserId}/insights`, {
-      params: lifetimeParams("audience_country"),
+      params: { metric: "follower_demographics", period: "lifetime", metric_type: "total_value", timeframe: "last_30_days", breakdown: "country", access_token: token },
     }),
     axios.get(`${GRAPH}/${igUserId}/insights`, {
-      params: lifetimeParams("audience_gender_age"),
+      params: { metric: "follower_demographics", period: "lifetime", metric_type: "total_value", timeframe: "last_30_days", breakdown: "age", access_token: token },
     }),
-    // Media list — increased to 25 for better top-content ranking
+    axios.get(`${GRAPH}/${igUserId}/insights`, {
+      params: { metric: "follower_demographics", period: "lifetime", metric_type: "total_value", timeframe: "last_30_days", breakdown: "gender", access_token: token },
+    }),
+    // Media list — 25 posts for better top-content ranking
     axios.get(`${GRAPH}/${igUserId}/media`, {
       params: {
         fields:
@@ -141,24 +142,12 @@ export async function fetchAndSaveInstagramAnalytics(
     }),
   ]);
 
-  console.log({
-    profileResult,
-    reachResult,
-    impressionsResult,
-    profileViewsResult,
-    followerCountResult,
-    cityResult,
-    countryResult,
-    genderAgeResult,
-    mediaResult,
-  });
-
   // Profile is required — throw if it failed
   const profileRes = settled(profileResult, "profile");
   if (!profileRes) throw new Error("Failed to fetch Instagram profile");
 
   const reachRes = settled(reachResult, "reach");
-  const impressionsRes = settled(impressionsResult, "impressions");
+  const viewsRes = settled(viewsResult, "views");
   const profileViewsRes = settled(profileViewsResult, "profile_views");
   const followerCountRes = settled(followerCountResult, "follower_count");
   const totalInteractionsRes = settled(
@@ -174,53 +163,17 @@ export async function fetchAndSaveInstagramAnalytics(
     followerCountPrevResult,
     "follower_count_prev",
   );
-  const cityRes = settled(cityResult, "audience_city");
-  const countryRes = settled(countryResult, "audience_country");
-  const genderAgeRes = settled(genderAgeResult, "audience_gender_age");
+  const demoCityRes = settled(demoCityResult, "follower_demographics_city");
+  const demoCountryRes = settled(demoCountryResult, "follower_demographics_country");
+  const demoAgeRes = settled(demoAgeResult, "follower_demographics_age");
+  const demoGenderRes = settled(demoGenderResult, "follower_demographics_gender");
   const mediaRes = settled(mediaResult, "media");
-
-  // console.log(
-  //   "[Instagram Analytics] Raw profile:",
-  //   JSON.stringify(profileRes.data, null, 2),
-  // );
-  // console.log(
-  //   "[Instagram Analytics] reach data:",
-  //   JSON.stringify(reachRes?.data, null, 2),
-  // );
-  // console.log(
-  //   "[Instagram Analytics] impressions data:",
-  //   JSON.stringify(impressionsRes?.data, null, 2),
-  // );
-  // console.log(
-  //   "[Instagram Analytics] profile_views data:",
-  //   JSON.stringify(profileViewsRes?.data, null, 2),
-  // );
-  // console.log(
-  //   "[Instagram Analytics] follower_count data:",
-  //   JSON.stringify(followerCountRes?.data, null, 2),
-  // );
-  // console.log(
-  //   "[Instagram Analytics] audience_city data:",
-  //   JSON.stringify(cityRes?.data, null, 2),
-  // );
-  // console.log(
-  //   "[Instagram Analytics] audience_country data:",
-  //   JSON.stringify(countryRes?.data, null, 2),
-  // );
-  // console.log(
-  //   "[Instagram Analytics] audience_gender_age data:",
-  //   JSON.stringify(genderAgeRes?.data, null, 2),
-  // );
-  // console.log(
-  //   "[Instagram Analytics] media data:",
-  //   JSON.stringify(mediaRes?.data, null, 2),
-  // );
 
   const profile = profileRes.data;
 
   // ── Current-period totals ─────────────────────────────────────────────────
   const reach30d = reachRes ? sumValues(reachRes.data) : 0;
-  const impressions30d = impressionsRes ? sumValues(impressionsRes.data) : 0;
+  const views30d = viewsRes ? sumValues(viewsRes.data) : 0;
   const profileViews30d = profileViewsRes ? sumValues(profileViewsRes.data) : 0;
   const totalInteractions30d = totalInteractionsRes
     ? sumValues(totalInteractionsRes.data)
@@ -254,68 +207,61 @@ export async function fetchAndSaveInstagramAnalytics(
   const profileViewsGrowthPct = calcGrowth(profileViews30d, profileViewsPrev);
   const followerGrowthPct = calcGrowth(followerGain30d, followerGainPrev);
 
-  // ── Audience demographics (lifetime — no time-window available in API) ────
-  const citiesRaw: Record<string, number> =
-    cityRes?.data?.data?.[0]?.value ?? {};
-  const topCities = Object.entries(citiesRaw)
-    .map(([city, count]) => ({ city, count }))
+  // ── Audience demographics (follower_demographics breakdown format) ────────
+  // Response shape: data[0].total_value.breakdowns[0].results[]
+  //   where each result = { dimension_values: [string], value: number }
+  type DemoResult = { dimension_values: string[]; value: number };
+  const parseDemoResults = (res: any): DemoResult[] =>
+    res?.data?.data?.[0]?.total_value?.breakdowns?.[0]?.results ?? [];
+
+  const cityResults = parseDemoResults(demoCityRes);
+  const countryResults = parseDemoResults(demoCountryRes);
+  const ageResults = parseDemoResults(demoAgeRes);
+  const genderResults = parseDemoResults(demoGenderRes);
+
+  const topCities = cityResults
+    .map((r) => ({ city: r.dimension_values[0], count: r.value }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
-  const countriesRaw: Record<string, number> =
-    countryRes?.data?.data?.[0]?.value ?? {};
-  const topCountries = Object.entries(countriesRaw)
-    .map(([country, count]) => ({ country, count }))
+  const topCountries = countryResults
+    .map((r) => ({ country: r.dimension_values[0], count: r.value }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
-  // Split "M.18-24" keys into separate gender and age-range distributions
-  const genderAgeRaw: Record<string, number> =
-    genderAgeRes?.data?.data?.[0]?.value ?? {};
-  const genderTotals: Record<string, number> = {};
-  const ageTotals: Record<string, number> = {};
-  for (const [key, val] of Object.entries(genderAgeRaw)) {
-    const dot = key.indexOf(".");
-    const gender = dot === -1 ? key : key.slice(0, dot);
-    const age = dot === -1 ? "Unknown" : key.slice(dot + 1);
-    genderTotals[gender] = (genderTotals[gender] ?? 0) + val;
-    ageTotals[age] = (ageTotals[age] ?? 0) + val;
-  }
-  const genderBreakdown = Object.entries(genderTotals)
-    .map(([label, value]) => ({ label, value }))
-    .sort((a, b) => b.value - a.value);
-  const ageBreakdown = Object.entries(ageTotals)
-    .map(([label, value]) => ({ label, value }))
+  const genderBreakdown = genderResults
+    .map((r) => ({ label: r.dimension_values[0], value: r.value }))
     .sort((a, b) => b.value - a.value);
 
-  // ── Per-media insights (shares, reposts, plays, impressions per post) ─────
+  const ageBreakdown = ageResults
+    .map((r) => ({ label: r.dimension_values[0], value: r.value }))
+    .sort((a, b) => b.value - a.value);
+
+  console.log("[Instagram Analytics] Audience demographics:", JSON.stringify({
+    top_cities: topCities,
+    top_countries: topCountries,
+    gender_breakdown: genderBreakdown,
+    age_breakdown: ageBreakdown,
+  }, null, 2));
+
+  // ── Per-media insights ────────────────────────────────────────────────────
   const mediaList: any[] = mediaRes?.data?.data ?? [];
 
   const mediaInsightsResults = await Promise.allSettled(
-    mediaList.map((post: any) => {
-      // Reels support `plays` but NOT `impressions`.
-      // Images/Carousels/Videos support `impressions` but NOT `plays`.
-      const isReel = post.media_product_type === "REELS";
-      return axios.get(`${GRAPH}/${post.id}/insights`, {
+    mediaList.map((post: any) =>
+      axios.get(`${GRAPH}/${post.id}/insights`, {
         params: {
-          metric: [
-            isReel ? "views" : "impressions",
-            "reach",
-            "saved",
-            "shares",
-            "total_interactions",
-          ].join(","),
+          metric: ["views", "reach", "saved", "shares", "total_interactions"].join(","),
           access_token: token,
         },
-      });
-    }),
+      }),
+    ),
   );
 
-  const getMetric = (insightData: any[], name: string): number =>
-    insightData.find((m: any) => m.name === name)?.values?.[0]?.value ?? 0;
+  const getMetric = (insightData: { name: string; values?: { value?: number }[] }[], name: string): number =>
+    insightData.find((m) => m.name === name)?.values?.[0]?.value ?? 0;
 
   const posts = mediaList.map((post: any, i) => {
-    const isReel = post.media_product_type === "REEL";
     const insightRes = settled(
       mediaInsightsResults[i],
       `media_insights_${post.id}`,
@@ -332,9 +278,7 @@ export async function fetchAndSaveInstagramAnalytics(
       timestamp: post.timestamp,
       like_count: post.like_count ?? 0,
       comments_count: post.comments_count ?? 0,
-      // `impressions` holds the primary view metric for the post type:
-      // plays for Reels, impressions for everything else.
-      impressions: getMetric(ins, isReel ? "views" : "impressions"),
+      impressions: getMetric(ins, "views"),
       reach: getMetric(ins, "reach"),
       saved: getMetric(ins, "saved"),
       shares: getMetric(ins, "shares"),
@@ -364,7 +308,7 @@ export async function fetchAndSaveInstagramAnalytics(
     media_count: profile.media_count,
     // Views analytics
     reach_30d: reach30d,
-    impressions_30d: impressions30d,
+    impressions_30d: views30d,
     reach_growth_pct: reachGrowthPct,
     profile_views_30d: profileViews30d,
     profile_views_growth_pct: profileViewsGrowthPct,
@@ -379,14 +323,9 @@ export async function fetchAndSaveInstagramAnalytics(
     // Followers analytics
     follower_gain_30d: followerGain30d,
     follower_growth_pct: followerGrowthPct,
-    // Audience (lifetime snapshot — same for views/interactions/followers)
+    // Audience (lifetime snapshot)
     top_cities: topCities,
     top_countries: topCountries,
-    // Combined "M.18-24" format kept for ProfilePreview audience rendering
-    gender_age: Object.entries(genderAgeRaw)
-      .map(([label, value]) => ({ label, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 10),
     gender_breakdown: genderBreakdown,
     age_breakdown: ageBreakdown,
     post_count: posts.length,
@@ -413,7 +352,7 @@ export async function fetchAndSaveInstagramAnalytics(
   );
   await refreshPostMediaUrls(userId, "profile", urlMap);
 
-  // Refresh profile_image_url on the User model if it's an Instagram CDN URL (not a user upload)
+  // Refresh profile_image_url if it's an Instagram CDN URL (not a user-uploaded Vercel Blob)
   const freshProfilePic = profile.profile_picture_url as string | undefined;
   if (freshProfilePic) {
     const user = await getUserById(userId);
