@@ -212,14 +212,13 @@ export function CreatorProfile({
         contrastColor={contrastColor}
         darkMode={darkMode}
       />
-      {/* Uncomment later */}
-      {/* <AudienceSection
+      <AudienceSection
         insights={insights}
-        nicheTags={nicheTags}
         baseColor={baseColor}
         accentColor={accentColor}
         contrastColor={contrastColor}
-      /> */}
+        darkMode={darkMode}
+      />
       <WorkSection
         posts={posts}
         handle={handle}

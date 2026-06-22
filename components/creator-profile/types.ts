@@ -16,6 +16,8 @@ export interface Stats {
 
 export interface AudienceInsights {
   gender_age?: { label: string; value: number }[];
+  gender_breakdown?: { label: string; value: number }[];
+  age_breakdown?: { label: string; value: number }[];
   top_countries?: { country: string; count: number }[];
   top_cities?: { city: string; count: number }[];
 }

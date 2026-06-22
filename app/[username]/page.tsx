@@ -87,9 +87,9 @@ export default async function PublishedProfilePage(props: {
         }}
         insights={{
           gender_age: Array.isArray(ig.gender_age) ? ig.gender_age : [],
-          top_countries: Array.isArray(ig.top_countries)
-            ? ig.top_countries
-            : [],
+          gender_breakdown: Array.isArray(ig.gender_breakdown) ? ig.gender_breakdown : [],
+          age_breakdown: Array.isArray(ig.age_breakdown) ? ig.age_breakdown : [],
+          top_countries: Array.isArray(ig.top_countries) ? ig.top_countries : [],
           top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
         }}
         posts={
