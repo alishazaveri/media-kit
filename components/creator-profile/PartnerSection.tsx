@@ -40,6 +40,7 @@ export function PartnerSection({
   baseColor,
   accentColor,
   contrastColor,
+  darkMode = false,
 }: {
   sortedCollabs: Collaboration[];
   visiblePackages: Package[];
@@ -51,6 +52,7 @@ export function PartnerSection({
   baseColor: string;
   accentColor: string;
   contrastColor: string;
+  darkMode?: boolean;
 }) {
   const [testimonialIdx, setTestimonialIdx] = useState(0);
   const t = TESTIMONIALS[testimonialIdx];
@@ -113,14 +115,14 @@ export function PartnerSection({
               <div>
                 {visiblePackages.map(({ id, title, description, price }, i) => (
                   <div key={id} className=" ">
-                    <div className="border-t border-gray-200/80" />
+                    <div className={`border-t ${darkMode ? "border-white/15" : "border-gray-200/80"}`} />
                     <div className="group flex flex-row md:flex-row items-start md:items-center justify-between py-8 hover:bg-surface/60 transition-colors px-2 md:px-4 gap-6">
                       <div className="flex flex-col md:flex-row items-start md:items-center justify-between  hover:bg-surface/60 transition-colors w-full ">
                         <div className="min-w-0">
-                          <h4 className="font-display text-2xl md:text-3xl font-bold">
+                          <h4 className={`font-display text-2xl md:text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
                             {title}
                           </h4>
-                          <p className="text-gray-500 text-sm">{description}</p>
+                          <p className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-500"}`}>{description}</p>
                         </div>
                         <div className="flex items-center justify-between w-full md:w-max gap-6 mt-4 md:mt-0 shrink-0">
                           <span className="text-xs font-semibold text-gray-400 hidden md:inline">
@@ -173,7 +175,7 @@ export function PartnerSection({
                     </div>
                   </div>
                 ))}
-                <div className="border-t border-gray-200/80" />
+                <div className={`border-t ${darkMode ? "border-white/15" : "border-gray-200/80"}`} />
               </div>
             </div>
 

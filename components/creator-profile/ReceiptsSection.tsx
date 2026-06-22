@@ -408,10 +408,12 @@ export function ReceiptsSection({
   collabs,
   accentColor,
   baseColor,
+  darkMode = false,
 }: {
   collabs?: Collaboration[];
   accentColor: string;
   baseColor: string;
+  darkMode?: boolean;
 }) {
   const hasCollabs = collabs && collabs.length > 0;
 
@@ -507,7 +509,7 @@ export function ReceiptsSection({
             <p className="text-xs font-bold tracking-[0.2em] uppercase text-gray-400 mb-3">
               Receipts
             </p>
-            <h2 className="font-black text-gray-900 text-3xl md:text-5xl leading-tight">
+            <h2 className={`font-black text-3xl md:text-5xl leading-tight ${darkMode ? "text-white" : "text-gray-900"}`}>
               Past collabs{" "}
               <em className="italic font-black" style={{ color: accentColor }}>
                 that delivered.

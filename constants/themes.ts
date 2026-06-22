@@ -16,12 +16,13 @@ export const THEMES: Theme[] = [
     contrast_color: "#1B1210",
     is_premium: false,
   },
+
   {
-    identifier: "forest",
-    name: "Forest",
-    accent_color: "#2E7D32",
-    base_color: "#F1F8F2",
-    contrast_color: "#0B1A0E",
+    identifier: "violet",
+    name: "Violet",
+    accent_color: "#6F42C1",
+    base_color: "#F3EFFF",
+    contrast_color: "#160D26",
     is_premium: false,
   },
   {
@@ -41,6 +42,14 @@ export const THEMES: Theme[] = [
     is_premium: false,
   },
   {
+    identifier: "forest",
+    name: "Forest",
+    accent_color: "#2E7D32",
+    base_color: "#F1F8F2",
+    contrast_color: "#0B1A0E",
+    is_premium: false,
+  },
+  {
     identifier: "thunder",
     name: "Thunder",
     accent_color: "#495057",
@@ -54,14 +63,6 @@ export const THEMES: Theme[] = [
     accent_color: "#D63384",
     base_color: "#FFF0F5",
     contrast_color: "#2B0A18",
-    is_premium: false,
-  },
-  {
-    identifier: "violet",
-    name: "Violet",
-    accent_color: "#6F42C1",
-    base_color: "#F3EFFF",
-    contrast_color: "#160D26",
     is_premium: false,
   },
 ];

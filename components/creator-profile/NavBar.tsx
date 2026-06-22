@@ -7,6 +7,7 @@ export function NavBar({
   baseColor,
   accentColor,
   contrastColor,
+  darkMode = false,
 }: {
   initials: string;
   name: string;
@@ -14,6 +15,7 @@ export function NavBar({
   baseColor: string;
   accentColor: string;
   contrastColor: string;
+  darkMode?: boolean;
 }) {
   return (
     <nav
@@ -21,7 +23,7 @@ export function NavBar({
       style={{ backgroundColor: `${baseColor}BF` }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
-        <span className="font-black text-xl text-gray-900 tracking-[-0.05em]">
+        <span className={`font-black text-xl tracking-[-0.05em] ${darkMode ? "text-white" : "text-gray-900"}`}>
           {initials?.split("").length > 1 ? (
             <>
               {initials.split("")[0]}
@@ -43,7 +45,7 @@ export function NavBar({
             <a
               key={label}
               href={href}
-              className="  text-gray-700 hover:text-[var(--accent)] transition-colors "
+              className={`${darkMode ? "text-gray-200" : "text-gray-700"} hover:text-[var(--accent)] transition-colors`}
               style={{ "--accent": accentColor } as React.CSSProperties}
             >
               {label}
@@ -52,8 +54,8 @@ export function NavBar({
         </div>
         <a
           href={email ? buildMailto(email, name) : undefined}
-          className=" text-white text-xs font-bold tracking-[.1rem] rounded-full hover:bg-gray-700 transition-colors px-4 py-2 text-[11px]"
-          style={{ backgroundColor: contrastColor }}
+          className={`${darkMode ? "text-gray-900" : "text-white"} text-xs font-bold tracking-[.1rem] rounded-full transition-colors px-4 py-2 text-[11px]`}
+          style={{ backgroundColor: darkMode ? accentColor : contrastColor }}
         >
           CONTACT
         </a>

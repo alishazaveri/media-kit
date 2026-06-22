@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { type ThemeData } from "@/components/CreatorProfile";
 import { THEMES } from "@/constants/themes";
+import { Toggle } from "./shared";
 
 interface ThemeSectionProps {
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
@@ -11,6 +12,7 @@ interface ThemeSectionProps {
 
 export function ThemeSection({ onThemeChange, onSectionFocus }: ThemeSectionProps) {
   const [theme, setTheme] = useState("default");
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     fetch("/api/customization")
@@ -18,33 +20,54 @@ export function ThemeSection({ onThemeChange, onSectionFocus }: ThemeSectionProp
       .then((data) => {
         const identifier = data.draft?.theme_identifier;
         if (identifier) setTheme(identifier);
+        if (data.draft?.dark_mode !== undefined) setDarkMode(data.draft.dark_mode);
       })
       .catch(() => {});
   }, []);
+
+  function applyTheme(identifier: string, newDarkMode: boolean) {
+    const t = THEMES.find((x) => x.identifier === identifier);
+    if (!t) return;
+    onThemeChange?.(identifier, {
+      accent_color: t.accent_color,
+      base_color: t.base_color,
+      contrast_color: t.contrast_color,
+      dark_mode: newDarkMode,
+    });
+    fetch("/api/customization", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ theme_identifier: identifier, dark_mode: newDarkMode }),
+    }).catch(() => {});
+  }
+
+  function handleThemeSelect(identifier: string) {
+    setTheme(identifier);
+    applyTheme(identifier, darkMode);
+  }
+
+  function handleDarkMode(value: boolean) {
+    setDarkMode(value);
+    applyTheme(theme, value);
+  }
 
   return (
     <section
       className="bg-white rounded-2xl border border-gray-100 p-5"
       onFocus={() => onSectionFocus?.("hero")}
     >
-      <p className="font-semibold text-gray-900 mb-4">Theme</p>
+      <div className="flex items-center justify-between mb-4">
+        <p className="font-semibold text-gray-900">Theme</p>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">Dark</span>
+          <Toggle checked={darkMode} onChange={handleDarkMode} />
+        </div>
+      </div>
       <div className="grid grid-cols-4 gap-3">
         {THEMES.map((t) => (
           <button
             key={t.identifier}
-            onClick={() => {
-              setTheme(t.identifier);
-              onThemeChange?.(t.identifier, {
-                accent_color: t.accent_color,
-                base_color: t.base_color,
-                contrast_color: t.contrast_color,
-              });
-              fetch("/api/customization", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ theme_identifier: t.identifier }),
-              }).catch(() => {});
-            }}
+            onClick={() => handleThemeSelect(t.identifier)}
             className="flex flex-col items-center gap-2"
           >
             <div

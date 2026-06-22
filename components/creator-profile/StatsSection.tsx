@@ -7,11 +7,13 @@ export function StatsSection({
   baseColor,
   accentColor,
   contrastColor,
+  darkMode = false,
 }: {
   stats: Stats;
   baseColor: string;
   accentColor: string;
   contrastColor: string;
+  darkMode?: boolean;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
@@ -188,17 +190,17 @@ export function StatsSection({
               <div
                 key={label}
                 style={{ opacity: 1, transform: "none" }}
-                className="flex-1 min-w-[42%] min-[400px]:min-w-0 md:flex-none mb-0 md:mb-10 cursor-default min-[400px]:px-4 md:px-0 min-[400px]:first:pl-0 min-[400px]:last:pr-0 min-[400px]:border-r border-[#1d293d]/10 last:border-r-0 md:border-r-0"
+                className={`flex-1 min-w-[42%] min-[400px]:min-w-0 md:flex-none mb-0 md:mb-10 cursor-default min-[400px]:px-4 md:px-0 min-[400px]:first:pl-0 min-[400px]:last:pr-0 min-[400px]:border-r last:border-r-0 md:border-r-0 ${darkMode ? "border-white/10" : "border-[#1d293d]/10"}`}
               >
                 <div className="font-display text-3xl min-[425px]:text-4xl md:text-7xl font-extrabold tracking-tighter leading-none transition-transform hover:translate-x-2">
-                  <span style={{ color: i > 0 ? "#1d293d" : accentColor }}>
+                  <span style={{ color: i > 0 ? (darkMode ? contrastColor : "#1d293d") : accentColor }}>
                     {value}
                   </span>
                 </div>
-                <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest mt-2 text-[#1d293d]/70">
+                <p className={`text-[10px] lg:text-xs font-bold uppercase tracking-widest mt-2 ${darkMode ? "text-white/60" : "text-[#1d293d]/70"}`}>
                   {label}
                 </p>
-                <div className="hidden md:block w-full h-px bg-[#1d293d]/10 mt-5"></div>
+                <div className={`hidden md:block w-full h-px mt-5 ${darkMode ? "bg-white/10" : "bg-[#1d293d]/10"}`}></div>
               </div>
             ))}
           </div>
@@ -287,16 +289,16 @@ export function StatsSection({
             {metricCards.map(({ icon, label, value }) => (
               <div
                 key={label}
-                className={`rounded-2xl  p-4 border border-[#1d293d]/5`}
+                className={`rounded-2xl p-4 ${darkMode ? "border border-white/10" : "border border-[#1d293d]/5"}`}
                 style={{ backgroundColor: baseColor }}
               >
-                <div className="flex items-center gap-2 text-muted text-[10px] font-bold uppercase tracking-[.1em]">
+                <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.1em] ${darkMode ? "text-white/50" : "text-muted"}`}>
                   {icon}
                   <span className="text-[9px] font-bold tracking-wider uppercase">
                     {label}
                   </span>
                 </div>
-                <p className="font-display text-2xl font-bold mt-1">{value}</p>
+                <p className={`font-display text-2xl font-bold mt-1 ${darkMode ? "text-white" : "text-gray-900"}`}>{value}</p>
               </div>
             ))}
           </div>

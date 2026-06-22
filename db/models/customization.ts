@@ -4,6 +4,7 @@ export type CustomizationStatus = "draft" | "published";
 
 export interface ICustomization extends Document {
   theme_identifier: string;
+  dark_mode: boolean;
   user_id: mongoose.Types.ObjectId;
   status: CustomizationStatus;
   created_at: Date;
@@ -13,6 +14,7 @@ export interface ICustomization extends Document {
 const CustomizationSchema = new Schema<ICustomization>(
   {
     theme_identifier: { type: String, required: true, default: "default" },
+    dark_mode: { type: Boolean, default: false },
     user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
     status: { type: String, enum: ["draft", "published"], required: true },
   },

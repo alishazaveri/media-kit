@@ -41,6 +41,7 @@ export default async function PublishedProfilePage(props: {
         accent_color: resolved.accent_color,
         base_color: resolved.base_color,
         contrast_color: resolved.contrast_color,
+        dark_mode: (customization as any)?.dark_mode ?? false,
       }
     : undefined;
 

@@ -22,6 +22,7 @@ export type ThemeData = {
   accent_color: string;
   base_color: string;
   contrast_color: string;
+  dark_mode?: boolean;
 };
 
 export interface CreatorProfileProps {
@@ -168,9 +169,13 @@ export function CreatorProfile({
   );
   const visiblePackages = packages.slice(0, 4);
 
-  const baseColor = theme?.base_color ?? "#fff4ef";
+  const darkMode = theme?.dark_mode ?? false;
+  const rawBaseColor = theme?.base_color ?? "#fff4ef";
   const accentColor = theme?.accent_color ?? "#ff7350";
-  const contrastColor = theme?.contrast_color ?? "#1B1210";
+  const rawContrastColor = theme?.contrast_color ?? "#1B1210";
+
+  const baseColor = darkMode ? rawContrastColor : rawBaseColor;
+  const contrastColor = darkMode ? rawBaseColor : rawContrastColor;
 
   return (
     <div className="font-sans min-h-screen bg-white">
@@ -181,6 +186,7 @@ export function CreatorProfile({
         baseColor={baseColor}
         accentColor={accentColor}
         contrastColor={contrastColor}
+        darkMode={darkMode}
       />
       <HeroSection
         firstName={firstName}
@@ -197,12 +203,14 @@ export function CreatorProfile({
         baseColor={baseColor}
         accentColor={accentColor}
         contrastColor={contrastColor}
+        darkMode={darkMode}
       />
       <StatsSection
         stats={stats}
         baseColor={baseColor}
         accentColor={accentColor}
         contrastColor={contrastColor}
+        darkMode={darkMode}
       />
       {/* Uncomment later */}
       {/* <AudienceSection
@@ -224,6 +232,7 @@ export function CreatorProfile({
           collabs={collabs}
           accentColor={accentColor}
           baseColor={baseColor}
+          darkMode={darkMode}
         />
       )}
       <PartnerSection
@@ -237,6 +246,7 @@ export function CreatorProfile({
         baseColor={baseColor}
         accentColor={accentColor}
         contrastColor={contrastColor}
+        darkMode={darkMode}
       />
       <FooterSection
         handle={handle}

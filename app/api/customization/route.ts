@@ -23,10 +23,10 @@ export async function PATCH(req: NextRequest) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { theme_identifier } = await req.json();
+    const { theme_identifier, dark_mode } = await req.json();
     if (!theme_identifier) return NextResponse.json({ error: "theme_identifier is required" }, { status: 400 });
 
-    const customization = await upsertCustomization(session.userId, "draft", theme_identifier);
+    const customization = await upsertCustomization(session.userId, "draft", theme_identifier, dark_mode ?? false);
     return NextResponse.json({ customization });
   } catch (err) {
     console.error("PATCH /api/customization:", err);

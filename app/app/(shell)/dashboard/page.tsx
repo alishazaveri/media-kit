@@ -144,6 +144,8 @@ export default function DashboardPage() {
     useState<string>("default");
   const [publishedThemeIdentifier, setPublishedThemeIdentifier] =
     useState<string>("default");
+  const [draftDarkMode, setDraftDarkMode] = useState<boolean>(false);
+  const [publishedDarkMode, setPublishedDarkMode] = useState<boolean>(false);
 
   useEffect(() => {
     fetch("/api/customization")
@@ -152,14 +154,19 @@ export default function DashboardPage() {
         const draftId: string = data.draft?.theme_identifier ?? "default";
         const publishedId: string =
           data.published?.theme_identifier ?? "default";
+        const draftDark: boolean = data.draft?.dark_mode ?? false;
+        const publishedDark: boolean = data.published?.dark_mode ?? false;
         setDraftThemeIdentifier(draftId);
         setPublishedThemeIdentifier(publishedId);
+        setDraftDarkMode(draftDark);
+        setPublishedDarkMode(publishedDark);
         const t = getThemeByIdentifier(draftId);
         if (t)
           setTheme({
             accent_color: t.accent_color,
             base_color: t.base_color,
             contrast_color: t.contrast_color,
+            dark_mode: draftDark,
           });
       })
       .catch(() => {});
@@ -324,6 +331,7 @@ export default function DashboardPage() {
       setPublishedProfilePic(profilePic);
       setProfilePicChanged(false);
       setPublishedThemeIdentifier(draftThemeIdentifier);
+      setPublishedDarkMode(draftDarkMode);
     } catch {
       /* silent */
     } finally {
@@ -382,7 +390,9 @@ export default function DashboardPage() {
     collabs,
     posts: featuredPosts,
   };
-  const hasUnpublishedTheme = draftThemeIdentifier !== publishedThemeIdentifier;
+  const hasUnpublishedTheme =
+    draftThemeIdentifier !== publishedThemeIdentifier ||
+    draftDarkMode !== publishedDarkMode;
 
   const hasUnpublishedChanges =
     analyticsLoaded &&
@@ -551,6 +561,7 @@ export default function DashboardPage() {
           theme={theme}
           onThemeChange={(identifier, themeData) => {
             setDraftThemeIdentifier(identifier);
+            setDraftDarkMode(themeData.dark_mode ?? false);
             setTheme(themeData);
           }}
           onProfilePicUploaded={() => setProfilePicChanged(true)}
