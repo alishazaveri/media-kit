@@ -14,33 +14,14 @@ isoCountries.registerLocale(enLocale);
 
 type Tab = "cities" | "countries";
 
-const GEO_URL = "/countries-50m.json";
-
-// World-atlas (Natural Earth) uses non-standard names for these countries;
-// everything else matches what i18n-iso-countries returns for "en".
-const NATURAL_EARTH_OVERRIDES: Record<string, string> = {
-  BA: "Bosnia and Herz.",
-  CD: "Dem. Rep. Congo",
-  CI: "Ivory Coast",
-  CZ: "Czechia",
-  DO: "Dominican Rep.",
-  RU: "Russia",
-  SS: "S. Sudan",
-  TW: "Taiwan",
-};
+// India boundary per Survey of India (Kashmir as integral part of India)
+const GEO_URL = "/countries-india.json";
 
 // Display name overrides for the legend (shorter / cleaner than ISO standard)
 const DISPLAY_OVERRIDES: Record<string, string> = {
   AE: "UAE",
   TW: "Taiwan",
 };
-
-// ISO 3166-1 alpha-2 → Natural Earth name used by world-atlas for map highlighting
-function isoToGeoName(code: string): string {
-  return (
-    NATURAL_EARTH_OVERRIDES[code] ?? isoCountries.getName(code, "en") ?? ""
-  );
-}
 
 // ISO 3166-1 alpha-2 → short readable name for the legend
 function isoToDisplay(code: string): string {
@@ -54,8 +35,6 @@ function isoToFlag(code: string): string {
     .join("");
 }
 
-// City name (lowercase) → [longitude, latitude]
-// To be disuss
 const CITY_COORDS: Record<string, [number, number]> = {
   "new york": [-74.006, 40.713],
   "los angeles": [-118.244, 34.052],
@@ -192,7 +171,7 @@ function computeProjection(coords: ([number, number] | null)[]): {
   center: [number, number];
 } {
   const valid = coords.filter((c): c is [number, number] => c !== null);
-  if (valid.length === 0) return { scale: 140, center: [10, 10] };
+  if (valid.length === 0) return { scale: 130, center: [10, 20] };
 
   const lons = valid.map((c) => c[0]);
   const lats = valid.map((c) => c[1]);
@@ -209,8 +188,6 @@ function computeProjection(coords: ([number, number] | null)[]): {
   // scale 140 ≈ full world (360°); invert to zoom in
 
   const scale = Math.min(1500, Math.round((140 * 360) / paddedSpan));
-  console.log({ scale });
-
   return { scale, center: [centerLon, centerLat] };
 }
 
@@ -237,6 +214,7 @@ export function WorldAudienceMap({
   topCities,
   accentColor,
   contrastColor,
+  baseColor,
 }: {
   topCountries: { country: string; count: number }[];
   topCities: { city: string; count: number }[];
@@ -254,8 +232,12 @@ export function WorldAudienceMap({
 
   // Country highlighting on map (countries tab)
   const maxCountryCount = Math.max(...countries.map((c) => c.count), 1);
+  // New geography file uses iso_code (alpha-3); convert alpha-2 → alpha-3 for matching
   const countryIntensity = new Map<string, number>(
-    countries.map((c) => [isoToGeoName(c.country), c.count / maxCountryCount]),
+    countries.flatMap((c) => {
+      const a3 = isoCountries.alpha2ToAlpha3(c.country);
+      return a3 ? [[a3, c.count / maxCountryCount] as [string, number]] : [];
+    }),
   );
 
   // City markers
@@ -267,34 +249,6 @@ export function WorldAudienceMap({
     pct: cityTotal > 0 ? Math.round((c.count / cityTotal) * 100) : 0,
     coords: getCityCoords(c.city),
   }));
-
-  // const cityMarkers = [
-  //   {
-  //     rank: 1,
-  //     name: "Dubai",
-  //     pct: 128,
-  //     coords: [55.2708, 25.2048],
-  //   },
-  //   {
-  //     rank: 2,
-  //     name: "Ahmedabad",
-  //     pct: 75,
-  //     coords: [72.5714, 23.0225],
-  //   },
-
-  //   {
-  //     rank: 3,
-  //     name: "Bangkok",
-  //     pct: 4,
-  //     coords: [100.5018, 13.7563],
-  //   },
-  //   {
-  //     rank: 4,
-  //     name: "Singapore",
-  //     pct: 3,
-  //     coords: [103.8198, 1.3521],
-  //   },
-  // ];
 
   // Auto-zoom the map to frame all known city coordinates
   const projection = computeProjection(cityMarkers.map((m) => m.coords));
@@ -331,7 +285,10 @@ export function WorldAudienceMap({
               className="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all capitalize cursor-pointer"
               style={
                 tab === t
-                  ? { backgroundColor: accentColor, color: "#ffffff" }
+                  ? {
+                      backgroundColor: baseColor ?? "#ffffff",
+                      color: contrastColor,
+                    }
                   : { color: "rgba(255,255,255,0.45)" }
               }
             >
@@ -344,7 +301,7 @@ export function WorldAudienceMap({
       {/* Map + Legend side by side on md+ */}
       <div className="flex flex-col md:flex-row flex-1 min-h-0">
         {/* Map */}
-        <div className="md:flex-1 w-full relative" style={{ height: "400px" }}>
+        <div className="md:flex-1 w-full relative md:h-[430px] h-[200px] ">
           {/* CSS pulse animation for city markers */}
           <style>{`
             @keyframes rsm-city-pulse {
@@ -359,18 +316,19 @@ export function WorldAudienceMap({
           `}</style>
 
           <ComposableMap
+            projection="geoMercator"
             projectionConfig={
               tab === "cities"
                 ? { scale: projection.scale, center: projection.center }
-                : { scale: 170, center: [20, -15] }
+                : { scale: 130, center: [0, 35] }
             }
             style={{ width: "100%", height: "100%" }}
           >
             <Geographies geography={GEO_URL}>
               {({ geographies }) =>
                 geographies.map((geo) => {
-                  const geoName: string = geo.properties?.name ?? "";
-                  const intensity = countryIntensity.get(geoName) ?? 0;
+                  const isoA3: string = geo.properties?.iso_code ?? "";
+                  const intensity = countryIntensity.get(isoA3) ?? 0;
 
                   let fill = "rgba(255,255,255,0.06)";
                   let fillOpacity = 1;
