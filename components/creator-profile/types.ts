@@ -12,6 +12,7 @@ export interface Stats {
   engagement?: number | null;
   avgReach?: number | null;
   growth?: number | null;
+  reach_daily_30d?: Record<string, number> | null;
 }
 
 export interface AudienceInsights {

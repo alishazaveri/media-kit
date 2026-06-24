@@ -43,10 +43,13 @@ export interface IgStats {
   engagement: number | null;
   avgReach: number | null;
   growth: number | null;
+  reach_daily_30d: Record<string, number> | null;
 }
 
 export interface IgInsights {
   gender_age: any[];
   top_countries: any[];
   top_cities: any[];
+  age_breakdown: { label: string; value: number }[];
+  gender_breakdown: { label: string; value: number }[];
 }

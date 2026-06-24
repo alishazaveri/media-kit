@@ -2,7 +2,12 @@ import axios from "axios";
 import { getSocialChannelById } from "@/db/social_channel.db";
 import { getValidInstagramToken } from "@/services/social_channel.service";
 import { saveInsight } from "@/services/insight.service";
-import { linkInsightToUserData, getDraft, saveDraft, refreshPostMediaUrls } from "@/services/user_data.service";
+import {
+  linkInsightToUserData,
+  getDraft,
+  saveDraft,
+  refreshPostMediaUrls,
+} from "@/services/user_data.service";
 import { getUserById, updateUser } from "@/db/user.db";
 import instagramConnect from "@/lib/instagramConnect";
 
@@ -39,13 +44,6 @@ export async function fetchAndSaveInstagramAnalytics(
   userId: string,
   accountId: string,
 ) {
-  console.log(
-    "[Instagram Analytics] Starting fetch for userId:",
-    userId,
-    "accountId:",
-    accountId,
-  );
-
   const [account, token] = await Promise.all([
     getSocialChannelById(accountId),
     getValidInstagramToken(userId),
@@ -120,16 +118,44 @@ export async function fetchAndSaveInstagramAnalytics(
     // Lifetime follower demographics — metric_type and timeframe are required by Meta's API
     // Without them the endpoint silently returns data:[] instead of an error
     axios.get(`${GRAPH}/${igUserId}/insights`, {
-      params: { metric: "follower_demographics", period: "lifetime", metric_type: "total_value", timeframe: "last_30_days", breakdown: "city", access_token: token },
+      params: {
+        metric: "follower_demographics",
+        period: "lifetime",
+        metric_type: "total_value",
+        timeframe: "last_30_days",
+        breakdown: "city",
+        access_token: token,
+      },
     }),
     axios.get(`${GRAPH}/${igUserId}/insights`, {
-      params: { metric: "follower_demographics", period: "lifetime", metric_type: "total_value", timeframe: "last_30_days", breakdown: "country", access_token: token },
+      params: {
+        metric: "follower_demographics",
+        period: "lifetime",
+        metric_type: "total_value",
+        timeframe: "last_30_days",
+        breakdown: "country",
+        access_token: token,
+      },
     }),
     axios.get(`${GRAPH}/${igUserId}/insights`, {
-      params: { metric: "follower_demographics", period: "lifetime", metric_type: "total_value", timeframe: "last_30_days", breakdown: "age", access_token: token },
+      params: {
+        metric: "follower_demographics",
+        period: "lifetime",
+        metric_type: "total_value",
+        timeframe: "last_30_days",
+        breakdown: "age",
+        access_token: token,
+      },
     }),
     axios.get(`${GRAPH}/${igUserId}/insights`, {
-      params: { metric: "follower_demographics", period: "lifetime", metric_type: "total_value", timeframe: "last_30_days", breakdown: "gender", access_token: token },
+      params: {
+        metric: "follower_demographics",
+        period: "lifetime",
+        metric_type: "total_value",
+        timeframe: "last_30_days",
+        breakdown: "gender",
+        access_token: token,
+      },
     }),
     // Media list — 25 posts for better top-content ranking
     axios.get(`${GRAPH}/${igUserId}/media`, {
@@ -164,15 +190,32 @@ export async function fetchAndSaveInstagramAnalytics(
     "follower_count_prev",
   );
   const demoCityRes = settled(demoCityResult, "follower_demographics_city");
-  const demoCountryRes = settled(demoCountryResult, "follower_demographics_country");
+  const demoCountryRes = settled(
+    demoCountryResult,
+    "follower_demographics_country",
+  );
   const demoAgeRes = settled(demoAgeResult, "follower_demographics_age");
-  const demoGenderRes = settled(demoGenderResult, "follower_demographics_gender");
+  const demoGenderRes = settled(
+    demoGenderResult,
+    "follower_demographics_gender",
+  );
   const mediaRes = settled(mediaResult, "media");
 
   const profile = profileRes.data;
 
   // ── Current-period totals ─────────────────────────────────────────────────
   const reach30d = reachRes ? sumValues(reachRes.data) : 0;
+  const reachDailyValues: { value: number; end_time: string }[] =
+    reachRes?.data?.data?.[0]?.values ?? [];
+  const reach_daily_30d: Record<string, number> = Object.fromEntries(
+    reachDailyValues.map(({ end_time, value }) => [
+      end_time.slice(0, 10),
+      value,
+    ]),
+  );
+
+  console.log("Reach Daily 30 days", { reach_daily_30d });
+
   const views30d = viewsRes ? sumValues(viewsRes.data) : 0;
   const profileViews30d = profileViewsRes ? sumValues(profileViewsRes.data) : 0;
   const totalInteractions30d = totalInteractionsRes
@@ -237,13 +280,6 @@ export async function fetchAndSaveInstagramAnalytics(
     .map((r) => ({ label: r.dimension_values[0], value: r.value }))
     .sort((a, b) => b.value - a.value);
 
-  console.log("[Instagram Analytics] Audience demographics:", JSON.stringify({
-    top_cities: topCities,
-    top_countries: topCountries,
-    gender_breakdown: genderBreakdown,
-    age_breakdown: ageBreakdown,
-  }, null, 2));
-
   // ── Per-media insights ────────────────────────────────────────────────────
   const mediaList: any[] = mediaRes?.data?.data ?? [];
 
@@ -251,14 +287,23 @@ export async function fetchAndSaveInstagramAnalytics(
     mediaList.map((post: any) =>
       axios.get(`${GRAPH}/${post.id}/insights`, {
         params: {
-          metric: ["views", "reach", "saved", "shares", "total_interactions"].join(","),
+          metric: [
+            "views",
+            "reach",
+            "saved",
+            "shares",
+            "total_interactions",
+          ].join(","),
           access_token: token,
         },
       }),
     ),
   );
 
-  const getMetric = (insightData: { name: string; values?: { value?: number }[] }[], name: string): number =>
+  const getMetric = (
+    insightData: { name: string; values?: { value?: number }[] }[],
+    name: string,
+  ): number =>
     insightData.find((m) => m.name === name)?.values?.[0]?.value ?? 0;
 
   const posts = mediaList.map((post: any, i) => {
@@ -329,12 +374,8 @@ export async function fetchAndSaveInstagramAnalytics(
     gender_breakdown: genderBreakdown,
     age_breakdown: ageBreakdown,
     post_count: posts.length,
+    reach_daily_30d,
   };
-
-  console.log(
-    "[Instagram Analytics] Final analyticsData:",
-    JSON.stringify(analyticsData, null, 2),
-  );
 
   const insight = await saveInsight(
     userId,
@@ -344,11 +385,13 @@ export async function fetchAndSaveInstagramAnalytics(
     reach30d,
   );
   await linkInsightToUserData(userId, "instagram", insight._id.toString());
-  console.log("[Instagram Analytics] Saved insight successfully.");
 
   // Refresh time-sensitive media URLs in stored draft/published posts
   const urlMap = new Map(
-    posts.map((p) => [p.id, { media_url: p.media_url, thumbnail_url: p.thumbnail_url }]),
+    posts.map((p) => [
+      p.id,
+      { media_url: p.media_url, thumbnail_url: p.thumbnail_url },
+    ]),
   );
   await refreshPostMediaUrls(userId, "profile", urlMap);
 
@@ -363,7 +406,7 @@ export async function fetchAndSaveInstagramAnalytics(
   }
 
   // Seed draft_data on first-time setup (display_name not yet set by user)
-  const existingDraft = await getDraft(userId, "instagram") as any;
+  const existingDraft = (await getDraft(userId, "instagram")) as any;
   if (!existingDraft?.draft_data?.display_name) {
     const seedPosts = posts.slice(0, 4).map((p) => ({
       id: p.id,
@@ -385,7 +428,6 @@ export async function fetchAndSaveInstagramAnalytics(
       location: "",
       available_for_collabs: true,
     });
-    console.log("[Instagram Analytics] Seeded draft_data for first-time user.");
   }
 
   return analyticsData;

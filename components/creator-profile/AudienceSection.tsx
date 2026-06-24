@@ -1,4 +1,14 @@
+"use client";
 import dynamic from "next/dynamic";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  PieChart,
+  Pie,
+  ResponsiveContainer,
+} from "recharts";
 import { type AudienceInsights } from "./types";
 
 const WorldAudienceMap = dynamic(
@@ -14,31 +24,26 @@ const DUMMY_AGE = [
   { label: "45+", pct: 10 },
 ];
 
-function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
-  const rad = ((deg - 90) * Math.PI) / 180;
-  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-}
-
-function r4(n: number) {
-  return Math.round(n * 10000) / 10000;
-}
-
-function donutSlice(
-  cx: number,
-  cy: number,
-  outer: number,
-  inner: number,
-  start: number,
-  end: number,
-): string {
-  const clamped = end - start >= 360 ? 359.99 : end - start;
-  const e = start + clamped;
-  const s1 = polarToCartesian(cx, cy, outer, start);
-  const e1 = polarToCartesian(cx, cy, outer, e);
-  const s2 = polarToCartesian(cx, cy, inner, e);
-  const e2 = polarToCartesian(cx, cy, inner, start);
-  const large = clamped > 180 ? 1 : 0;
-  return `M${r4(s1.x)} ${r4(s1.y)} A${outer} ${outer} 0 ${large} 1 ${r4(e1.x)} ${r4(e1.y)} L${r4(s2.x)} ${r4(s2.y)} A${inner} ${inner} 0 ${large} 0 ${r4(e2.x)} ${r4(e2.y)}Z`;
+function AgeBarLabel(props: {
+  x?: number;
+  y?: number;
+  width?: number;
+  value?: number;
+  labelColor?: string;
+}) {
+  const { x = 0, y = 0, width = 0, value, labelColor } = props;
+  return (
+    <text
+      x={x + width / 2}
+      y={y - 4}
+      textAnchor="middle"
+      fill={labelColor}
+      fontSize={10}
+      fontWeight={700}
+    >
+      {value}%
+    </text>
+  );
 }
 
 export function AudienceSection({
@@ -55,7 +60,6 @@ export function AudienceSection({
   darkMode?: boolean;
 }) {
   // ── Age distribution ────────────────────────────────────────────────────
-
   const ageRaw = insights.age_breakdown ?? [];
   const ageFiltered = ageRaw.filter((a) => a.label !== "13-17");
   const ageTotal = ageFiltered.reduce((s, a) => s + a.value, 0);
@@ -73,6 +77,13 @@ export function AudienceSection({
   const genZMillPct =
     (agePcts.find((a) => a.label === "18-24")?.pct ?? 0) +
     (agePcts.find((a) => a.label === "25-34")?.pct ?? 0);
+  const maxAgePct = Math.max(...agePcts.map((d) => d.pct));
+  // fill embedded in data so recharts v3 picks it up per-bar without Cell
+  const agePctsStyled = agePcts.map(({ label, pct }) => ({
+    label,
+    pct,
+    fill: pct === peakAge.pct ? accentColor : "url(#barGradAge)",
+  }));
 
   // ── Gender breakdown ────────────────────────────────────────────────────
   const genderRaw = insights.gender_breakdown ?? [];
@@ -93,22 +104,16 @@ export function AudienceSection({
       : 36;
   const nbPct = Math.max(0, 100 - femalePct - malePct);
 
-  // ── Donut chart segments ────────────────────────────────────────────────
-  const rawSegments = [
-    { pct: femalePct, color: accentColor, label: "Female" },
-    { pct: malePct, color: contrastColor, label: "Male" },
-    ...(nbPct > 0 ? [{ pct: nbPct, color: "#a1a1aa", label: "Other" }] : []),
+  const genderSegments = [
+    { pct: femalePct, fill: accentColor, label: "Female" },
+    { pct: malePct, fill: contrastColor, label: "Male" },
+    ...(nbPct > 0 ? [{ pct: nbPct, fill: "#a1a1aa", label: "Other" }] : []),
   ];
-  let cumDeg = 0;
-  const genderSegments = rawSegments.map((s) => {
-    const start = cumDeg;
-    cumDeg += (s.pct / 100) * 360;
-    return { ...s, startDeg: start, endDeg: cumDeg };
-  });
-  const dominantGender = rawSegments.reduce((a, b) => (a.pct >= b.pct ? a : b));
+  const dominantGender = genderSegments.reduce((a, b) =>
+    a.pct >= b.pct ? a : b,
+  );
 
   const cardBg = darkMode ? "#1e1e1e" : "#ffffff";
-  const softCardBg = darkMode ? "#2a2a2a" : "#f2f5f2";
   const cardText = darkMode ? "#f5f5f5" : "#111827";
   const subText = darkMode ? "#9ca3af" : "#6b7280";
 
@@ -144,7 +149,7 @@ export function AudienceSection({
           </span>
         </div>
 
-        {/* ── Top locations (map) — spans full width ────────── */}
+        {/* ── Top locations (map) ────────────────────────────────────────── */}
         {(insights.top_countries ?? []).length > 0 ||
         (insights.top_cities ?? []).length > 0 ? (
           <div className="mb-8">
@@ -218,7 +223,7 @@ export function AudienceSection({
         )}
 
         {/* 2 × 2 grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 ">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
           {/* ── Card 1: Age distribution ──────────────────────────────── */}
           <div
             className="rounded-3xl p-6 md:p-8 shadow-sm"
@@ -291,54 +296,65 @@ export function AudienceSection({
             ) : (
               <>
                 <p
-                  className="text-sm mb-6 leading-relaxed"
+                  className="text-sm mb-4 leading-relaxed"
                   style={{ color: subText }}
                 >
                   {genZMillPct}% are Gen Z &amp; young millennials
                 </p>
-                <div
-                  className="flex gap-3 sm:gap-6 md:gap-4 items-end"
-                  style={{ height: "148px" }}
-                >
-                  {agePcts.map(({ label, pct }) => (
-                    <div
-                      key={label}
-                      className="flex-1 h-full flex flex-col items-center justify-end"
+                <div className="h-[180px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={agePctsStyled}
+                      margin={{ top: 0, right: 8, left: 8, bottom: 0 }}
+                      barCategoryGap="20%"
                     >
-                      <span
-                        className="text-[10px] font-bold mb-1"
-                        style={{ color: subText }}
-                      >
-                        {pct}%
-                      </span>
-                      <div
-                        className="w-full rounded-xl"
-                        style={{
-                          height: `${Math.max((pct / 45) * 100, 3)}%`,
-                          background: `linear-gradient(to bottom, ${baseColor} 0%, ${accentColor} 100%)`,
-                        }}
+                      <defs>
+                        <linearGradient
+                          id="barGradAge"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="40%"
+                            stopColor={accentColor}
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor={accentColor}
+                            stopOpacity={0.1}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <XAxis
+                        dataKey="label"
+                        tick={{ fontSize: 10, fill: "#9ca3af" }}
+                        axisLine={false}
+                        tickLine={false}
                       />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-2 md:gap-3 mt-2.5">
-                  {agePcts.map(({ label }) => (
-                    <div
-                      key={label}
-                      className="flex-1 text-center text-[10px] md:text-[11px] text-gray-400"
-                    >
-                      {label}
-                    </div>
-                  ))}
+                      <YAxis
+                        hide
+                        domain={[0, Math.ceil(maxAgePct * 1.35)]}
+                        width={0}
+                      />
+                      <Bar
+                        dataKey="pct"
+                        radius={[6, 6, 3, 3]}
+                        label={<AgeBarLabel labelColor={contrastColor} />}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </>
             )}
           </div>
 
-          {/* ── Card 2: Gender split (donut chart) ────────────────────── */}
+          {/* ── Card 2: Gender split ────────────────────────────────────── */}
           <div
             className="rounded-3xl p-6 md:p-8 shadow-sm"
-            style={{ backgroundColor: "white" }}
+            style={{ backgroundColor: cardBg }}
           >
             <h3
               className="text-[17px] font-bold mb-1.5"
@@ -401,50 +417,30 @@ export function AudienceSection({
                   className="text-sm mb-6 leading-relaxed"
                   style={{ color: subText }}
                 >
-                  Know your audience - position your brand right.
+                  Know your audience — position your brand right.
                 </p>
-                <div className="flex min-[300px]:flex-row flex-col  items-center gap-4 min-[425px]:gap-10 md:gap-8">
-                  <svg
-                    viewBox="0 0 160 160"
-                    className="shrink-0 min-[425px]:w-[160px] min-[425px]:h-[160px] w-[120px] h-[120px]"
-                  >
-                    {genderSegments.map((s) => (
-                      <path
-                        key={s.label}
-                        d={donutSlice(80, 80, 68, 35, s.startDeg, s.endDeg)}
-                        fill={s.color}
-                      />
-                    ))}
-                    {/* <text
-                      x={80}
-                      y={74}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fill={cardText}
-                      // fontSize={24}
-                      fontWeight={900}
-                      fontFamily="sans-serif"
-                      className="text-[20px] min-[425px]:text-[24px]"
-                    >
-                      {dominantGender.pct}%
-                    </text>
-                    <text
-                      x={80}
-                      y={96}
-                      textAnchor="middle"
-                      fill={subText}
-                      fontSize={11}
-                      fontFamily="sans-serif"
-                    >
-                      {dominantGender.label}
-                    </text> */}
-                  </svg>
+                <div className="flex min-[310px]:flex-row flex-col items-center gap-6 md:gap-8">
+                  <div className="relative min-[425px]:w-[160px] min-[425px]:h-[160px] w-[120px] h-[120px] shrink-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={genderSegments}
+                          dataKey="pct"
+                          innerRadius="40%"
+                          outerRadius="85%"
+                          startAngle={90}
+                          endAngle={-270}
+                          strokeWidth={0}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                   <div className="flex flex-col gap-4 flex-1">
-                    {rawSegments.map((s) => (
+                    {genderSegments.map((s) => (
                       <div key={s.label} className="flex items-center gap-2.5">
                         <span
                           className="min-[425px]:w-3 min-[425px]:h-3 w-2 h-2 rounded-full shrink-0"
-                          style={{ backgroundColor: s.color }}
+                          style={{ backgroundColor: s.fill }}
                         />
                         <span
                           className="text-[13px]"

@@ -26,11 +26,14 @@ export default function DashboardPage() {
     engagement: null,
     avgReach: null,
     growth: null,
+    reach_daily_30d: null,
   });
   const [igInsights, setIgInsights] = useState<IgInsights>({
     gender_age: [],
     top_countries: [],
     top_cities: [],
+    age_breakdown: [],
+    gender_breakdown: [],
   });
   const [igPosts] = useState<any[]>([]);
   const [featuredPosts, setFeaturedPosts] = useState<any[]>([]);
@@ -195,13 +198,14 @@ export default function DashboardPage() {
           engagement: engagementRate,
           avgReach: ig.reach_30d || null,
           growth: ig.follower_gain_30d || null,
+          reach_daily_30d: ig.reach_daily_30d && typeof ig.reach_daily_30d === "object" ? ig.reach_daily_30d : null,
         });
         setIgInsights({
           gender_age: Array.isArray(ig.gender_age) ? ig.gender_age : [],
-          top_countries: Array.isArray(ig.top_countries)
-            ? ig.top_countries
-            : [],
+          top_countries: Array.isArray(ig.top_countries) ? ig.top_countries : [],
           top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
+          age_breakdown: Array.isArray(ig.age_breakdown) ? ig.age_breakdown : [],
+          gender_breakdown: Array.isArray(ig.gender_breakdown) ? ig.gender_breakdown : [],
         });
         // If draft.profile_pic is explicitly null it means the user removed it — don't fall back.
         // Only fall back to profile_image_url / ig pic when the draft has never set a pic.

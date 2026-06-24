@@ -21,6 +21,7 @@ function AccountPageInner() {
     engagement: null,
     avgReach: null,
     growth: null,
+    reach_daily_30d: null,
   });
   const [toast, setToast] = useState<{ message: string; type: "success" | "info" } | null>(null);
   const searchParams = useSearchParams();
@@ -48,6 +49,7 @@ function AccountPageInner() {
         engagement: null,
         avgReach: ig.reach_30d || null,
         growth: ig.follower_gain_30d || null,
+        reach_daily_30d: ig.reach_daily_30d && typeof ig.reach_daily_30d === "object" ? ig.reach_daily_30d : null,
       });
       setProfilePic(res.data?.profile_image_url ?? ig.profile_pic ?? null);
       if (ig.username) setHandle(ig.username);
@@ -90,7 +92,7 @@ function AccountPageInner() {
           onDisconnectInstagram={async () => {
             await axios.delete("/api/auth/instagram/disconnect");
             setHandle("");
-            setIgStats({ followers: null, avgViews: null, engagement: null, avgReach: null, growth: null });
+            setIgStats({ followers: null, avgViews: null, engagement: null, avgReach: null, growth: null, reach_daily_30d: null });
             showToast("Instagram disconnected", "info");
           }}
           onDeleteAccount={async () => {

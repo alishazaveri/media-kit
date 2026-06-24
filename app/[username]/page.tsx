@@ -84,6 +84,7 @@ export default async function PublishedProfilePage(props: {
           engagement: engagementRate,
           avgReach: ig.reach_30d || null,
           growth: ig.follower_gain_30d || null,
+          reach_daily_30d: ig.reach_daily_30d && typeof ig.reach_daily_30d === "object" ? ig.reach_daily_30d : null,
         }}
         insights={{
           gender_age: Array.isArray(ig.gender_age) ? ig.gender_age : [],
