@@ -10,7 +10,10 @@ interface ThemeSectionProps {
   onSectionFocus?: (sectionId: string) => void;
 }
 
-export function ThemeSection({ onThemeChange, onSectionFocus }: ThemeSectionProps) {
+export function ThemeSection({
+  onThemeChange,
+  onSectionFocus,
+}: ThemeSectionProps) {
   const [theme, setTheme] = useState("default");
   const [darkMode, setDarkMode] = useState(false);
 
@@ -20,7 +23,8 @@ export function ThemeSection({ onThemeChange, onSectionFocus }: ThemeSectionProp
       .then((data) => {
         const identifier = data.draft?.theme_identifier;
         if (identifier) setTheme(identifier);
-        if (data.draft?.dark_mode !== undefined) setDarkMode(data.draft.dark_mode);
+        if (data.draft?.dark_mode !== undefined)
+          setDarkMode(data.draft.dark_mode);
       })
       .catch(() => {});
   }, []);
@@ -37,7 +41,10 @@ export function ThemeSection({ onThemeChange, onSectionFocus }: ThemeSectionProp
     fetch("/api/customization", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ theme_identifier: identifier, dark_mode: newDarkMode }),
+      body: JSON.stringify({
+        theme_identifier: identifier,
+        dark_mode: newDarkMode,
+      }),
     }).catch(() => {});
   }
 
@@ -58,10 +65,11 @@ export function ThemeSection({ onThemeChange, onSectionFocus }: ThemeSectionProp
     >
       <div className="flex items-center justify-between mb-4">
         <p className="font-semibold text-gray-900">Theme</p>
-        <div className="flex items-center gap-2">
+        {/* Future Feature */}
+        {/* <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500">Dark</span>
           <Toggle checked={darkMode} onChange={handleDarkMode} />
-        </div>
+        </div> */}
       </div>
       <div className="grid grid-cols-4 gap-3">
         {THEMES.map((t) => (

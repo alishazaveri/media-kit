@@ -29,7 +29,7 @@ function buildCardData(posts: PostItem[] | undefined, fallback: boolean) {
       title: p.caption
         ? p.caption.split("\n")[0].slice(0, 28)
         : `Post ${i + 1}`,
-      metric: fmt(p.like_count),
+      metric: fmt(p.view_count ?? p.like_count),
       gradient: DUMMY_GRADIENTS[i % DUMMY_GRADIENTS.length],
     }));
   }
@@ -162,7 +162,7 @@ export function WorkSection({
             >
               The Visual Lab
             </h2>
-            <p className="text-gray-500 text-sm font-mono">@{handle}</p>
+            <p className="text-gray-500 text-sm font-mono">Most Viewed</p>
           </div>
         </div>
       </div>

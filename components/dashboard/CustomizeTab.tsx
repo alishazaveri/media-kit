@@ -30,6 +30,7 @@ interface Props {
   igStats: IgStats;
   igInsights: IgInsights;
   igPosts: any[];
+  igTopPosts?: any[];
   packages: Package[];
   addPackage: () => void;
   removePackage: (id: number) => void;
@@ -90,6 +91,7 @@ export function CustomizeTab(props: Props) {
     igStats,
     igInsights,
     igPosts,
+    igTopPosts,
     packages,
     addPackage,
     removePackage,
@@ -129,7 +131,7 @@ export function CustomizeTab(props: Props) {
     profilePic,
     stats: igStats,
     insights: igInsights,
-    posts: (featuredPosts?.length ?? 0) > 0 ? featuredPosts : igPosts,
+    posts: (igTopPosts?.length ?? 0) > 0 ? igTopPosts : (featuredPosts?.length ?? 0) > 0 ? featuredPosts : igPosts,
     availableForCollabs,
     nicheTags,
     packages,
@@ -310,7 +312,7 @@ export function CustomizeTab(props: Props) {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <ProfilePreview {...previewProps} theme={theme} />
+            {showPreview && <ProfilePreview {...previewProps} theme={theme} />}
           </div>
         </div>
       </div>

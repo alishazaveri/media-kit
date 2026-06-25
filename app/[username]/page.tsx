@@ -94,11 +94,23 @@ export default async function PublishedProfilePage(props: {
           top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
         }}
         posts={
-          Array.isArray(published.posts) && published.posts.length > 0
-            ? published.posts
-            : Array.isArray(ig.posts)
-              ? ig.posts.slice(0, 4)
-              : []
+          Array.isArray(ig.top_content_by_views) && ig.top_content_by_views.length > 0
+            ? ig.top_content_by_views.slice(0, 4).map((p: any) => ({
+                id: p.id,
+                caption: p.caption,
+                media_type: p.media_type,
+                thumbnail_url: p.thumbnail_url ?? null,
+                media_url: p.media_url ?? null,
+                permalink: p.permalink ?? null,
+                like_count: p.like_count,
+                comments_count: p.comments_count,
+                view_count: p.impressions,
+              }))
+            : Array.isArray(published.posts) && published.posts.length > 0
+              ? published.posts
+              : Array.isArray(ig.posts)
+                ? ig.posts.slice(0, 4)
+                : []
         }
         availableForCollabs={published.available_for_collabs ?? true}
         nicheTags={

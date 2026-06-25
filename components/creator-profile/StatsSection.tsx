@@ -69,9 +69,14 @@ export function StatsSection({
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  const xTicks = chartData
-    .map((d) => d.date)
-    .filter((_, i, arr) => i % 5 === 0 || i === arr.length - 1);
+  // Only show date ticks for real data — dummy entries all have date="" which
+  // causes Recharts to generate duplicate tick keys
+  const xTicks =
+    reachEntries.length > 0
+      ? chartData
+          .map((d) => d.date)
+          .filter((_, i, arr) => i % 5 === 0 || i === arr.length - 1)
+      : [];
 
   const followersTarget = stats.followers ?? 1_200_000;
   const engagementTarget = stats.engagement;
@@ -149,28 +154,36 @@ export function StatsSection({
 
         {/* Right: Daily Reach card */}
         <div className="flex-1 min-w-0 bg-white rounded-[2.5rem] p-6 md:p-10 shadow-sm border border-[#1d293d]/5">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
-            <h2 className="font-display text-2xl md:text-3xl font-bold">
+          <div className="flex flex-row flex-wrap md:items-center justify-between gap-3 mb-6">
+            <h2 className="font-display text-lg min-[425px]:text-2xl md:text-3xl font-bold">
               Daily Reach
             </h2>
             <span
-              className="text-xs font-bold px-3 py-1.5 rounded-full"
+              className="text-xs min-[425px]:font-bold font-semibold min-[425px]:px-3 min-[425px]:py-1.5 px-2 py-1 rounded-full flex items-center mb-0"
               style={{ color: accentColor, backgroundColor: baseColor }}
             >
               LAST 30 DAYS
             </span>
           </div>
 
-          <div className="h-[200px] md:h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="w-full">
+            <ResponsiveContainer width="100%" height={200}>
               <AreaChart
                 data={chartData}
                 margin={{ top: 8, right: 4, left: 0, bottom: 0 }}
               >
                 <defs>
                   <linearGradient id="reachGradRc" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={accentColor} stopOpacity={0.18} />
-                    <stop offset="100%" stopColor={accentColor} stopOpacity={0.02} />
+                    <stop
+                      offset="0%"
+                      stopColor={accentColor}
+                      stopOpacity={0.18}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={accentColor}
+                      stopOpacity={0.02}
+                    />
                   </linearGradient>
                 </defs>
                 <XAxis
@@ -199,7 +212,10 @@ export function StatsSection({
                     fontSize: 12,
                   }}
                   labelFormatter={(label) => formatDate(String(label ?? ""))}
-                  formatter={(value) => [fmt(typeof value === "number" ? value : null), "Reach"]}
+                  formatter={(value) => [
+                    fmt(typeof value === "number" ? value : null),
+                    "Reach",
+                  ]}
                 />
                 <Area
                   type="monotone"

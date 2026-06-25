@@ -63,7 +63,22 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
       age_breakdown: Array.isArray(ig.age_breakdown) ? ig.age_breakdown : [],
       gender_breakdown: Array.isArray(ig.gender_breakdown) ? ig.gender_breakdown : [],
     },
-    posts: Array.isArray(draft.posts) ? draft.posts : [],
+    posts:
+      Array.isArray(ig.top_content_by_views) && ig.top_content_by_views.length > 0
+        ? ig.top_content_by_views.slice(0, 4).map((p: any) => ({
+            id: p.id,
+            caption: p.caption,
+            media_type: p.media_type,
+            thumbnail_url: p.thumbnail_url ?? null,
+            media_url: p.media_url ?? null,
+            permalink: p.permalink ?? null,
+            like_count: p.like_count,
+            comments_count: p.comments_count,
+            view_count: p.impressions,
+          }))
+        : Array.isArray(draft.posts) && draft.posts.length > 0
+          ? draft.posts
+          : [],
   };
 
   previewPropsRef.current = previewProps;

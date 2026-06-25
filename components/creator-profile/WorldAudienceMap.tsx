@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ComposableMap,
   Geographies,
   Geography,
   Marker,
-} from "react-simple-maps";
+} from "@vnedyalk0v/react19-simple-maps";
+import type { Coordinates } from "@vnedyalk0v/react19-simple-maps";
 import isoCountries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
 
@@ -213,14 +214,14 @@ export function WorldAudienceMap({
   topCountries,
   topCities,
   accentColor,
-  contrastColor,
   baseColor,
+  contrastColor,
 }: {
   topCountries: { country: string; count: number }[];
   topCities: { city: string; count: number }[];
   accentColor: string;
+  baseColor: string;
   contrastColor: string;
-  baseColor?: string;
 }) {
   const rawCountries = topCountries.length > 0 ? topCountries : DUMMY_COUNTRIES;
   const rawCities = topCities.length > 0 ? topCities : DUMMY_CITIES;
@@ -264,19 +265,27 @@ export function WorldAudienceMap({
   }));
 
   const [tab, setTab] = useState<Tab>("cities");
+  const [geoData, setGeoData] = useState<object | null>(null);
+
+  useEffect(() => {
+    fetch(GEO_URL)
+      .then((r) => r.json())
+      .then(setGeoData)
+      .catch(console.error);
+  }, []);
 
   return (
     <div
       className="rounded-3xl overflow-hidden flex flex-col"
-      style={{ backgroundColor: contrastColor }}
+      style={{ backgroundColor: "white" }}
     >
       {/* Header + Tabs */}
       <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
-        <h3 className="text-[17px] font-bold text-white">Top locations</h3>
+        <h3 className="text-[17px] font-bold text-gray-900">Top locations</h3>
         {/* Tab switcher */}
         <div
           className="flex items-center gap-0.5 p-1 rounded-xl"
-          style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+          style={{ backgroundColor: "rgba(0,0,0,0.06)" }}
         >
           {(["cities", "countries"] as Tab[]).map((t) => (
             <button
@@ -285,11 +294,8 @@ export function WorldAudienceMap({
               className="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all capitalize cursor-pointer"
               style={
                 tab === t
-                  ? {
-                      backgroundColor: baseColor ?? "#ffffff",
-                      color: contrastColor,
-                    }
-                  : { color: "rgba(255,255,255,0.45)" }
+                  ? { backgroundColor: contrastColor, color: "white" }
+                  : { color: "rgba(0,0,0,0.4)" }
               }
             >
               {t}
@@ -301,7 +307,10 @@ export function WorldAudienceMap({
       {/* Map + Legend side by side on md+ */}
       <div className="flex flex-col md:flex-row flex-1 min-h-0">
         {/* Map */}
-        <div className="md:flex-1 w-full relative md:h-[430px] h-[200px] ">
+        <div
+          className="md:flex-1 w-full relative md:h-[430px] h-[200px] "
+          style={{ backgroundColor: "rgba(0,0,0,0.04)" }}
+        >
           {/* CSS pulse animation for city markers */}
           <style>{`
             @keyframes rsm-city-pulse {
@@ -319,18 +328,23 @@ export function WorldAudienceMap({
             projection="geoMercator"
             projectionConfig={
               tab === "cities"
-                ? { scale: projection.scale, center: projection.center }
-                : { scale: 130, center: [0, 35] }
+                ? {
+                    scale: projection.scale,
+                    center: projection.center as Coordinates,
+                  }
+                : { scale: 130, center: [0, 35] as Coordinates }
             }
             style={{ width: "100%", height: "100%" }}
           >
-            <Geographies geography={GEO_URL}>
+            <Geographies
+              geography={geoData ?? { type: "FeatureCollection", features: [] }}
+            >
               {({ geographies }) =>
                 geographies.map((geo) => {
                   const isoA3: string = geo.properties?.iso_code ?? "";
                   const intensity = countryIntensity.get(isoA3) ?? 0;
 
-                  let fill = "rgba(255,255,255,0.06)";
+                  let fill = baseColor;
                   let fillOpacity = 1;
 
                   if (tab === "countries" && intensity > 0) {
@@ -344,7 +358,7 @@ export function WorldAudienceMap({
                       geography={geo}
                       fill={fill}
                       fillOpacity={fillOpacity}
-                      stroke="rgba(255, 255, 255, 0.2)"
+                      stroke="rgba(0,0,0,0.3)"
                       strokeWidth={0.4}
                       style={{
                         default: { outline: "none" },
@@ -362,7 +376,7 @@ export function WorldAudienceMap({
               cityMarkers
                 .filter((m) => m.coords !== null)
                 .map((m) => (
-                  <Marker key={m.name} coordinates={m.coords!}>
+                  <Marker key={m.name} coordinates={m.coords as Coordinates}>
                     {/* Pulsing ring via CSS animation */}
                     <circle
                       r={11}
@@ -374,7 +388,7 @@ export function WorldAudienceMap({
                     <circle
                       r={11}
                       fill={accentColor}
-                      stroke="#ffffff"
+                      stroke="rgba(0, 0, 0, 0.25)"
                       strokeWidth={2}
                     />
                     {/* Rank number */}
@@ -400,7 +414,7 @@ export function WorldAudienceMap({
         {/* Legend panel */}
         <div
           className="md:w-[38%] shrink-0 flex flex-col px-6 py-5 md:border-l border-t md:border-t-0"
-          style={{ borderColor: "rgba(255,255,255,0.08)" }}
+          style={{ borderColor: "rgba(0,0,0,0.1)" }}
         >
           {/* Items — spread to fill full height */}
           <div className="flex flex-col flex-1 justify-between gap-6">
@@ -415,17 +429,17 @@ export function WorldAudienceMap({
                         >
                           {m.rank}
                         </span>
-                        <span className="text-[13px] font-medium text-gray-200 truncate">
+                        <span className="text-[13px] font-medium text-gray-600 truncate">
                           {m.name}
                         </span>
                       </div>
-                      <span className="text-[13px] font-bold text-white ml-2 shrink-0">
+                      <span className="text-[13px] font-bold text-gray-900 ml-2 shrink-0">
                         {m.pct}%
                       </span>
                     </div>
                     <div
                       className="md:h-6 h-2 rounded-lg overflow-hidden"
-                      style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                      style={{ backgroundColor: "rgba(0,0,0,0.08)" }}
                     >
                       <div
                         className="h-full rounded-lg"
@@ -444,17 +458,17 @@ export function WorldAudienceMap({
                         <span className="text-base shrink-0 leading-none">
                           {c.flag}
                         </span>
-                        <span className="text-[13px] font-medium text-gray-200 truncate">
+                        <span className="text-[13px] font-medium text-gray-600 truncate">
                           {c.name}
                         </span>
                       </div>
-                      <span className="text-[13px] font-bold text-white ml-2 shrink-0">
+                      <span className="text-[13px] font-bold text-gray-900 ml-2 shrink-0">
                         {c.pct}%
                       </span>
                     </div>
                     <div
                       className="md:h-6 h-2 rounded-lg overflow-hidden"
-                      style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                      style={{ backgroundColor: "rgba(0,0,0,0.08)" }}
                     >
                       <div
                         className="h-full rounded-lg"
@@ -469,12 +483,12 @@ export function WorldAudienceMap({
           </div>
 
           {/* Footer */}
-          <p
+          {/* <p
             className="text-[10px] font-semibold tracking-widest uppercase mt-4 shrink-0"
-            style={{ color: "rgba(255,255,255,0.25)" }}
+            style={{ color: "rgba(0,0,0,0.35)" }}
           >
             Instagram · Last 30 days
-          </p>
+          </p> */}
         </div>
       </div>
     </div>

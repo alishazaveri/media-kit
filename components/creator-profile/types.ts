@@ -29,6 +29,7 @@ export interface PostItem {
   media_type?: string;
   like_count?: number;
   comments_count?: number;
+  view_count?: number;
   thumbnail_url?: string | null;
   media_url?: string | null;
   permalink?: string | null;

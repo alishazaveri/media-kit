@@ -53,9 +53,12 @@ export async function fetchAndSaveInstagramAnalytics(
 
   const igUserId = account.platform_user_id;
 
-  const now = Math.floor(Date.now() / 1000);
-  const since30 = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000);
-  const since60 = Math.floor((Date.now() - 60 * 24 * 60 * 60 * 1000) / 1000);
+  const DAY = 24 * 60 * 60;
+  // Align to midnight UTC so "today" is never included — range is [May 25 … Jun 23] when today is Jun 24
+  const startOfToday = Math.floor(Date.now() / 1000 / DAY) * DAY;
+  const now = startOfToday; // "until" is midnight today = end of yesterday
+  const since30 = startOfToday - 30 * DAY;
+  const since60 = startOfToday - 60 * DAY;
 
   const dayParams = (metric: string) => ({
     metric,
@@ -312,6 +315,7 @@ export async function fetchAndSaveInstagramAnalytics(
       `media_insights_${post.id}`,
     );
     const ins: any[] = insightRes?.data?.data ?? [];
+
     return {
       id: post.id,
       caption: post.caption ?? "",
@@ -331,9 +335,9 @@ export async function fetchAndSaveInstagramAnalytics(
     };
   });
 
-  // Top content by reach; top reels by engagement
+  // Top content by views (impressions); top reels by engagement
   const topContentByViews = [...posts]
-    .sort((a, b) => b.reach - a.reach)
+    .sort((a, b) => b.impressions - a.impressions)
     .slice(0, 5);
   const topReelsByEngagement = [...posts]
     .filter((p) => p.media_type === "VIDEO" || p.media_product_type === "REELS")
@@ -408,7 +412,9 @@ export async function fetchAndSaveInstagramAnalytics(
   // Seed draft_data on first-time setup (display_name not yet set by user)
   const existingDraft = (await getDraft(userId, "instagram")) as any;
   if (!existingDraft?.draft_data?.display_name) {
-    const seedPosts = posts.slice(0, 4).map((p) => ({
+    const seedSource =
+      topContentByViews.length > 0 ? topContentByViews : posts.slice(0, 4);
+    const seedPosts = seedSource.slice(0, 4).map((p) => ({
       id: p.id,
       caption: p.caption,
       media_type: p.media_type,
@@ -419,6 +425,7 @@ export async function fetchAndSaveInstagramAnalytics(
       timestamp: p.timestamp,
       like_count: p.like_count,
       comments_count: p.comments_count,
+      view_count: p.impressions || null,
     }));
     await saveDraft(userId, "instagram", {
       display_name: profile.name ?? "",

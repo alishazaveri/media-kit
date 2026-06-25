@@ -36,6 +36,7 @@ export default function DashboardPage() {
     gender_breakdown: [],
   });
   const [igPosts] = useState<any[]>([]);
+  const [igTopPosts, setIgTopPosts] = useState<any[]>([]);
   const [featuredPosts, setFeaturedPosts] = useState<any[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [publishedData, setPublishedData] = useState<Record<string, any>>({});
@@ -207,6 +208,21 @@ export default function DashboardPage() {
           age_breakdown: Array.isArray(ig.age_breakdown) ? ig.age_breakdown : [],
           gender_breakdown: Array.isArray(ig.gender_breakdown) ? ig.gender_breakdown : [],
         });
+        if (Array.isArray(ig.top_content_by_views) && ig.top_content_by_views.length > 0) {
+          setIgTopPosts(
+            ig.top_content_by_views.slice(0, 4).map((p: any) => ({
+              id: p.id,
+              caption: p.caption,
+              media_type: p.media_type,
+              thumbnail_url: p.thumbnail_url ?? null,
+              media_url: p.media_url ?? null,
+              permalink: p.permalink ?? null,
+              like_count: p.like_count,
+              comments_count: p.comments_count,
+              view_count: p.impressions,
+            })),
+          );
+        }
         // If draft.profile_pic is explicitly null it means the user removed it — don't fall back.
         // Only fall back to profile_image_url / ig pic when the draft has never set a pic.
         setProfilePic(
@@ -235,8 +251,23 @@ export default function DashboardPage() {
           setCollabs(draft.collabs);
         if (Array.isArray(draft.posts) && draft.posts.length) {
           setFeaturedPosts(draft.posts);
+        } else if (Array.isArray(ig.top_content_by_views) && ig.top_content_by_views.length > 0) {
+          // Use top posts by views from insights as the default
+          setFeaturedPosts(
+            ig.top_content_by_views.slice(0, 4).map((p: any) => ({
+              id: p.id,
+              caption: p.caption,
+              media_type: p.media_type,
+              thumbnail_url: p.thumbnail_url ?? null,
+              media_url: p.media_url ?? null,
+              permalink: p.permalink ?? null,
+              like_count: p.like_count,
+              comments_count: p.comments_count,
+              view_count: p.impressions,
+            })),
+          );
         } else {
-          // No saved selection — auto-select the first 4 Instagram posts
+          // Last resort — fetch first 4 posts chronologically
           fetch("/api/instagram/posts?limit=4")
             .then((r) => r.json())
             .then((data) => {
@@ -543,6 +574,7 @@ export default function DashboardPage() {
           igStats={igStats}
           igInsights={igInsights}
           igPosts={igPosts}
+          igTopPosts={igTopPosts}
           packages={packages}
           addPackage={addPackage}
           removePackage={removePackage}

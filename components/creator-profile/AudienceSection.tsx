@@ -157,8 +157,8 @@ export function AudienceSection({
               topCountries={insights.top_countries ?? []}
               topCities={insights.top_cities ?? []}
               accentColor={accentColor}
-              contrastColor={contrastColor}
               baseColor={baseColor}
+              contrastColor={contrastColor}
             />
           </div>
         ) : (
@@ -301,8 +301,8 @@ export function AudienceSection({
                 >
                   {genZMillPct}% are Gen Z &amp; young millennials
                 </p>
-                <div className="h-[180px]">
-                  <ResponsiveContainer width="100%" height="100%">
+                <div>
+                  <ResponsiveContainer width="100%" height={180}>
                     <BarChart
                       data={agePctsStyled}
                       margin={{ top: 0, right: 8, left: 8, bottom: 0 }}
@@ -421,19 +421,21 @@ export function AudienceSection({
                 </p>
                 <div className="flex min-[310px]:flex-row flex-col items-center gap-6 md:gap-8">
                   <div className="relative min-[425px]:w-[160px] min-[425px]:h-[160px] w-[120px] h-[120px] shrink-0">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={genderSegments}
-                          dataKey="pct"
-                          innerRadius="40%"
-                          outerRadius="85%"
-                          startAngle={90}
-                          endAngle={-270}
-                          strokeWidth={0}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    <PieChart
+                      width={160}
+                      height={160}
+                      style={{ width: "100%", height: "100%" }}
+                    >
+                      <Pie
+                        data={genderSegments}
+                        dataKey="pct"
+                        innerRadius="40%"
+                        outerRadius="85%"
+                        startAngle={90}
+                        endAngle={-270}
+                        strokeWidth={0}
+                      />
+                    </PieChart>
                   </div>
                   <div className="flex flex-col gap-4 flex-1">
                     {genderSegments.map((s) => (
