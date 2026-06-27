@@ -85,7 +85,7 @@ function PostGrid({
   accentColor: string;
 }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 items-start">
+    <div className="grid grid-cols-2 min-[476px]:grid-cols-4 gap-3 md:gap-4 items-start">
       {cardData.map((card, i) => {
         const cardClass = `relative rounded-2xl overflow-hidden ${i % 2 === 1 ? "md:mt-8 mt-5" : ""}`;
         const href = card.permalink ?? `https://www.instagram.com/${handle}/`;
