@@ -27,6 +27,7 @@ export async function updateSubscriptionOnVerify(
   razorpayCustomerId?: string,
   current_period_start?: number,
   current_period_end?: number,
+  subscription_start_at?: number,
   meta?: any
 ) {
   await connectDB();
@@ -34,11 +35,12 @@ export async function updateSubscriptionOnVerify(
   if (razorpayCustomerId) updateObj.razorpay_customer_id = razorpayCustomerId;
   if (current_period_start) updateObj.current_period_start = new Date(current_period_start * 1000);
   if (current_period_end) updateObj.current_period_end = new Date(current_period_end * 1000);
+  if (subscription_start_at) updateObj.subscription_start_at = new Date(subscription_start_at * 1000);
   if (meta) updateObj.meta = meta;
 
   return Subscription.findOneAndUpdate(
     { razorpay_subscription_id: razorpaySubscriptionId },
-    updateObj,
+    { $set: updateObj },
     { new: true }
   ).lean();
 }

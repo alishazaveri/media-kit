@@ -19,6 +19,15 @@ export type Plan = {
   pricing: Record<BillingFrequency, PricingVariant>;
 };
 
+export function getPricingByPlanId(planId: string): { plan: Plan; billing: BillingFrequency; pricing: PricingVariant } | null {
+  for (const plan of PLANS) {
+    for (const [billing, pricing] of Object.entries(plan.pricing) as [BillingFrequency, PricingVariant][]) {
+      if (pricing.id === planId) return { plan, billing, pricing };
+    }
+  }
+  return null;
+}
+
 export const PLANS: Plan[] = [
   {
     key: "early_bird",

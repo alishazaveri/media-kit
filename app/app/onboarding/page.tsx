@@ -6,11 +6,13 @@ import { UsernameStep } from "@/components/onBoarding/UsernameStep";
 import { SignupStep } from "@/components/onBoarding/SignupStep";
 import { ConnectStep } from "@/components/onBoarding/ConnectStep";
 import { ActivateStep } from "@/components/onBoarding/ActivateStep";
+import { useUser } from "@/contexts/UserContext";
 
 type Step = "username" | "signup" | "connect" | "activate";
 
 function OnboardingContent() {
   const router = useRouter();
+  const { refresh } = useUser();
   const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>("username");
   const [userId, setUserId] = useState("");
@@ -71,7 +73,7 @@ function OnboardingContent() {
         <ConnectStep userId={userId} externalError={connectError} />
       )}
       {step === "activate" && (
-        <ActivateStep onNext={() => router.push("/app/dashboard")} />
+        <ActivateStep onNext={() => { refresh(); router.push("/app/dashboard"); }} />
       )}
     </div>
   );

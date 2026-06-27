@@ -30,6 +30,7 @@ type ChildProps = {
 type Props = {
   userId: string;
   planId: string;
+  startAt?: number;
   children: (props: ChildProps) => React.ReactNode;
   onSuccess?: (data: any) => void;
   onError?: (err: string | Error) => void;
@@ -39,6 +40,7 @@ type Props = {
 export default function SubscribeButtonHOC({
   userId,
   planId,
+  startAt,
   children,
   onSuccess,
   onError,
@@ -69,7 +71,7 @@ export default function SubscribeButtonHOC({
       const res = await fetch("/api/payments/create-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan_id: planId.trim(), user_id: userId }),
+        body: JSON.stringify({ plan_id: planId.trim(), user_id: userId, ...(startAt && { start_at: startAt }) }),
       });
 
       if (!res.ok) {
