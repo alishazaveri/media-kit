@@ -123,17 +123,21 @@ export function HeroSection({
                 fontFamily: "Outfit,ui-sans-serif,system-ui,sans-serif",
               }}
             >
-              <span className={`block text-3xl min-[425px]:text-4xl md:text-5xl lg:text-[5.5rem] ${darkMode ? "text-white/30" : "text-gray-900/30"}`}>
+              <span
+                className={`block text-3xl min-[425px]:text-4xl md:text-5xl lg:text-[5.5rem] ${darkMode ? "text-white/30" : "text-gray-900/30"}`}
+              >
                 Hi, I&apos;m
               </span>
-              <span className={`block text-5xl min-[425px]:text-6xl md:text-6xl lg:text-[7rem] ${darkMode ? "text-white" : "text-gray-900"}`}>
+              <span
+                className={`block text-5xl min-[425px]:text-6xl md:text-6xl lg:text-[7rem] ${darkMode ? "text-white" : "text-gray-900"}`}
+              >
                 {firstName || "Creator"}{" "}
                 {lastName && (
                   <span
                     className="relative z-10"
                     style={{ color: accentColor }}
                   >
-                    {lastName}
+                    {lastName.split(" ")[0]}
                   </span>
                 )}
               </span>
@@ -141,7 +145,9 @@ export function HeroSection({
 
             {/* Tagline */}
             {tagline && (
-              <p className={`text-base md:text-xl font-medium max-w-2xl leading-relaxed whitespace-pre-line ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+              <p
+                className={`text-base md:text-xl font-medium max-w-2xl leading-relaxed whitespace-pre-line ${darkMode ? "text-gray-300" : "text-gray-600"}`}
+              >
                 {tagline}
               </p>
             )}

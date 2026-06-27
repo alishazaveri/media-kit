@@ -107,7 +107,11 @@ export async function GET(req: NextRequest) {
     const enrichedPosts = posts.map((post: any, i) => {
       const insights =
         insightsResults[i].status === "fulfilled"
-          ? (insightsResults[i] as PromiseFulfilledResult<Record<string, number>>).value
+          ? (
+              insightsResults[i] as PromiseFulfilledResult<
+                Record<string, number>
+              >
+            ).value
           : {};
       return { ...post, ...insights };
     });

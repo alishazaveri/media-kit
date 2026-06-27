@@ -16,6 +16,7 @@ function postTypeCode(mediaType?: string, index?: number) {
 
 function buildCardData(posts: PostItem[] | undefined, fallback: boolean) {
   const items = posts && posts.length > 0 ? posts.slice(0, 4) : [];
+
   if (items.length > 0) {
     return items.map((p, i) => ({
       id: p.id,
@@ -29,7 +30,7 @@ function buildCardData(posts: PostItem[] | undefined, fallback: boolean) {
       title: p.caption
         ? p.caption.split("\n")[0].slice(0, 28)
         : `Post ${i + 1}`,
-      metric: fmt(p.view_count ?? p.like_count),
+      metric: fmt(p.impressions ?? p.like_count),
       gradient: DUMMY_GRADIENTS[i % DUMMY_GRADIENTS.length],
     }));
   }
@@ -115,12 +116,12 @@ function PostGrid({
                 {card.type}
               </span>
             </div>
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-4">
-              <div className="flex items-end justify-between">
-                <p className="text-white font-bold text-sm leading-tight">
+            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent backdrop-blur-[2px] [mask-image:linear-gradient(to_top,black_60%,transparent)] p-4 flex items-end">
+              <div className="flex items-center justify-between w-full">
+                <p className="text-white font-bold text-sm leading-tight truncate min-w-0">
                   {card.title}
                 </p>
-                <p className="text-white/80 text-sm font-semibold shrink-0 ml-2">
+                <p className="text-white/90 text-md font-bold shrink-0 ml-2">
                   {card.metric}
                 </p>
               </div>
@@ -162,7 +163,7 @@ export function WorkSection({
             >
               The Visual Lab
             </h2>
-            <p className="text-gray-500 text-sm font-mono">Most Viewed</p>
+            <p className="text-gray-500 text-md font-mono">Most Viewed</p>
           </div>
         </div>
       </div>

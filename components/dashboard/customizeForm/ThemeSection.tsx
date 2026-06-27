@@ -71,7 +71,7 @@ export function ThemeSection({
           <Toggle checked={darkMode} onChange={handleDarkMode} />
         </div> */}
       </div>
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 min-[425px]:grid-cols-4 gap-3">
         {THEMES.map((t) => (
           <button
             key={t.identifier}

@@ -30,7 +30,9 @@ export function PastCollabsSection({
   onSectionFocus,
 }: PastCollabsSectionProps) {
   const [expandedCollabId, setExpandedCollabId] = useState<number | null>(null);
-  const [pendingDeleteCollab, setPendingDeleteCollab] = useState<number | null>(null);
+  const [pendingDeleteCollab, setPendingDeleteCollab] = useState<number | null>(
+    null,
+  );
   const [collabPickerOpen, setCollabPickerOpen] = useState<number | null>(null);
 
   useEffect(() => {
@@ -45,10 +47,42 @@ export function PastCollabsSection({
 
   const pickerGridIcon = (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <rect x="1" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-      <rect x="8" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-      <rect x="1" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-      <rect x="8" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+      <rect
+        x="1"
+        y="1"
+        width="5"
+        height="5"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+      <rect
+        x="8"
+        y="1"
+        width="5"
+        height="5"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+      <rect
+        x="1"
+        y="8"
+        width="5"
+        height="5"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+      <rect
+        x="8"
+        y="8"
+        width="5"
+        height="5"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
     </svg>
   );
 
@@ -131,14 +165,20 @@ export function PastCollabsSection({
                     {c.brand || "New collab"}
                   </p>
                   {c.industry && (
-                    <p className="text-xs text-gray-400 truncate">{c.industry}</p>
+                    <p className="text-xs text-gray-400 truncate">
+                      {c.industry}
+                    </p>
                   )}
                 </div>
 
                 {/* Top Performer badge toggle */}
                 <button
                   type="button"
-                  title={c.featured ? "Remove Top Performer badge" : "Mark as Top Performer"}
+                  title={
+                    c.featured
+                      ? "Remove Top Performer badge"
+                      : "Mark as Top Performer"
+                  }
                   onClick={() => updateCollab(c.id, "featured", !c.featured)}
                   className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
                     c.featured
@@ -212,7 +252,7 @@ export function PastCollabsSection({
                   onFocus={() => onSectionFocus?.(`receipts-card-${c.id}`)}
                 >
                   {/* Brand + Category */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 min-[425px]:grid-cols-2 gap-2">
                     <div>
                       <Label>Brand</Label>
                       <Input
@@ -282,7 +322,7 @@ export function PastCollabsSection({
                         ({selectedPosts.length}/10)
                       </span>
                     </p>
-                    <div className="grid grid-cols-5 gap-1.5 mb-2">
+                    <div className="grid grid-cols-3 min-[425px]:grid-cols-5 gap-1.5 mb-2">
                       {selectedThumbs.map((thumb, i) =>
                         thumb ? (
                           <div
@@ -315,7 +355,9 @@ export function PastCollabsSection({
                       onClick={() => setCollabPickerOpen(c.id)}
                       icon={pickerGridIcon}
                     >
-                      {selectedPosts.length > 0 ? "Change posts" : "Select posts"}
+                      {selectedPosts.length > 0
+                        ? "Change posts"
+                        : "Select posts"}
                     </Button>
                   </div>
                 </div>

@@ -412,8 +412,12 @@ export async function fetchAndSaveInstagramAnalytics(
   // Seed draft_data on first-time setup (display_name not yet set by user)
   const existingDraft = (await getDraft(userId, "instagram")) as any;
   if (!existingDraft?.draft_data?.display_name) {
-    const seedSource =
-      topContentByViews.length > 0 ? topContentByViews : posts.slice(0, 4);
+    const cutoff = new Date(since30 * 1000);
+    const recentPosts = posts.filter((p) => new Date(p.timestamp) >= cutoff);
+    const ranked = [...(recentPosts.length > 0 ? recentPosts : posts)].sort(
+      (a, b) => b.impressions - a.impressions,
+    );
+    const seedSource = ranked.length > 0 ? ranked : posts;
     const seedPosts = seedSource.slice(0, 4).map((p) => ({
       id: p.id,
       caption: p.caption,

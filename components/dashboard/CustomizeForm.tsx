@@ -57,6 +57,9 @@ export interface CustomizeFormProps {
   receiptsVisible: boolean;
   setReceiptsVisible: (v: boolean) => void;
   onPreviewClick: () => void;
+  onPublish?: () => void;
+  publishing?: boolean;
+  hasUnpublishedChanges?: boolean;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
   onProfilePicUploaded?: (url: string | null) => void;
   onSectionFocus?: (sectionId: string) => void;
@@ -92,39 +95,75 @@ export function CustomizeForm({
   receiptsVisible,
   setReceiptsVisible,
   onPreviewClick,
+  onPublish,
+  publishing = false,
+  hasUnpublishedChanges = false,
   onThemeChange,
   onProfilePicUploaded,
   onSectionFocus,
 }: CustomizeFormProps) {
   return (
-    <div className="w-full lg:w-[520px] shrink-0 overflow-y-auto px-4 lg:px-6 mb-5 mt-5 space-y-4 ">
-      {/* Mobile preview button */}
-      <Button
-        variant="default"
-        size="md"
-        onClick={onPreviewClick}
-        fullWidth
-        icon={
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path
-              d="M1 8C1 8 3.5 3 8 3C12.5 3 15 8 15 8C15 8 12.5 13 8 13C3.5 13 1 8 1 8Z"
-              stroke="currentColor"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-            />
-            <circle
-              cx="8"
-              cy="8"
-              r="2"
-              stroke="currentColor"
-              strokeWidth="1.4"
-            />
-          </svg>
-        }
-        className="lg:hidden rounded-xl"
-      >
-        Preview my page
-      </Button>
+    <div className="w-full lg:w-[520px] shrink-0 overflow-y-auto px-4 lg:px-6 lg:mb-5 mb-[68px] mt-5 space-y-4 ">
+      {/* Mobile preview + publish buttons */}
+      <div className="flex gap-2 lg:hidden">
+        <Button
+          variant="default"
+          size="md"
+          onClick={onPreviewClick}
+          fullWidth
+          icon={
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M1 8C1 8 3.5 3 8 3C12.5 3 15 8 15 8C15 8 12.5 13 8 13C3.5 13 1 8 1 8Z"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+              />
+              <circle
+                cx="8"
+                cy="8"
+                r="2"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
+            </svg>
+          }
+          className="rounded-xl"
+        >
+          Preview
+        </Button>
+        {onPublish && (
+          <Button
+            variant="primary"
+            size="md"
+            onClick={onPublish}
+            disabled={publishing || !hasUnpublishedChanges}
+            loading={publishing}
+            fullWidth
+            icon={
+              !publishing && (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+              )
+            }
+            className="rounded-xl font-bold"
+          >
+            {publishing ? "Saving…" : "Publish"}
+          </Button>
+        )}
+      </div>
 
       <ProfileSection
         profilePic={profilePic}

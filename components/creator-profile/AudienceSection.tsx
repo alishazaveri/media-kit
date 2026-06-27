@@ -82,7 +82,8 @@ export function AudienceSection({
   const agePctsStyled = agePcts.map(({ label, pct }) => ({
     label,
     pct,
-    fill: pct === peakAge.pct ? accentColor : "url(#barGradAge)",
+    // fill: pct === peakAge.pct ? accentColor : "url(#barGradAge)",
+    fill: accentColor,
   }));
 
   // ── Gender breakdown ────────────────────────────────────────────────────
@@ -316,16 +317,16 @@ export function AudienceSection({
                           x2="0"
                           y2="1"
                         >
-                          <stop
-                            offset="40%"
+                          {/* <stop
+                            offset="50%"
                             stopColor={accentColor}
                             stopOpacity={0.8}
-                          />
-                          <stop
+                          /> */}
+                          {/* <stop
                             offset="100%"
                             stopColor={accentColor}
                             stopOpacity={0.1}
-                          />
+                          /> */}
                         </linearGradient>
                       </defs>
                       <XAxis

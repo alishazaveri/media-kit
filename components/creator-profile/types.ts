@@ -33,6 +33,7 @@ export interface PostItem {
   thumbnail_url?: string | null;
   media_url?: string | null;
   permalink?: string | null;
+  impressions?: number;
 }
 
 export interface Package {

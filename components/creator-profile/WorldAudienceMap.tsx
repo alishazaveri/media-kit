@@ -276,8 +276,8 @@ export function WorldAudienceMap({
 
   return (
     <div
-      className="rounded-3xl overflow-hidden flex flex-col"
-      style={{ backgroundColor: "white" }}
+      className="rounded-3xl overflow-hidden flex flex-col border-1 "
+      style={{ backgroundColor: "white", borderColor: "rgba(0,0,0,0.1)" }}
     >
       {/* Header + Tabs */}
       <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">

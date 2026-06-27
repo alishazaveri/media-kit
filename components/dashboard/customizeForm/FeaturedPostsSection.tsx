@@ -31,10 +31,42 @@ export function FeaturedPostsSection({
 
   const gridIcon = (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <rect x="1" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-      <rect x="8" y="1" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-      <rect x="1" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-      <rect x="8" y="8" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+      <rect
+        x="1"
+        y="1"
+        width="5"
+        height="5"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+      <rect
+        x="8"
+        y="1"
+        width="5"
+        height="5"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+      <rect
+        x="1"
+        y="8"
+        width="5"
+        height="5"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+      <rect
+        x="8"
+        y="8"
+        width="5"
+        height="5"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
     </svg>
   );
 
@@ -43,15 +75,18 @@ export function FeaturedPostsSection({
       className="bg-white rounded-2xl border border-gray-100 p-5"
       onFocus={() => onSectionFocus?.("work")}
     >
-      <p className="font-semibold text-gray-900 mb-1">Featured Instagram content</p>
-      <p className="text-xs text-gray-400 mb-3">Up to 4 posts or reels shown on your page.</p>
+      <p className="font-semibold text-gray-900 mb-1">Most Viewed Content</p>
+      <p className="text-xs text-gray-400 mb-3">
+        Up to 4 posts or reels shown on your page.
+      </p>
 
-      <div className="grid grid-cols-4 gap-2 mb-3">
+      <div className="grid grid-cols-3 min-[425px]:grid-cols-4 gap-2 mb-3">
         {Array.from({ length: 4 }, (_, i) => {
           const post = featuredPosts[i] ?? null;
           const thumb = post
             ? (post.thumbnail_url ??
-              (post.media_type === "IMAGE" || post.media_type === "CAROUSEL_ALBUM"
+              (post.media_type === "IMAGE" ||
+              post.media_type === "CAROUSEL_ALBUM"
                 ? post.media_url
                 : null))
             : null;
@@ -61,7 +96,11 @@ export function FeaturedPostsSection({
               className="relative rounded-2xl overflow-hidden aspect-square ring-2 ring-primary ring-offset-1"
             >
               {thumb ? (
-                <img src={thumb} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={thumb}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div
                   className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`}
@@ -99,7 +138,7 @@ export function FeaturedPostsSection({
       <PostPickerModal
         isOpen={pickerOpen}
         onClose={() => setPickerOpen(false)}
-        title="Choose posts"
+        title="Choose most viewed posts"
         maxSelect={4}
         initialSelectedIds={featuredIds}
         existingPosts={featuredPosts}

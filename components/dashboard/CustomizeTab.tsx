@@ -131,7 +131,7 @@ export function CustomizeTab(props: Props) {
     profilePic,
     stats: igStats,
     insights: igInsights,
-    posts: (igTopPosts?.length ?? 0) > 0 ? igTopPosts : (featuredPosts?.length ?? 0) > 0 ? featuredPosts : igPosts,
+    posts: (featuredPosts?.length ?? 0) > 0 ? featuredPosts : (igTopPosts?.length ?? 0) > 0 ? igTopPosts : igPosts,
     availableForCollabs,
     nicheTags,
     packages,
@@ -228,6 +228,9 @@ export function CustomizeTab(props: Props) {
     receiptsVisible,
     setReceiptsVisible,
     onPreviewClick: () => setShowPreview(true),
+    onPublish,
+    publishing,
+    hasUnpublishedChanges,
     onThemeChange,
     onProfilePicUploaded: props.onProfilePicUploaded,
     onSectionFocus: (sectionId: string) => {

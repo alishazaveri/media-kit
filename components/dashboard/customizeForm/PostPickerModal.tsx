@@ -126,7 +126,7 @@ export function PostPickerModal({
 
         {selectedIds.length >= maxSelect && (
           <div className="mx-5 mt-4 shrink-0 bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 text-xs text-center text-primary font-medium">
-            {maxSelect} posts selected — deselect one to swap
+            {maxSelect} posts selected - deselect one to swap
           </div>
         )}
 
@@ -136,7 +136,7 @@ export function PostPickerModal({
           className="overflow-y-auto flex-1 p-4"
           onScroll={handleScroll}
         >
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 min-[425px]:grid-cols-3 gap-2">
             {loading
               ? Array.from({ length: 9 }, (_, i) => (
                   <div
@@ -153,13 +153,22 @@ export function PostPickerModal({
                       : null);
                   const selected = selectedIds.includes(post.id);
                   const dimmed = selectedIds.length >= maxSelect && !selected;
+                  const views = post.impressions ?? post.view_count ?? null;
+                  const viewLabel =
+                    views == null
+                      ? null
+                      : views >= 1_000_000
+                        ? `${(views / 1_000_000).toFixed(1)}M`
+                        : views >= 1_000
+                          ? `${(views / 1_000).toFixed(1)}K`
+                          : String(views);
                   return (
                     <button
                       key={post.id}
                       onClick={() => togglePost(post)}
                       className={`relative rounded-2xl overflow-hidden aspect-square transition-all
-                        ${selected ? "ring-2 ring-primary ring-offset-1" : ""}
-                        ${dimmed ? "cursor-not-allowed" : "cursor-pointer"}
+                        ${selected ? "ring-[3px] ring-primary ring-offset-2 scale-[0.97]" : ""}
+                        ${dimmed ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}
                       `}
                     >
                       {thumb ? (
@@ -173,12 +182,25 @@ export function PostPickerModal({
                           className={`w-full h-full bg-gradient-to-br ${POST_GRADIENTS[i % POST_GRADIENTS.length]}`}
                         />
                       )}
+                      {selected && (
+                        <div className="absolute inset-0 bg-primary/20" />
+                      )}
                       <span className="absolute top-1.5 right-1.5 bg-gray-900/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md">
                         {mediaTypeLabel(post.media_type)}
                       </span>
+                      {viewLabel && (
+                        <span className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[11px] font-semibold px-1.5 py-0.5 rounded-md">
+                          {viewLabel}
+                        </span>
+                      )}
                       {selected && (
-                        <span className="absolute bottom-1.5 left-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                        <span className="absolute bottom-1.5 right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow">
+                          <svg
+                            width="10"
+                            height="10"
+                            viewBox="0 0 10 10"
+                            fill="none"
+                          >
                             <path
                               d="M2 5l2.5 2.5L8 3"
                               stroke="white"
@@ -214,7 +236,7 @@ export function PostPickerModal({
             className="rounded-2xl"
             onClick={handleDone}
           >
-            Done — {selectedIds.length} selected
+            Done ( {selectedIds.length} selected )
           </Button>
         </div>
       </div>
