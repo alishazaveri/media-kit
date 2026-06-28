@@ -1,5 +1,5 @@
 import Razorpay from "razorpay";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getSubscriptionsByUserId } from "@/db/subscription.db";
 import Subscription from "@/db/models/subscription";
@@ -10,11 +10,14 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET as string,
 });
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
     if (!session)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = await req.json().catch(() => ({}));
+    const { excludeSubscriptionId } = body || {};
 
     const now = new Date();
     const subs: any[] = (await getSubscriptionsByUserId(session.userId)) as any[];
@@ -22,7 +25,10 @@ export async function POST() {
     // Collect all subs eligible for cancellation:
     // 1. authenticated subs with a future subscription_start_at (pending resumes)
     // 2. active subs with current_period_end > now that aren't already cancelled
+    // excludeSubscriptionId lets callers protect a newly created sub (e.g. after plan change)
     const subsToCancel = subs.filter((s) => {
+      if (excludeSubscriptionId && s.razorpay_subscription_id === excludeSubscriptionId) return false;
+
       const isPendingResume =
         s.status === "authenticated" &&
         s.subscription_start_at &&

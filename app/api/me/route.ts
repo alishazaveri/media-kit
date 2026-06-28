@@ -27,14 +27,17 @@ export async function GET() {
       (s) => s.current_period_end && new Date(s.current_period_end) > now
     ) ?? null;
 
-    // A pending resume exists when there's an authenticated sub with a subscription_start_at
-    // in the future. cancelAtCycleEnd is only suppressed when BOTH conditions are true:
-    // the user still has an active sub (activeSub found above) AND a pending resume.
-    const hasPendingResume = !!activeSub && subList.some(
-      (s) => s.status === "authenticated" &&
-        s.subscription_start_at &&
-        new Date(s.subscription_start_at) > now
-    );
+    // A pending resume/plan-change exists when there's an authenticated sub with a
+    // subscription_start_at in the future. cancelAtCycleEnd is only suppressed when BOTH
+    // conditions are true: the user still has an active sub AND a pending one.
+    // When pending, surface the incoming plan's ID so the UI reflects what the user switched to.
+    const pendingResumeSub = activeSub
+      ? subList.find(
+          (s) => s.status === "authenticated" &&
+            s.subscription_start_at &&
+            new Date(s.subscription_start_at) > now
+        ) ?? null
+      : null;
 
     return NextResponse.json({
       userId: session.userId,
@@ -44,10 +47,10 @@ export async function GET() {
       isLinkActive: active,
       subscription: activeSub
         ? {
-            planId: activeSub.plan_id,
+            planId: pendingResumeSub ? pendingResumeSub.plan_id : activeSub.plan_id,
             status: activeSub.status,
             currentPeriodEnd: activeSub.current_period_end ?? null,
-            cancelAtCycleEnd: hasPendingResume ? false : (activeSub.cancel_at_cycle_end ?? false),
+            cancelAtCycleEnd: pendingResumeSub ? false : (activeSub.cancel_at_cycle_end ?? false),
           }
         : null,
     });

@@ -5,6 +5,7 @@ import axios from "axios";
 import Button from "@/components/reusable/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import SubscribeButtonHOC from "@/components/SubscribeButtonHOC";
+import { PricingCards } from "@/components/PricingCards";
 import { useUser } from "@/contexts/UserContext";
 import { getPricingByPlanId } from "@/lib/plans";
 
@@ -22,9 +23,14 @@ export function PlanTab() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [showActivateModal, setShowActivateModal] = useState(false);
 
   const matched = subscription?.planId ? getPricingByPlanId(subscription.planId) : null;
   const renewalDate = formatDate(subscription?.currentPeriodEnd ?? null);
+
+  const otherBilling = matched?.billing === "monthly" ? "yearly" : "monthly";
+  const otherPricing = matched ? matched.plan.pricing[otherBilling] : null;
 
   async function handleCancel() {
     setCancelling(true);
@@ -118,31 +124,124 @@ export function PlanTab() {
             </div>
           ) : !loading ? (
             <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center flex flex-col gap-3 items-center">
-              <p className="text-gray-500 text-sm">No active subscription.</p>
-              <Button variant="primary" size="sm" className="rounded-xl" onClick={() => window.location.href = "/app/onboarding"}>
-                Activate my link
+              <p className="text-gray-500 text-sm">You don&apos;t have an active plan.</p>
+              <Button variant="primary" size="sm" className="rounded-xl" onClick={() => setShowActivateModal(true)}>
+                Activate your kloot link
               </Button>
             </div>
           ) : null}
 
+          {/* Activate modal */}
+          {showActivateModal && (
+            <div
+              className="fixed inset-0 z-9999 flex items-end sm:items-center justify-center p-4"
+              onClick={() => setShowActivateModal(false)}
+            >
+              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+              <div
+                className="relative bg-[#FAF7F2] rounded-3xl shadow-xl w-full max-w-2xl p-6 flex flex-col gap-5 max-h-[90dvh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900">Activate your kloot link</h2>
+                    <p className="text-sm text-gray-500 mt-0.5">One simple plan. Cancel anytime.</p>
+                  </div>
+                  <button
+                    onClick={() => setShowActivateModal(false)}
+                    className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </div>
+                <PricingCards
+                  userId={userId}
+                  onSuccess={() => { setShowActivateModal(false); refresh(); }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Resume — below the card, only when cancellation is scheduled */}
           {matched && subscription?.cancelAtCycleEnd && subscription.currentPeriodEnd && (
+            <Button
+              variant="primary"
+              size="sm"
+              className="rounded-xl"
+              onClick={() => setShowResumeModal(true)}
+            >
+              Resume plan
+            </Button>
+          )}
+
+          {/* Resume modal */}
+          {showResumeModal && subscription?.currentPeriodEnd && (
+            <div
+              className="fixed inset-0 z-9999 flex items-end sm:items-center justify-center p-4"
+              onClick={() => setShowResumeModal(false)}
+            >
+              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+              <div
+                className="relative bg-[#FAF7F2] rounded-3xl shadow-xl w-full max-w-2xl p-6 flex flex-col gap-5 max-h-[90dvh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900">Resume your plan</h2>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      Pick a plan — payment starts after {renewalDate}.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowResumeModal(false)}
+                    className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </div>
+                <PricingCards
+                  userId={userId}
+                  startAt={Math.floor(new Date(subscription.currentPeriodEnd).getTime() / 1000)}
+                  onSuccess={() => { setShowResumeModal(false); refresh(); }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Switch billing — below the card, only when active and not already scheduled */}
+          {matched && !subscription?.cancelAtCycleEnd && otherPricing && subscription?.currentPeriodEnd && (
             <SubscribeButtonHOC
               userId={userId}
-              planId={matched.pricing.id}
-              startAt={Math.floor(new Date(subscription.currentPeriodEnd).getTime() / 1000)}
-              onSuccess={() => refresh()}
+              planId={otherPricing.id}
+              startAt={Math.floor(new Date(subscription.currentPeriodEnd!).getTime() / 1000)}
+              onSuccess={async (v) => {
+                const newSubId = v?.subscription?.razorpay_subscription_id;
+                await fetch("/api/payments/cancel-subscription", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ excludeSubscriptionId: newSubId }),
+                });
+                refresh();
+              }}
             >
-              {({ onSubscribe, loading: resuming }) => (
+              {({ onSubscribe, loading: switching }) => (
                 <Button
-                  variant="primary"
+                  variant="outline"
                   size="sm"
                   className="rounded-xl"
                   onClick={onSubscribe}
-                  disabled={resuming || !userId}
-                  loading={resuming}
+                  disabled={switching || !userId}
+                  loading={switching}
                 >
-                  {resuming ? "Processing…" : "Resume plan"}
+                  {switching
+                    ? "Processing…"
+                    : otherBilling === "yearly"
+                    ? `Switch to yearly · Save ${otherPricing.discountPct ?? 15}%`
+                    : `Switch to monthly · ₹${otherPricing.price}/mo`}
                 </Button>
               )}
             </SubscribeButtonHOC>
