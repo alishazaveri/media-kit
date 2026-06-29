@@ -1,5 +1,11 @@
 import { connectDB } from "@/db";
-import Token from "@/db/models/token";
+import Token, { IToken } from "@/db/models/token";
+import { encrypt, decrypt } from "@/lib/encryption";
+
+function decryptDoc<T extends { token: string } | null>(doc: T): T {
+  if (!doc) return doc;
+  return { ...doc, token: decrypt(doc.token) };
+}
 
 export async function createToken(
   userId: string,
@@ -12,7 +18,7 @@ export async function createToken(
   await connectDB();
   return Token.create({
     user_id: userId,
-    token,
+    token: encrypt(token),
     type,
     expires_at: expiresAt,
     ...(platform && { platform }),
@@ -22,12 +28,14 @@ export async function createToken(
 
 export async function getTokenByValue(token: string) {
   await connectDB();
-  return Token.findOne({ token }).lean();
+  const doc = await Token.findOne({ token: encrypt(token) }).lean();
+  return decryptDoc(doc);
 }
 
 export async function getTokenByUserId(userId: string, type: string) {
   await connectDB();
-  return Token.findOne({ user_id: userId, type }).lean();
+  const doc = await Token.findOne({ user_id: userId, type }).lean();
+  return decryptDoc(doc);
 }
 
 export async function deleteToken(id: string) {
@@ -51,17 +59,21 @@ export async function upsertToken(
   await connectDB();
   return Token.findOneAndUpdate(
     { user_id: userId, type, ...(platform && { platform }) },
-    { token, expires_at: expiresAt, ...(accountId && { account_id: accountId }) },
+    { token: encrypt(token), expires_at: expiresAt, ...(accountId && { account_id: accountId }) },
     { upsert: true, new: true }
   );
 }
 
 export async function getTokenByPlatform(userId: string, platform: string, type: string) {
   await connectDB();
-  return Token.findOne({ user_id: userId, platform, type }).lean();
+  const doc = await Token.findOne({ user_id: userId, platform, type }).lean();
+  return decryptDoc(doc);
 }
 
 export async function updateTokenById(id: string, token: string, expiresAt: Date) {
   await connectDB();
-  return Token.findByIdAndUpdate(id, { token, expires_at: expiresAt }, { new: true });
+  const doc = await Token.findByIdAndUpdate(id, { token: encrypt(token), expires_at: expiresAt }, { new: true });
+  if (!doc) return null;
+  doc.token = decrypt(doc.token);
+  return doc;
 }
