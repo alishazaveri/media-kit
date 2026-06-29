@@ -2,11 +2,6 @@ import { connectDB } from "@/db";
 import Token from "@/db/models/token";
 import { encrypt, decrypt } from "@/lib/encryption";
 
-function decryptDoc<T extends { token: string } | null>(doc: T): T {
-  if (!doc) return doc;
-  return { ...doc, token: decrypt(doc.token) };
-}
-
 export async function createToken(
   userId: string,
   token: string,
@@ -18,7 +13,7 @@ export async function createToken(
   await connectDB();
   return Token.create({
     user_id: userId,
-    token: encrypt(token),
+    token,
     type,
     expires_at: expiresAt,
     ...(platform && { platform }),
@@ -28,14 +23,12 @@ export async function createToken(
 
 export async function getTokenByValue(token: string) {
   await connectDB();
-  const doc = await Token.findOne({ token: encrypt(token) }).lean();
-  return decryptDoc(doc);
+  return Token.findOne({ token }).lean();
 }
 
 export async function getTokenByUserId(userId: string, type: string) {
   await connectDB();
-  const doc = await Token.findOne({ user_id: userId, type }).lean();
-  return decryptDoc(doc);
+  return Token.findOne({ user_id: userId, type }).lean();
 }
 
 export async function deleteToken(id: string) {
@@ -67,7 +60,8 @@ export async function upsertToken(
 export async function getTokenByPlatform(userId: string, platform: string, type: string) {
   await connectDB();
   const doc = await Token.findOne({ user_id: userId, platform, type }).lean();
-  return decryptDoc(doc);
+  if (!doc) return null;
+  return { ...doc, token: decrypt(doc.token) };
 }
 
 export async function updateTokenById(id: string, token: string, expiresAt: Date) {
