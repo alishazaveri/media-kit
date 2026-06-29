@@ -1,5 +1,5 @@
 import { connectDB } from "@/db";
-import Token, { IToken } from "@/db/models/token";
+import Token from "@/db/models/token";
 import { encrypt, decrypt } from "@/lib/encryption";
 
 function decryptDoc<T extends { token: string } | null>(doc: T): T {
