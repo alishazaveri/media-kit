@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { BillingDetailsModal } from "@/components/BillingDetailsModal";
 
 declare global {
   interface Window {
@@ -50,23 +51,16 @@ export default function SubscribeButtonHOC({
   const [success, setSuccess] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paymentResponse, setPaymentResponse] = useState<any | null>(null);
+  const [showBillingModal, setShowBillingModal] = useState(false);
+  const [billingInitial, setBillingInitial] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    loadScript("https://checkout.razorpay.com/v1/checkout.js").catch(() => {
-      // ignore — we'll try loading again when initiating payment
-    });
+    loadScript("https://checkout.razorpay.com/v1/checkout.js").catch(() => {});
   }, []);
 
-  async function onSubscribe() {
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    onLoadingChange?.(true);
-
+  async function openRazorpay() {
     try {
-      if (!planId || !planId.trim()) {
-        throw new Error("Invalid plan ID");
-      }
+      if (!planId || !planId.trim()) throw new Error("Invalid plan ID");
 
       const res = await fetch("/api/payments/create-subscription", {
         method: "POST",
@@ -76,18 +70,13 @@ export default function SubscribeButtonHOC({
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        const msg = data?.error || "Failed to create subscription";
-        setError(msg);
-        onError?.(msg);
-        return;
+        throw new Error(data?.error || "Failed to create subscription");
       }
 
       const data = await res.json();
       const subscriptionId = data.subscription_id;
 
-      if (!window.Razorpay) {
-        await loadScript("https://checkout.razorpay.com/v1/checkout.js");
-      }
+      if (!window.Razorpay) await loadScript("https://checkout.razorpay.com/v1/checkout.js");
 
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
@@ -106,7 +95,6 @@ export default function SubscribeButtonHOC({
                 razorpay_signature: resp.razorpay_signature,
               }),
             });
-
             const v = await verify.json().catch(() => ({}));
             if (verify.ok && v.success) {
               setSuccess(true);
@@ -124,11 +112,13 @@ export default function SubscribeButtonHOC({
             onError?.(err as Error);
           }
         },
-        modal: { ondismiss: () => {
-          const msg = "Subscription flow cancelled";
-          setError(msg);
-          onError?.(msg);
-        } },
+        modal: {
+          ondismiss: () => {
+            const msg = "Subscription flow cancelled";
+            setError(msg);
+            onError?.(msg);
+          },
+        },
       } as any;
 
       const rzp = new window.Razorpay(options);
@@ -150,13 +140,70 @@ export default function SubscribeButtonHOC({
     }
   }
 
-  const childProps: ChildProps = {
-    onSubscribe,
-    loading,
-    success,
-    error,
-    paymentResponse,
-  };
+  async function onSubscribe() {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    onLoadingChange?.(true);
 
-  return <>{typeof children === "function" ? children(childProps) : null}</>;
+    try {
+      const res = await fetch("/api/billing/profile");
+      const { profile } = await res.json().catch(() => ({ profile: null }));
+
+      setBillingInitial({
+        name: profile?.name ?? "",
+        phone: profile?.phone ?? "",
+        phone_country_code: profile?.phone_country_code ?? "+91",
+        gstin: profile?.gstin ?? "",
+        company_name: profile?.company_name ?? "",
+        address_line1: profile?.address_line1 ?? "",
+        address_line2: profile?.address_line2 ?? "",
+        city: profile?.city ?? "",
+        country: profile?.country ?? "IN",
+        state: profile?.state ?? "",
+        pincode: profile?.pincode ?? "",
+      });
+      setShowBillingModal(true);
+      setLoading(false);
+      onLoadingChange?.(false);
+    } catch {
+      setLoading(false);
+      onLoadingChange?.(false);
+    }
+  }
+
+  async function handleBillingSave(profile: Record<string, any>) {
+    const res = await fetch("/api/billing/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(profile),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data?.error ?? "Failed to save billing details");
+    }
+    setShowBillingModal(false);
+    setLoading(true);
+    onLoadingChange?.(true);
+    await openRazorpay();
+  }
+
+  return (
+    <>
+      {showBillingModal && (
+        <BillingDetailsModal
+          initial={billingInitial}
+          onSave={handleBillingSave}
+          onCancel={() => {
+            setShowBillingModal(false);
+            setLoading(false);
+            onLoadingChange?.(false);
+          }}
+        />
+      )}
+      {typeof children === "function"
+        ? children({ onSubscribe, loading, success, error, paymentResponse })
+        : null}
+    </>
+  );
 }
