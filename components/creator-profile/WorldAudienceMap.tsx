@@ -216,12 +216,16 @@ export function WorldAudienceMap({
   accentColor,
   baseColor,
   contrastColor,
+  cardBg = "#ffffff",
+  cardText = "#111827",
 }: {
   topCountries: { country: string; count: number }[];
   topCities: { city: string; count: number }[];
   accentColor: string;
   baseColor: string;
   contrastColor: string;
+  cardBg?: string;
+  cardText?: string;
 }) {
   const rawCountries = topCountries.length > 0 ? topCountries : DUMMY_COUNTRIES;
   const rawCities = topCities.length > 0 ? topCities : DUMMY_CITIES;
@@ -276,12 +280,12 @@ export function WorldAudienceMap({
 
   return (
     <div
-      className="rounded-3xl overflow-hidden flex flex-col border-1 "
-      style={{ backgroundColor: "white", borderColor: "rgba(0,0,0,0.1)" }}
+      className="rounded-3xl overflow-hidden flex flex-col shadow-sm"
+      style={{ backgroundColor: cardBg }}
     >
       {/* Header + Tabs */}
       <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
-        <h3 className="text-[17px] font-bold text-gray-900">Top locations</h3>
+        <h3 className="text-[17px] font-bold" style={{ color: cardText }}>Top locations</h3>
         {/* Tab switcher */}
         <div
           className="flex items-center gap-0.5 p-1 rounded-xl"
