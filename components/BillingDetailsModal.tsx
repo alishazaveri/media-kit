@@ -62,6 +62,9 @@ export function BillingDetailsModal({ initial = {}, onSave, onCancel }: Props) {
     if (!phone.trim()) { setError("Phone number is required"); return; }
     if (!state.trim()) { setError("State is required"); return; }
     if (showGstFields) {
+      if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(gstin.trim().toUpperCase())) {
+        setError("Invalid GSTIN format (e.g. 24AAAAA0000A1Z5)"); return;
+      }
       if (!companyName.trim()) { setError("Company name is required when GSTIN is provided"); return; }
       if (!addressLine1.trim()) { setError("Address Line 1 is required when GSTIN is provided"); return; }
       if (!city.trim()) { setError("City is required when GSTIN is provided"); return; }
@@ -148,7 +151,7 @@ export function BillingDetailsModal({ initial = {}, onSave, onCancel }: Props) {
                 const detected = val.trim().length >= 2 ? getStateFromGstin(val.trim()) : undefined;
                 if (detected) setState(detected);
               }}
-              placeholder="22AAAAA0000A1Z5"
+              placeholder="24AAAAA0000A1Z5"
               maxLength={15}
               className={`${inputCls} uppercase`}
             />

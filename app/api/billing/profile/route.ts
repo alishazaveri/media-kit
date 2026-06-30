@@ -26,8 +26,11 @@ export async function POST(req: NextRequest) {
   if (!phone_country_code?.trim()) return NextResponse.json({ error: "Country code is required" }, { status: 400 });
   if (!state?.trim()) return NextResponse.json({ error: "State is required" }, { status: 400 });
 
-  // If GSTIN provided, validate company details are present
+  // If GSTIN provided, validate format and company details
   if (gstin?.trim()) {
+    if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(gstin.trim().toUpperCase())) {
+      return NextResponse.json({ error: "Invalid GSTIN format" }, { status: 400 });
+    }
     if (!company_name?.trim()) return NextResponse.json({ error: "Company name is required when GSTIN is provided" }, { status: 400 });
     if (!address_line1?.trim()) return NextResponse.json({ error: "Address is required when GSTIN is provided" }, { status: 400 });
     if (!city?.trim()) return NextResponse.json({ error: "City is required when GSTIN is provided" }, { status: 400 });
