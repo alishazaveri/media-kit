@@ -44,7 +44,15 @@ export function ProfileSection({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [picMenuOpen, setPicMenuOpen] = useState(false);
   const [pronouns, setPronouns] = useState("she/her");
+  const [prevNicheTags, setPrevNicheTags] = useState(nicheTags);
   const [nicheText, setNicheText] = useState(nicheTags.join(", "));
+
+  if (prevNicheTags !== nicheTags) {
+    setPrevNicheTags(nicheTags);
+    if (nicheTags.length > 0 && !nicheText) {
+      setNicheText(nicheTags.join(", "));
+    }
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -294,7 +302,10 @@ export function ProfileSection({
         <Label>Niche tags</Label>
         <Input
           value={nicheText}
-          onChange={setNicheText}
+          onChange={(text) => {
+            setNicheText(text);
+            setNicheTags(text.split(",").map((t) => t.trim()).filter(Boolean));
+          }}
           onBlur={syncNicheTags}
           placeholder="lifestyle, travel, beauty"
         />

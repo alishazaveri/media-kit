@@ -208,7 +208,7 @@ export default function DashboardPage() {
         setDisplayName(draft.display_name ?? ig.name ?? "");
         setTagline(draft.tagline ?? ig.tagline ?? ig.biography ?? "");
         setLocation(draft.location ?? "India");
-        if (draft.display_email) setDisplayEmail(draft.display_email);
+        setDisplayEmail(draft.display_email ?? res.data?.email ?? "");
         if (typeof draft.services_visible === "boolean")
           setServicesVisible(draft.services_visible);
         if (typeof draft.receipts_visible === "boolean")
