@@ -4,14 +4,12 @@ export function FooterSection({
   handle,
   name,
   email,
-  baseColor,
   accentColor,
   contrastColor,
 }: {
   handle: string;
   name: string;
   email?: string;
-  baseColor: string;
   accentColor: string;
   contrastColor: string;
 }) {
@@ -70,7 +68,9 @@ export function FooterSection({
       </div>
       <div className="max-w-7xl mx-auto mt-16 pt-6 border-t border-gray-100 text-center">
         <p className="text-xs text-gray-400">
-          © {new Date().getFullYear()} Kloot X {name}.
+          © {new Date().getFullYear()}{" "}
+          <a href="/" className="hover:underline">Kloot</a>
+          {" "}X {name}.
         </p>
       </div>
     </section>

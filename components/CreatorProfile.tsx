@@ -251,7 +251,6 @@ export function CreatorProfile({
         handle={handle}
         name={name}
         email={email}
-        baseColor={baseColor}
         accentColor={accentColor}
         contrastColor={contrastColor}
       />
