@@ -174,7 +174,7 @@ export function UsernameStep({
             href="/app/login"
             className="text-primary font-semibold hover:underline"
           >
-            Sign in
+            Login
           </a>
         </p>
       </div>

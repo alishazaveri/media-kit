@@ -60,19 +60,13 @@ function LoginForm() {
     <div className="min-h-dvh bg-[#FAF7F2] flex flex-col">
       {toast && <Toast message={toast} type="success" onClose={() => setToast("")} />}
       {/* Nav */}
-      <nav className="px-6 py-4 flex items-center justify-between">
+      <nav className="px-6 py-4">
         <a href="/" className="flex items-center">
           <img
             src="/assets/images/logo/logo-transparent-slim.png"
             alt="Kloot"
             className="h-6 w-auto object-contain"
           />
-        </a>
-        <a
-          href="/app/onboarding"
-          className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-        >
-          Sign up
         </a>
       </nav>
 

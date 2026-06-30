@@ -117,9 +117,9 @@ export function SignupStep({
 
           <p className="text-center text-sm text-gray-400 mt-6">
             By continuing you agree to our{" "}
-            <a href="/o/terms" className="underline hover:text-gray-600">
-              Terms & Privacy
-            </a>
+            <a href="/o/terms" className="underline hover:text-gray-600">Terms</a>
+            {" "}&amp;{" "}
+            <a href="/o/privacy" className="underline hover:text-gray-600">Privacy Policy</a>
             .
           </p>
 
@@ -129,7 +129,7 @@ export function SignupStep({
               href="/app/login"
               className="text-primary font-semibold hover:underline"
             >
-              Sign in
+              Login
             </a>
           </p>
         </div>
