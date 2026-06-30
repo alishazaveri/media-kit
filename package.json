@@ -10,6 +10,7 @@
     "seed:themes": "npx tsx scripts/seed-themes.ts"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.5.1",
     "@vercel/blob": "^2.4.0",
     "@vnedyalk0v/react19-simple-maps": "^2.0.9",
     "antd": "^6.3.7",
@@ -26,7 +27,8 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.9.0",
-    "resend": "^6.12.4"
+    "resend": "^6.12.4",
+    "to-words": "^5.6.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

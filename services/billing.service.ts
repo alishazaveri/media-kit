@@ -1,61 +1,17 @@
 import { getNextSequenceNumber } from "@/db/billing_sequence.db";
-import { createInvoice, getInvoiceByPaymentId } from "@/db/invoice.db";
+import { createInvoice, getInvoiceByPaymentId, updateInvoicePdfUrl } from "@/db/invoice.db";
 import { getBillingProfile } from "@/db/billing_profile.db";
 import { getUserById } from "@/db/user.db";
 import { getSubscriptionByRazorpayId } from "@/db/subscription.db";
 import { getPricingByPlanId } from "@/lib/plans";
+import { generateAndUploadInvoicePdf } from "@/services/pdf.service";
 
 const GST_RATE = 18;
 const SAC_CODE = "998315";
 const PREFIX = process.env.INVOICE_PREFIX ?? "KLT";
 
-// Indian GST state codes — first 2 digits of GSTIN (source: CBIC / gst.gov.in)
-const STATE_CODE_MAP: Record<string, string> = {
-  "01": "Jammu and Kashmir",
-  "02": "Himachal Pradesh",
-  "03": "Punjab",
-  "04": "Chandigarh",
-  "05": "Uttarakhand",
-  "06": "Haryana",
-  "07": "Delhi",
-  "08": "Rajasthan",
-  "09": "Uttar Pradesh",
-  "10": "Bihar",
-  "11": "Sikkim",
-  "12": "Arunachal Pradesh",
-  "13": "Nagaland",
-  "14": "Manipur",
-  "15": "Mizoram",
-  "16": "Tripura",
-  "17": "Meghalaya",
-  "18": "Assam",
-  "19": "West Bengal",
-  "20": "Jharkhand",
-  "21": "Odisha",
-  "22": "Chhattisgarh",
-  "23": "Madhya Pradesh",
-  "24": "Gujarat",
-  // 25 — Daman and Diu (discontinued 2020, merged into 26)
-  "26": "Dadra and Nagar Haveli and Daman and Diu",
-  "27": "Maharashtra",
-  // 28 — Not Assigned
-  "29": "Karnataka",
-  "30": "Goa",
-  "31": "Lakshadweep",
-  "32": "Kerala",
-  "33": "Tamil Nadu",
-  "34": "Puducherry",
-  "35": "Andaman and Nicobar Islands",
-  "36": "Telangana",
-  "37": "Andhra Pradesh",
-  "38": "Ladakh",
-  "97": "Other Territory",
-  "99": "Centre Jurisdiction",
-};
-
-export function getStateFromCode(code: string): string {
-  return STATE_CODE_MAP[code] ?? "Unknown";
-}
+import { getStateFromCode, getStateCodeFromName } from "@/lib/gst-states";
+export { getStateFromCode, getStateCodeFromName };
 
 export function getFinancialYear(): string {
   const now = new Date();
@@ -144,7 +100,7 @@ export async function generateInvoice({
   const seq = await getNextSequenceNumber(PREFIX, fy);
   const invoiceNumber = formatInvoiceNumber(PREFIX, fy, seq);
 
-  return createInvoice({
+  const invoice = await createInvoice({
     invoice_number: invoiceNumber,
     prefix: PREFIX,
     financial_year: fy,
@@ -187,7 +143,14 @@ export async function generateInvoice({
     currency: "INR",
 
     status: "paid",
-  } as any);
+  } as Parameters<typeof createInvoice>[0]);
+
+  // Generate PDF and upload — failure is non-fatal, invoice is already created
+  generateAndUploadInvoicePdf(invoice)
+    .then((pdfUrl) => updateInvoicePdfUrl(invoice._id.toString(), pdfUrl))
+    .catch((err) => console.error("[Invoice] PDF generation failed for", invoice.invoice_number, err));
+
+  return invoice;
 }
 
 export async function generateInvoiceForCharge(

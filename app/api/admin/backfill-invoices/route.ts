@@ -11,13 +11,17 @@ type RzpInvoices = { fetch: (id: string) => Promise<Record<string, unknown>> };
 
 // ── Date range helpers ────────────────────────────────────────────────────────
 
-type RangeLabel = "yesterday" | "this_week" | "last_week" | "this_month" | "last_month";
+type RangeLabel = "today" | "yesterday" | "this_week" | "last_week" | "this_month" | "last_month";
 
 function resolveRange(label: RangeLabel): { from: number; to: number } {
   const now = new Date();
   const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
   switch (label) {
+    case "today": {
+      const d = startOfDay(now);
+      return { from: d.getTime() / 1000, to: now.getTime() / 1000 };
+    }
     case "yesterday": {
       const d = startOfDay(now);
       d.setDate(d.getDate() - 1);
@@ -155,7 +159,7 @@ export async function POST(req: NextRequest) {
     let fromTs: number, toTs: number;
 
     if (range) {
-      const VALID: RangeLabel[] = ["yesterday", "this_week", "last_week", "this_month", "last_month"];
+      const VALID: RangeLabel[] = ["today", "yesterday", "this_week", "last_week", "this_month", "last_month"];
       if (!VALID.includes(range)) {
         return NextResponse.json({ error: `range must be one of: ${VALID.join(", ")}` }, { status: 400 });
       }

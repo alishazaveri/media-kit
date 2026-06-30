@@ -15,3 +15,13 @@ export async function getInvoiceByPaymentId(paymentId: string) {
   await connectDB();
   return Invoice.findOne({ razorpay_payment_id: paymentId }).lean();
 }
+
+export async function getInvoiceById(id: string) {
+  await connectDB();
+  return Invoice.findById(id).lean();
+}
+
+export async function updateInvoicePdfUrl(id: string, pdfUrl: string) {
+  await connectDB();
+  return Invoice.updateOne({ _id: id }, { pdf_url: pdfUrl });
+}
