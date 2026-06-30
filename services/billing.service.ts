@@ -7,7 +7,7 @@ import { getPricingByPlanId } from "@/lib/plans";
 import { generateAndUploadInvoicePdf } from "@/services/pdf.service";
 
 const GST_RATE = 18;
-const SAC_CODE = "998315";
+const SAC_CODE = "9983";
 const PREFIX = process.env.INVOICE_PREFIX ?? "KLT";
 
 import { getStateFromCode, getStateCodeFromName } from "@/lib/gst-states";
