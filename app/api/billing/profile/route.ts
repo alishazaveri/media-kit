@@ -53,13 +53,20 @@ export async function POST(req: NextRequest) {
       country: country?.trim() || "IN",
       state: state.trim(),
       state_code,
-      ...(gstin?.trim() && {
+      ...(gstin?.trim() ? {
         gstin: gstin.trim().toUpperCase(),
         company_name: company_name.trim(),
         address_line1: address_line1.trim(),
-        address_line2: address_line2?.trim(),
+        address_line2: address_line2?.trim() || null,
         city: city.trim(),
         pincode: pincode.trim(),
+      } : {
+        gstin: null,
+        company_name: null,
+        address_line1: null,
+        address_line2: null,
+        city: null,
+        pincode: null,
       }),
     }),
     Object.keys(userUpdates).length > 0 ? updateUser(session.userId, userUpdates) : Promise.resolve(null),

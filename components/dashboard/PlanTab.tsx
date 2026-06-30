@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Button from "@/components/reusable/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -8,6 +8,16 @@ import SubscribeButtonHOC from "@/components/SubscribeButtonHOC";
 import { PricingCards } from "@/components/PricingCards";
 import { useUser } from "@/contexts/UserContext";
 import { getPricingByPlanId } from "@/lib/plans";
+
+interface Invoice {
+  _id: string;
+  invoice_number: string;
+  plan_name: string;
+  invoice_date: string;
+  total_amount: number;
+  currency: string;
+  pdf_url?: string;
+}
 
 function formatDate(dateStr: string | null) {
   if (!dateStr) return null;
@@ -25,6 +35,15 @@ export function PlanTab() {
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [showActivateModal, setShowActivateModal] = useState(false);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get<{ invoices: Invoice[] }>("/api/invoices")
+      .then((r) => setInvoices(r.data.invoices))
+      .catch(() => {})
+      .finally(() => setInvoicesLoading(false));
+  }, []);
 
   const matched = subscription?.planId ? getPricingByPlanId(subscription.planId) : null;
   const renewalDate = formatDate(subscription?.currentPeriodEnd ?? null);
@@ -261,6 +280,46 @@ export function PlanTab() {
               >
                 Cancel plan
               </Button>
+            </div>
+          )}
+
+          {/* Invoices */}
+          {(invoicesLoading || invoices.length > 0) && (
+            <div className="flex flex-col gap-3 pt-2">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Invoices</h3>
+              {invoicesLoading ? (
+                <p className="text-sm text-gray-400">Loading…</p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {invoices.map((inv) => (
+                    <div
+                      key={inv._id}
+                      className="bg-white border border-gray-200 rounded-2xl px-4 py-3 flex items-center justify-between gap-3"
+                    >
+                      <div className="flex flex-col gap-0.5">
+                        <p className="text-sm font-semibold text-gray-800">{inv.plan_name}</p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(inv.invoice_date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+                          <span className="mx-1.5">·</span>
+                          ₹{(inv.total_amount / 100).toLocaleString("en-IN")}
+                        </p>
+                      </div>
+                      {inv.pdf_url ? (
+                        <a
+                          href={`/app/invoices/${inv._id}/pdf`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 text-xs font-semibold text-primary hover:underline"
+                        >
+                          Download
+                        </a>
+                      ) : (
+                        <span className="shrink-0 text-xs text-gray-300">Processing…</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

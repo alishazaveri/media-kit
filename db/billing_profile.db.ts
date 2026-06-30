@@ -12,13 +12,13 @@ export async function upsertBillingProfile(
     name: string;
     phone: string;
     phone_country_code: string;
-    gstin?: string;
-    company_name?: string;
-    address_line1?: string;
-    address_line2?: string;
-    city?: string;
+    gstin?: string | null;
+    company_name?: string | null;
+    address_line1?: string | null;
+    address_line2?: string | null;
+    city?: string | null;
     state?: string;
-    pincode?: string;
+    pincode?: string | null;
     state_code?: string;
     country?: string;
   }
