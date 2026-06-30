@@ -6,6 +6,7 @@ import { getInsightBySocialChannel } from "@/db/insight.db";
 import { getCustomization } from "@/db/customization.db";
 import { getThemeByIdentifier } from "@/constants/themes";
 import { CreatorProfile } from "@/components/CreatorProfile";
+import isLinkActive from "@/lib/isLinkActive";
 
 export default async function PublishedProfilePage(props: {
   params: Promise<{ username: string }>;
@@ -19,6 +20,9 @@ export default async function PublishedProfilePage(props: {
   }
 
   const userId = (user as any)._id.toString();
+
+  const active = await isLinkActive(userId);
+  if (!active) return <WipPage username={username} />;
 
   const channel = await getSocialChannelByPlatform(userId, "instagram");
 

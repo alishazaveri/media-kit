@@ -59,36 +59,7 @@ export function CreatorProfile({
   posts,
   availableForCollabs = true,
   nicheTags = ["Lifestyle", "Wellness", "Beauty", "Travel"],
-  packages = [
-    {
-      id: 1,
-      title: "Instagram Reel",
-      description: "Single Instagram Reel with full rights",
-      price: "₹2,500",
-      popular: false,
-    },
-    {
-      id: 2,
-      title: "Instagram Story",
-      description: "Story series (3–5 frames)",
-      price: "₹800",
-      popular: false,
-    },
-    // {
-    //   id: 3,
-    //   title: "YouTube Video",
-    //   description: "Dedicated or integrated video",
-    //   price: "$5,000",
-    //   popular: true,
-    // },
-    {
-      id: 4,
-      title: "Campaign Bundle",
-      description: "Multi-platform package",
-      price: "Request Price",
-      popular: false,
-    },
-  ],
+  packages = [],
   collabs = [
     {
       id: 1,

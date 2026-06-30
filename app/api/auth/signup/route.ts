@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   try {
     const { email, username, password } = await req.json();
 
-    await registerUser(username, email, username, password);
+    await registerUser("", email, username, password);
 
     const { accessToken, refreshToken, user } = await loginUser(email, password);
 

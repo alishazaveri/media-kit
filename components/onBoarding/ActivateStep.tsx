@@ -7,6 +7,7 @@ import Button from "@/components/reusable/Button";
 import SubscribeButtonHOC from "@/components/SubscribeButtonHOC";
 import { PLANS, type BillingFrequency } from "@/lib/plans";
 import { useUser } from "@/contexts/UserContext";
+import { getDefaultPackages } from "@/lib/default-packages";
 
 export function ActivateStep({ onNext }: { onNext: () => void }) {
   const { userId } = useUser();
@@ -77,6 +78,9 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
         : Array.isArray(draft.posts) && draft.posts.length > 0
           ? draft.posts
           : [],
+    packages: Array.isArray(draft.packages) && draft.packages.length
+      ? draft.packages
+      : getDefaultPackages(ig.followers_count ?? 0),
   };
 
   useEffect(() => {
