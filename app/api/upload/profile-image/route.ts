@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   const inputBuffer = isHeic
     ? Buffer.from(
         await heicConvert({
-          buffer: buffer as unknown as ArrayBuffer,
+          buffer,
           format: "JPEG",
           quality: 1,
         })
