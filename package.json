@@ -10,9 +10,14 @@
     "seed:themes": "npx tsx scripts/seed-themes.ts"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.5.1",
+    "@vercel/blob": "^2.4.0",
+    "@vnedyalk0v/react19-simple-maps": "^2.0.9",
     "antd": "^6.3.7",
     "axios": "^1.16.0",
     "bcryptjs": "^3.0.3",
+    "heic-convert": "^2.1.0",
+    "i18n-iso-countries": "^7.14.0",
     "jose": "^6.2.3",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.1",
@@ -20,11 +25,15 @@
     "next": "16.2.4",
     "razorpay": "^2.9.6",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "recharts": "^3.9.0",
+    "resend": "^6.12.4",
+    "to-words": "^5.6.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
+    "@types/heic-convert": "^2.1.1",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -2,6 +2,7 @@ import { getSession } from "@/lib/session";
 import { getInsight } from "@/services/insight.service";
 import { getDraft } from "@/services/user_data.service";
 import { getUserInstagramChannel } from "@/services/social_channel.service";
+import { getUserById } from "@/db/user.db";
 import { NextResponse } from "next/server";
 
 /** GET /api/analytics — returns raw insight + user_data draft for the authenticated user. */
@@ -13,9 +14,10 @@ export async function GET() {
 
     const channel = await getUserInstagramChannel(session.userId);
 
-    const [insight, profileData] = await Promise.all([
+    const [insight, profileData, user] = await Promise.all([
       channel ? getInsight(session.userId) : Promise.resolve(null),
       getDraft(session.userId, "profile"),
+      getUserById(session.userId),
     ]);
 
     return NextResponse.json({
@@ -24,6 +26,7 @@ export async function GET() {
       published: (profileData as any)?.published_data ?? {},
       username: session.username,
       email: session.email,
+      profile_image_url: (user as any)?.profile_image_url ?? null,
     });
   } catch (err) {
     console.error("GET /api/analytics:", err);

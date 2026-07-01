@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 function CustomizeIcon({ active }: { active: boolean }) {
   return (
@@ -64,10 +66,15 @@ function BillingIcon({ active }: { active: boolean }) {
 }
 
 export const NAV_ITEMS = [
-  { id: "customize", label: "Customize", Icon: CustomizeIcon, href: "/dashboard" },
-  { id: "account", label: "Account", Icon: AccountIcon, href: "/account" },
+  {
+    id: "customize",
+    label: "Customize",
+    Icon: CustomizeIcon,
+    href: "/app/dashboard",
+  },
+  { id: "account", label: "Account", Icon: AccountIcon, href: "/app/account" },
   // Uncomment later
-  // { id: "plan", label: "Plan & billing", Icon: BillingIcon, href: "/plan" },
+  { id: "plan", label: "Plan & billing", Icon: BillingIcon, href: "/app/plan" },
 ];
 
 interface Props {
@@ -77,66 +84,90 @@ interface Props {
 
 export function DashboardSidebar({ onLogout, collapsed }: Props) {
   const pathname = usePathname();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   return (
-    <aside
-      className={`hidden lg:flex shrink-0 bg-[#f8f8f8] flex-col transition-all duration-200 ${
-        collapsed ? "w-16" : "w-56"
-      }`}
-    >
-      <div className={`py-5 flex items-center shrink-0 ${collapsed ? "justify-center px-0" : "px-5"}`}>
-        {!collapsed && (
-          <img
-            src="/assets/images/logo/logo-transparent-slim.png"
-            alt="Kloot"
-            className="h-6 w-auto object-contain"
-          />
-        )}
-      </div>
-
-      <nav className="flex-1 px-2 py-2 space-y-0.5">
-        {NAV_ITEMS.map(({ label, Icon, href }) => {
-          const active = pathname === href;
-          return (
-            <Link
-              key={href}
-              href={href}
-              title={collapsed ? label : undefined}
-              className={`w-full flex items-center py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                collapsed ? "justify-center px-0" : "gap-3 px-3"
-              } ${
-                active
-                  ? "bg-[#f9f3f4]"
-                  : "text-gray-500 hover:bg-[#f9f3f4] hover:text-gray-800"
-              }`}
-            >
-              <Icon active={active} />
-              {!collapsed && label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className={`pb-5 border-t border-gray-100 pt-4 px-2`}>
-        <button
-          onClick={onLogout}
-          title={collapsed ? "Log out" : undefined}
-          className={`w-full flex items-center py-2.5 rounded-xl text-sm text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors ${
-            collapsed ? "justify-center px-0" : "gap-3 px-3"
-          }`}
+    <>
+      {showLogoutModal && (
+        <ConfirmModal
+          title="Log out?"
+          description="You'll need to sign in again to access your dashboard."
+          confirmLabel="Log out"
+          cancelLabel="Cancel"
+          onConfirm={() => {
+            setShowLogoutModal(false);
+            onLogout();
+          }}
+          onCancel={() => setShowLogoutModal(false)}
+        />
+      )}
+      <aside
+        className={`hidden lg:flex shrink-0 bg-[#f8f8f8] flex-col transition-all duration-200 ${
+          collapsed ? "w-16" : "w-56"
+        }`}
+      >
+        <div
+          className={`py-5 flex items-center shrink-0 ${collapsed ? "justify-center px-0" : "px-5"}`}
         >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path
-              d="M7 3H4a1 1 0 00-1 1v10a1 1 0 001 1h3M12 13l4-4-4-4M16 9H7"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {collapsed ? (
+            <img
+              src="/assets/images/logo/logo-k-transparent.png"
+              alt="Kloot"
+              className="h-6 w-auto object-contain"
             />
-          </svg>
-          {!collapsed && "Log out"}
-        </button>
-      </div>
-    </aside>
+          ) : (
+            <img
+              src="/assets/images/logo/logo-transparent-slim.png"
+              alt="Kloot"
+              className="h-6 w-auto object-contain"
+            />
+          )}
+        </div>
+
+        <nav className="flex-1 px-2 py-2 space-y-0.5">
+          {NAV_ITEMS.map(({ label, Icon, href }) => {
+            const active = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                title={collapsed ? label : undefined}
+                className={`w-full flex items-center py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                  collapsed ? "justify-center px-0" : "gap-3 px-3"
+                } ${
+                  active
+                    ? "bg-[#f9f3f4]"
+                    : "text-gray-500 hover:bg-[#f9f3f4] hover:text-gray-800"
+                }`}
+              >
+                <Icon active={active} />
+                {!collapsed && label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className={`pb-5 border-t border-gray-100 pt-4 px-2`}>
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            title={collapsed ? "Log out" : undefined}
+            className={`w-full flex items-center py-2.5 rounded-xl text-sm text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors cursor-pointer ${
+              collapsed ? "justify-center px-0" : "gap-3 px-3"
+            }`}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path
+                d="M7 3H4a1 1 0 00-1 1v10a1 1 0 001 1h3M12 13l4-4-4-4M16 9H7"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {!collapsed && "Log out"}
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

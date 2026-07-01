@@ -3,6 +3,42 @@
 import { useState } from "react";
 import axios from "axios";
 import { OnboardingNav } from "./OnboardingNav";
+import Button from "@/components/reusable/Button";
+
+const BENEFITS = [
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+      </svg>
+    ),
+    title: "Posts & reels synced",
+    desc: "Your latest content is auto-selected for your page",
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+      </svg>
+    ),
+    title: "Profile filled in for you",
+    desc: "Photo, bio and handle pulled straight from Instagram",
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+        <polyline points="16 7 22 7 22 13" />
+      </svg>
+    ),
+    title: "Live stats on your page",
+    desc: "Followers, engagement & reach shown to brands",
+  },
+];
 
 export function ConnectStep({
   userId,
@@ -68,53 +104,81 @@ export function ConnectStep({
     <div className="min-h-[100dvh] bg-[#FAF7F2] flex flex-col">
       <OnboardingNav currentStep={3} />
 
-      <div className="flex-1 flex flex-col items-center justify-center px-4 pb-16">
-        {/* Instagram icon */}
-        <div
-          className="w-20 h-20 rounded-2xl flex items-center justify-center mb-8"
-          style={{
-            background: "linear-gradient(135deg, #E8714A 0%, #D4603A 100%)",
-          }}
-        >
-          <svg
-            width="36"
-            height="36"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="white"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm flex flex-col items-center">
+
+          {/* Instagram gradient icon */}
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-md"
+            style={{
+              background: "linear-gradient(135deg, #833AB4 0%, #FD1D1D 50%, #F56040 100%)",
+            }}
           >
-            <rect x="2" y="2" width="20" height="20" rx="5" />
-            <circle cx="12" cy="12" r="4" />
-            <circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none" />
-          </svg>
-        </div>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none" />
+            </svg>
+          </div>
 
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 text-center mb-4">
-          Connect your Instagram
-        </h1>
-        <p className="text-gray-500 text-center text-base leading-relaxed mb-10 max-w-sm">
-          We&apos;ll pull in your latest posts, profile picture, and bio to
-          build your kloot page automatically.
-        </p>
+          <h1 className="text-3xl font-extrabold text-gray-900 text-center mb-2">
+            Connect Instagram
+          </h1>
+          <p className="text-gray-500 text-center text-base leading-relaxed mb-8 max-w-xs">
+            Your kloot page builds itself — we sync your content and stats automatically.
+          </p>
 
-        <div className="w-full max-w-md">
+          {/* Benefit cards */}
+          <div className="w-full bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100 mb-6 shadow-sm">
+            {BENEFITS.map((b) => (
+              <div key={b.title} className="flex items-start gap-3.5 px-4 py-3.5">
+                <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                  {b.icon}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{b.title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{b.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Error */}
           {(externalError || error) && (
-            <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600 text-center">
+            <div className="w-full mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600 text-center">
               {externalError || error}
             </div>
           )}
-          <button
+
+          {/* CTA */}
+          <Button
+            variant="primary"
+            size="lg"
             onClick={handleConnect}
-            className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-4 rounded-2xl text-base transition-colors"
+            fullWidth
+            className="rounded-2xl"
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none" />
+              </svg>
+            }
           >
             Connect Instagram
-          </button>
-          <p className="text-center text-sm text-gray-400 mt-4">
-            We never post or message on your behalf.
-          </p>
+          </Button>
+
+          {/* Trust note */}
+          <div className="flex items-center justify-center gap-1.5 mt-4">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <p className="text-sm text-gray-400">
+              We never post or message on your behalf
+            </p>
+          </div>
+
         </div>
       </div>
     </div>

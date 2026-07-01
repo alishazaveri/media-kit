@@ -3,13 +3,16 @@
 import { useState } from "react";
 import axios from "axios";
 import { OnboardingNav } from "./OnboardingNav";
+import Button from "@/components/reusable/Button";
 
 export function SignupStep({
   onNext,
   claimedUsername,
+  trialToken,
 }: {
   onNext: (userId: string) => void;
   claimedUsername: string;
+  trialToken?: string;
 }) {
   const [form, setForm] = useState({
     email: "",
@@ -32,6 +35,7 @@ export function SignupStep({
         email: form.email,
         username: claimedUsername,
         password: form.password,
+        ...(trialToken && { trial_token: trialToken }),
       });
       onNext(res.data.userId);
     } catch (err) {
@@ -109,30 +113,26 @@ export function SignupStep({
               </p>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
-            >
+            <Button type="submit" variant="primary" size="lg" loading={loading} fullWidth className="rounded-xl">
               {loading ? "Creating account…" : "Continue"}
-            </button>
+            </Button>
           </form>
 
           <p className="text-center text-sm text-gray-400 mt-6">
             By continuing you agree to our{" "}
-            <a href="/terms" className="underline hover:text-gray-600">
-              Terms & Privacy
-            </a>
+            <a href="/o/terms" className="underline hover:text-gray-600">Terms</a>
+            {" "}&amp;{" "}
+            <a href="/o/privacy" className="underline hover:text-gray-600">Privacy Policy</a>
             .
           </p>
 
           <p className="text-center text-sm text-gray-500 mt-4">
             Already have an account?{" "}
             <a
-              href="/login"
+              href="/app/login"
               className="text-primary font-semibold hover:underline"
             >
-              Sign in
+              Login
             </a>
           </p>
         </div>

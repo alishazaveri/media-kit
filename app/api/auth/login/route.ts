@@ -1,6 +1,7 @@
 import { loginUser } from "@/services/user.service";
 import { getUserInstagramChannel } from "@/services/social_channel.service";
 import isLinkActive from "@/lib/isLinkActive";
+import { checkRateLimit } from "@/lib/rateLimit";
 import { NextRequest, NextResponse } from "next/server";
 
 const ACCESS_TOKEN_MAX_AGE = 15 * 60;
@@ -8,6 +9,17 @@ const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60;
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim()
+      ?? req.headers.get("x-real-ip")
+      ?? "unknown";
+
+    if (!checkRateLimit(`login:${ip}`, 5, 15 * 60 * 1000)) {
+      return NextResponse.json(
+        { error: "Too many login attempts. Please try again in 15 minutes." },
+        { status: 429 },
+      );
+    }
+
     const { identifier, password } = await req.json();
 
     const { accessToken, refreshToken, user } = await loginUser(identifier, password);

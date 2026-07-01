@@ -10,6 +10,7 @@ export interface ISubscription extends Document {
   current_period_end?: Date;
   cancel_at_cycle_end?: boolean;
   cancelled_at?: Date;
+  subscription_start_at?: Date;
   last_payment_id?: string;
   webhook_last_processed_at?: Date;
   webhook_last_event_id?: string;
@@ -28,6 +29,7 @@ const SubscriptionSchema = new Schema<ISubscription>(
     current_period_end: { type: Date, index: true },
     cancel_at_cycle_end: { type: Boolean, default: false },
     cancelled_at: { type: Date },
+    subscription_start_at: { type: Date },
     last_payment_id: { type: String },
     webhook_last_processed_at: { type: Date },
     webhook_last_event_id: { type: String, index: true },

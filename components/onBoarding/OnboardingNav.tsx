@@ -4,7 +4,7 @@ const STEPS = ["Claim", "Sign up", "Connect", "Pay"];
 
 export function OnboardingNav({ currentStep }: { currentStep: 1 | 2 | 3 | 4 }) {
   return (
-    <nav className="flex items-center justify-between px-6 py-4 bg-[#FAF7F2]">
+    <nav className="flex items-center justify-between px-6 py-4 bg-[#FAF7F2] max-w-7xl mx-auto w-full">
       <a href="/">
         <Image
           src="/assets/images/logo/logo-transparent-slim.png"

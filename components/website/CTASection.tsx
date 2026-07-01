@@ -30,7 +30,7 @@ export default function CTASection() {
             with less effort.
           </p>
           <a
-            href="/onboarding"
+            href="/app/onboarding"
             className="inline-flex items-center gap-2.5 bg-primary hover:bg-primary-hover text-white font-bold px-8 py-4 rounded-2xl text-base transition-colors"
           >
             Create Your Page

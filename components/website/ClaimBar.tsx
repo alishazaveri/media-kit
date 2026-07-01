@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Button from "@/components/reusable/Button";
 
 export default function ClaimBar() {
   const [username, setUsername] = useState("");
@@ -10,8 +11,8 @@ export default function ClaimBar() {
 
   const handleClaim = () => {
     const url = username
-      ? `/onboarding?username=${encodeURIComponent(username)}`
-      : "/onboarding";
+      ? `/app/onboarding?username=${encodeURIComponent(username)}`
+      : "/app/onboarding";
     router.push(url);
     // setUsername("");
   };
@@ -39,12 +40,14 @@ export default function ClaimBar() {
             className="flex-1 min-w-0 text-sm font-semibold text-primary placeholder-primaryBF outline-none bg-transparent "
           />
         </div>
-        <button
+        <Button
+          variant="primary"
+          size="md"
           onClick={handleClaim}
-          className="shrink-0 bg-primary hover:bg-primary-hover text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors"
+          className="shrink-0 font-bold rounded-xl"
         >
           Claim Now
-        </button>
+        </Button>
       </div>
     </div>
   );

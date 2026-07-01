@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import config from "@/lib/config";
+import { SALT_ROUNDS, DUMMY_HASH } from "@/lib/auth";
+import { sendPasswordResetEmail } from "@/services/email.service";
 import {
   createUser,
   getUserByEmail,
@@ -17,11 +19,10 @@ import {
 import { upsertCustomization } from "@/db/customization.db";
 import { initializeCreatorUserData } from "@/services/user_data.service";
 
-const SALT_ROUNDS = 12;
 const ACCESS_TOKEN_TTL = "15m";
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
-const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
+const PASSWORD_RESET_TTL_MS = 10 * 60 * 1000;
 
 function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -37,7 +38,7 @@ export async function registerUser(
   username: string,
   password: string
 ) {
-  if (!name || !email || !username || !password) {
+  if (!email || !username || !password) {
     throw new Error("All fields are required");
   }
   if (!validateEmail(email)) throw new Error("Invalid email address");
@@ -72,11 +73,15 @@ export async function registerUser(
 export async function loginUser(identifier: string, password: string) {
   if (!identifier || !password) throw new Error("Identifier and password are required");
 
-  const isEmail = identifier.includes("@");
+  const normalized = identifier.trim().toLowerCase();
+  const isEmail = normalized.includes("@");
   const user = isEmail
-    ? await getUserByEmail(identifier)
-    : await getUserByUsername(identifier);
-  if (!user) throw new Error("Invalid credentials");
+    ? await getUserByEmail(normalized)
+    : await getUserByUsername(normalized);
+  if (!user) {
+    await bcrypt.compare(password, DUMMY_HASH); // timing-safe: same cost as a real compare
+    throw new Error("Invalid credentials");
+  }
 
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) throw new Error("Invalid credentials");
@@ -148,7 +153,7 @@ export async function forgotPassword(email: string) {
     new Date(Date.now() + PASSWORD_RESET_TTL_MS)
   );
 
-  // TODO: send password reset email with resetToken
+  await sendPasswordResetEmail(user.email, resetToken);
   return { resetToken };
 }
 

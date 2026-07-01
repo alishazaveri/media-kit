@@ -44,12 +44,12 @@ export async function connectInstagramChannel(
   return channel;
 }
 
-export async function refreshInstagramToken(userId: string) {
+export async function refreshInstagramToken(userId: string, force = false) {
   const tokenDoc = await getTokenByPlatform(userId, "instagram", "access");
   if (!tokenDoc) throw new Error("Instagram token not found");
 
   const timeLeft = tokenDoc.expires_at.getTime() - Date.now();
-  if (timeLeft > INSTAGRAM_REFRESH_THRESHOLD_MS) return tokenDoc;
+  if (!force && timeLeft > INSTAGRAM_REFRESH_THRESHOLD_MS) return tokenDoc;
 
   const res = await axios.get("https://graph.instagram.com/refresh_access_token", {
     params: { grant_type: "ig_refresh_token", access_token: tokenDoc.token },

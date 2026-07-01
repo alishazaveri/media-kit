@@ -3,6 +3,7 @@ import instagramConnect from "@/lib/instagramConnect";
 import { connectInstagramChannel } from "@/services/social_channel.service";
 import { fetchAndSaveInstagramAnalytics } from "@/services/instagram.service";
 import isLinkActive from "@/lib/isLinkActive";
+import { getUserById, updateUser } from "@/db/user.db";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -96,14 +97,24 @@ export async function GET(request: NextRequest) {
     );
     try {
       await fetchAndSaveInstagramAnalytics(userId, account._id.toString());
+      await updateUser(userId, { last_data_refreshed_at: new Date() });
       console.log(
         "[Callback] Analytics fetch succeeded, redirecting to onboarding.",
       );
     } catch (analyticsErr) {
       console.error("[Callback] Analytics fetch failed:", analyticsErr);
       return NextResponse.redirect(
-        `${config.PUBLIC_URL}/onboarding?error=analytics_failed`,
+        `${config.PUBLIC_URL}/app/onboarding?error=analytics_failed`,
       );
+    }
+
+    // Step 6: Set profile image from Instagram if user doesn't have one yet
+    const instagramPicUrl: string | undefined = profile.data.profile_picture_url;
+    if (instagramPicUrl) {
+      const user = await getUserById(userId);
+      if (user && !(user as any).profile_image_url) {
+        await updateUser(userId, { profile_image_url: instagramPicUrl });
+      }
     }
 
     let successRedirect: string;
@@ -113,8 +124,8 @@ export async function GET(request: NextRequest) {
     } else {
       const hasPlan = await isLinkActive(userId).catch(() => false);
       successRedirect = hasPlan
-        ? `${config.PUBLIC_URL}/dashboard`
-        : `${config.PUBLIC_URL}/onboarding?connected=true`;
+        ? `${config.PUBLIC_URL}/app/dashboard`
+        : `${config.PUBLIC_URL}/app/onboarding?connected=true`;
     }
     return NextResponse.redirect(successRedirect);
   } catch (err) {

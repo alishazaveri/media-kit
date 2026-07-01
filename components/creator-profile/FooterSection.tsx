@@ -1,15 +1,17 @@
+import { buildMailto } from "./mailtoLink";
+
 export function FooterSection({
   handle,
   name,
-  primaryColor,
+  email,
   accentColor,
-  secondaryColor,
+  contrastColor,
 }: {
   handle: string;
   name: string;
-  primaryColor: string;
+  email?: string;
   accentColor: string;
-  secondaryColor: string;
+  contrastColor: string;
 }) {
   return (
     <section className="bg-white px-4 pt-16 pb-10 md:px-8 md:pt-24">
@@ -31,18 +33,18 @@ export function FooterSection({
               width="20"
               height="16"
               rx="2"
-              stroke={secondaryColor}
+              stroke={contrastColor}
               strokeWidth="2"
             />
             <path
               d="M2 7l10 7 10-7"
-              stroke={secondaryColor}
+              stroke={contrastColor}
               strokeWidth="2"
               strokeLinecap="round"
             />
           </svg>
           <a
-            href={`mailto:hello@${handle || "creator"}.com`}
+            href={email ? buildMailto(email, name) : undefined}
             className="font-black text-gray-900 transition-colors hover:text-[var(--accent)] break-all"
             style={
               {
@@ -52,21 +54,23 @@ export function FooterSection({
               } as React.CSSProperties
             }
           >
-            hello@{handle || "creator"}.com {/* [DUMMY: no email field] */}
+            {email || `hello@${handle || "creator"}.com`}
           </a>
         </div>
-        <div className="flex items-center justify-center gap-2 text-sm text-gray-400 flex-wrap">
+        {/* <div className="flex items-center justify-center gap-2 text-sm text-gray-400 flex-wrap">
           <span>Booking via form or email</span>
           <span className="text-gray-300">•</span>
           <span>Manager: Lina Park · lina@hellostudio.co</span>{" "}
-          {/* [DUMMY: no manager field] */}
+         
           <span className="text-gray-300">•</span>
-          <span>WhatsApp on request</span> {/* [DUMMY] */}
-        </div>
+          <span>WhatsApp on request</span>
+        </div> */}
       </div>
       <div className="max-w-7xl mx-auto mt-16 pt-6 border-t border-gray-100 text-center">
         <p className="text-xs text-gray-400">
-          © 2026 {name} Studio. Built with intention. {/* [DUMMY: copyright] */}
+          © {new Date().getFullYear()}{" "}
+          <a href="/" className="hover:underline">Kloot</a>
+          {" "}X {name}.
         </p>
       </div>
     </section>

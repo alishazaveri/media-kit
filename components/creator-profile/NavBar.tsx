@@ -1,21 +1,29 @@
+import { buildMailto } from "./mailtoLink";
+
 export function NavBar({
   initials,
-  primaryColor,
+  name,
+  email,
+  baseColor,
   accentColor,
-  secondaryColor,
+  contrastColor,
+  darkMode = false,
 }: {
   initials: string;
-  primaryColor: string;
+  name: string;
+  email: string;
+  baseColor: string;
   accentColor: string;
-  secondaryColor: string;
+  contrastColor: string;
+  darkMode?: boolean;
 }) {
   return (
     <nav
       className={`sticky top-0 z-50 backdrop-blur-sm border-b border-gray-100 px-0 md:px-8 py-4 `}
-      style={{ backgroundColor: `${primaryColor}BF` }}
+      style={{ backgroundColor: `${baseColor}BF` }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
-        <span className="font-black text-xl text-gray-900 tracking-[-0.05em]">
+        <span className={`font-black text-xl tracking-[-0.05em] ${darkMode ? "text-white" : "text-gray-900"}`}>
           {initials?.split("").length > 1 ? (
             <>
               {initials.split("")[0]}
@@ -37,16 +45,20 @@ export function NavBar({
             <a
               key={label}
               href={href}
-              className="  text-gray-700 hover:text-[var(--accent)] transition-colors "
+              className={`${darkMode ? "text-gray-200" : "text-gray-700"} hover:text-[var(--accent)] transition-colors`}
               style={{ "--accent": accentColor } as React.CSSProperties}
             >
               {label}
             </a>
           ))}
         </div>
-        <button className="bg-gray-900 text-white text-xs font-bold tracking-[.1rem]  rounded-full hover:bg-gray-700 transition-colors px-4 py-2 text-[11px]">
+        <a
+          href={email ? buildMailto(email, name) : undefined}
+          className={`${darkMode ? "text-gray-900" : "text-white"} text-xs font-bold tracking-[.1rem] rounded-full transition-colors px-4 py-2 text-[11px]`}
+          style={{ backgroundColor: darkMode ? accentColor : contrastColor }}
+        >
           CONTACT
-        </button>
+        </a>
       </div>
     </nav>
   );

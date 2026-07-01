@@ -9,12 +9,13 @@ export async function getCustomization(userId: string, status: CustomizationStat
 export async function upsertCustomization(
   userId: string,
   status: CustomizationStatus,
-  themeIdentifier: string = "default"
+  themeIdentifier: string = "default",
+  darkMode: boolean = false
 ) {
   await connectDB();
   return Customization.findOneAndUpdate(
     { user_id: userId, status },
-    { $set: { theme_identifier: themeIdentifier } },
+    { $set: { theme_identifier: themeIdentifier, dark_mode: darkMode } },
     { new: true, upsert: true, setDefaultsOnInsert: true }
   ).lean();
 }
@@ -25,7 +26,7 @@ export async function publishCustomization(userId: string) {
   if (!draft) throw new Error("No draft customization found");
   return Customization.findOneAndUpdate(
     { user_id: userId, status: "published" },
-    { $set: { theme_identifier: draft.theme_identifier } },
+    { $set: { theme_identifier: draft.theme_identifier, dark_mode: draft.dark_mode ?? false } },
     { new: true, upsert: true }
   ).lean();
 }

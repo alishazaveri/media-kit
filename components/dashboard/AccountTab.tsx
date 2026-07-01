@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import axios from "axios";
 import { IgStats } from "./types";
 import { formatCount } from "./utils";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import Button from "@/components/reusable/Button";
 
 interface Props {
   email: string;
@@ -14,12 +16,126 @@ interface Props {
   onConnectInstagram: () => void;
   onDisconnectInstagram: () => void;
   onDeleteAccount: () => Promise<void>;
+  onPasswordChanged: () => void;
 }
 
-export function AccountTab({ email, appUsername, handle, igStats, onLogout, onConnectInstagram, onDisconnectInstagram, onDeleteAccount }: Props) {
+function ChangePasswordModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (newPassword !== confirmPassword) {
+      setError("New passwords don't match");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError("New password must be at least 8 characters");
+      return;
+    }
+    setSaving(true);
+    try {
+      await axios.post("/api/auth/change-password", { currentPassword, newPassword });
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      setError(err?.response?.data?.error ?? "Something went wrong");
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-9999 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+      <div
+        className="relative bg-white rounded-3xl shadow-xl w-full max-w-sm p-6 flex flex-col gap-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div>
+          <h2 className="text-base font-bold text-gray-900">Change password</h2>
+          <p className="text-sm text-gray-500 mt-1">Enter your current password and choose a new one.</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <div>
+            <label className="text-xs text-gray-500 block mb-1.5">Current password</label>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              autoFocus
+              className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-gray-400 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 block mb-1.5">New password</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-gray-400 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 block mb-1.5">Repeat new password</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-gray-400 transition-colors"
+            />
+          </div>
+
+          {error && <p className="text-xs text-red-500">{error}</p>}
+
+          <div className="flex flex-col gap-2.5 pt-1">
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              fullWidth
+              loading={saving}
+              disabled={saving}
+              className="rounded-2xl"
+            >
+              {saving ? "Saving…" : "Update password"}
+            </Button>
+            <Button
+              type="button"
+              variant="default"
+              size="md"
+              fullWidth
+              onClick={onClose}
+              disabled={saving}
+              className="rounded-2xl"
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export function AccountTab({ email, appUsername, handle, igStats, onLogout, onConnectInstagram, onDisconnectInstagram, onDeleteAccount, onPasswordChanged }: Props) {
   const isConnected = Boolean(handle);
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
@@ -36,6 +152,12 @@ export function AccountTab({ email, appUsername, handle, igStats, onLogout, onCo
             onDisconnectInstagram();
           }}
           onCancel={() => setShowDisconnectModal(false)}
+        />
+      )}
+      {showChangePasswordModal && (
+        <ChangePasswordModal
+          onClose={() => setShowChangePasswordModal(false)}
+          onSuccess={onPasswordChanged}
         />
       )}
       {showDeleteModal && (
@@ -80,12 +202,22 @@ export function AccountTab({ email, appUsername, handle, igStats, onLogout, onCo
           </div>
           <div>
             <label className="text-sm text-gray-500 block mb-1.5">Password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              readOnly
-              className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm outline-none bg-gray-50 cursor-default"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="password"
+                placeholder="••••••••"
+                readOnly
+                className="flex-1 border border-gray-200 rounded-2xl px-4 py-3 text-sm outline-none bg-gray-50 cursor-default"
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowChangePasswordModal(true)}
+                className="shrink-0"
+              >
+                Change
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -110,19 +242,21 @@ export function AccountTab({ email, appUsername, handle, igStats, onLogout, onCo
               </div>
             </div>
             {isConnected ? (
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => setShowDisconnectModal(true)}
-                className="border border-red-200 text-red-500 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-red-50 transition-colors"
               >
                 Disconnect
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={onConnectInstagram}
-                className="border border-gray-300 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-gray-50 transition-colors"
               >
                 Connect
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -178,12 +312,9 @@ export function AccountTab({ email, appUsername, handle, igStats, onLogout, onCo
           )}
         </div>
 
-        <button
-          onClick={onLogout}
-          className="w-full border border-red-200 text-red-500 font-semibold py-4 rounded-2xl hover:bg-red-50 transition-colors text-base"
-        >
+        <Button variant="danger" size="lg" onClick={onLogout} fullWidth className="rounded-2xl">
           Log out
-        </button>
+        </Button>
       </div>
     </div>
   );

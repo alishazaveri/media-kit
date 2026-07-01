@@ -1,5 +1,7 @@
 "use client";
 
+import Button from "@/components/reusable/Button";
+
 interface ConfirmModalProps {
   title: string;
   description: string;
@@ -19,7 +21,7 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={onCancel}
     >
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
@@ -32,18 +34,12 @@ export function ConfirmModal({
           <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
         </div>
         <div className="flex flex-col gap-2.5">
-          <button
-            onClick={onConfirm}
-            className="w-full py-3.5 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-colors"
-          >
+          <Button variant="danger" size="md" onClick={onConfirm} fullWidth className="rounded-2xl">
             {confirmLabel}
-          </button>
-          <button
-            onClick={onCancel}
-            className="w-full py-3.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm transition-colors"
-          >
+          </Button>
+          <Button variant="default" size="md" onClick={onCancel} fullWidth className="rounded-2xl">
             {cancelLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

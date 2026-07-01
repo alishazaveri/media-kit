@@ -5,6 +5,7 @@ import { HeroSection } from "./creator-profile/HeroSection";
 import { StatsSection } from "./creator-profile/StatsSection";
 import { AudienceSection } from "./creator-profile/AudienceSection";
 import { WorkSection } from "./creator-profile/WorkSection";
+import { ReceiptsSection } from "./creator-profile/ReceiptsSection";
 import { PartnerSection } from "./creator-profile/PartnerSection";
 import { FooterSection } from "./creator-profile/FooterSection";
 import type {
@@ -21,6 +22,7 @@ export type ThemeData = {
   accent_color: string;
   base_color: string;
   contrast_color: string;
+  dark_mode?: boolean;
 };
 
 export interface CreatorProfileProps {
@@ -41,6 +43,9 @@ export interface CreatorProfileProps {
   deliverables?: string[];
   turnaround?: string;
   theme?: ThemeData;
+  email?: string;
+  servicesVisible?: boolean;
+  receiptsVisible?: boolean;
 }
 
 export function CreatorProfile({
@@ -54,36 +59,7 @@ export function CreatorProfile({
   posts,
   availableForCollabs = true,
   nicheTags = ["Lifestyle", "Wellness", "Beauty", "Travel"],
-  packages = [
-    {
-      id: 1,
-      title: "Instagram Reel",
-      description: "Single Instagram Reel with full rights",
-      price: "$2,500",
-      popular: false,
-    },
-    {
-      id: 2,
-      title: "Instagram Story",
-      description: "Story series (3–5 frames)",
-      price: "$800",
-      popular: false,
-    },
-    {
-      id: 3,
-      title: "YouTube Video",
-      description: "Dedicated or integrated video",
-      price: "$5,000",
-      popular: true,
-    },
-    {
-      id: 4,
-      title: "Campaign Bundle",
-      description: "Multi-platform package",
-      price: "Request Price",
-      popular: false,
-    },
-  ],
+  packages = [],
   collabs = [
     {
       id: 1,
@@ -144,8 +120,11 @@ export function CreatorProfile({
     "UGC Content",
     "Product Photography",
   ],
-  turnaround = "7-10 days",
+  // turnaround = "7-10 days",z
   theme,
+  email = "",
+  servicesVisible = true,
+  receiptsVisible = true,
 }: CreatorProfileProps) {
   const nameParts = name.trim().split(/\s+/);
   const firstName = nameParts[0] || "";
@@ -154,26 +133,31 @@ export function CreatorProfile({
     .map((p) => p[0]?.toUpperCase() || "")
     .join("")
     .slice(0, 2);
-  const initial = firstName[0]?.toUpperCase() ?? "?";
+  const initial = firstName[0]?.toUpperCase() ?? "";
 
   const sortedCollabs = [...collabs].sort(
     (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0),
   );
   const visiblePackages = packages.slice(0, 4);
 
-  console.log({ theme });
-
-  const primaryColor = theme?.base_color ?? "#fff4ef";
+  const darkMode = theme?.dark_mode ?? false;
+  const rawBaseColor = theme?.base_color ?? "#fff4ef";
   const accentColor = theme?.accent_color ?? "#ff7350";
-  const secondaryColor = theme?.contrast_color ?? "#1B1210";
+  const rawContrastColor = theme?.contrast_color ?? "#1B1210";
+
+  const baseColor = darkMode ? rawContrastColor : rawBaseColor;
+  const contrastColor = darkMode ? rawBaseColor : rawContrastColor;
 
   return (
     <div className="font-sans min-h-screen bg-white">
       <NavBar
         initials={initials}
-        primaryColor={primaryColor}
+        name={name}
+        email={email}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
+        darkMode={darkMode}
       />
       <HeroSection
         firstName={firstName}
@@ -186,48 +170,60 @@ export function CreatorProfile({
         profilePic={profilePic}
         availableForCollabs={availableForCollabs}
         nicheTags={nicheTags}
-        primaryColor={primaryColor}
+        email={email}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
+        darkMode={darkMode}
       />
       <StatsSection
         stats={stats}
-        primaryColor={primaryColor}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
+        darkMode={darkMode}
       />
-      {/* Uncomment later */}
-      {/* <AudienceSection
+      <AudienceSection
         insights={insights}
-        nicheTags={nicheTags}
-        primaryColor={primaryColor}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
-      /> */}
+        contrastColor={contrastColor}
+        darkMode={darkMode}
+      />
       <WorkSection
         posts={posts}
         handle={handle}
-        primaryColor={primaryColor}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
       />
+      {receiptsVisible && (
+        <ReceiptsSection
+          collabs={collabs}
+          accentColor={accentColor}
+          baseColor={baseColor}
+          darkMode={darkMode}
+        />
+      )}
       <PartnerSection
         sortedCollabs={sortedCollabs}
-        visiblePackages={visiblePackages}
-        turnaround={turnaround}
+        visiblePackages={servicesVisible ? visiblePackages : []}
+        // turnaround={turnaround}
         nicheTags={nicheTags}
         tagline={tagline}
         name={name}
-        primaryColor={primaryColor}
+        email={email}
+        baseColor={baseColor}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
+        darkMode={darkMode}
       />
       <FooterSection
         handle={handle}
         name={name}
-        primaryColor={primaryColor}
+        email={email}
         accentColor={accentColor}
-        secondaryColor={secondaryColor}
+        contrastColor={contrastColor}
       />
     </div>
   );

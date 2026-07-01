@@ -14,7 +14,12 @@ type UserUpdateInput = Partial<{
   email: string;
   username: string;
   password_hash: string;
+  phone: string;
+  phone_country_code: string;
   plan_id: Types.ObjectId;
+  profile_image_url: string;
+  data_refresh_interval_hours: number;
+  last_data_refreshed_at: Date;
 }>;
 
 export async function createUser(data: UserCreateInput) {
@@ -29,12 +34,12 @@ export async function getUserById(id: string) {
 
 export async function getUserByEmail(email: string) {
   await connectDB();
-  return User.findOne({ email }).lean();
+  return User.findOne({ email: { $regex: `^${email.trim()}$`, $options: "i" } }).lean();
 }
 
 export async function getUserByUsername(username: string) {
   await connectDB();
-  return User.findOne({ username }).lean();
+  return User.findOne({ username: { $regex: `^${username.trim()}$`, $options: "i" } }).lean();
 }
 
 export async function getAllUsers() {
@@ -50,4 +55,28 @@ export async function updateUser(id: string, updates: UserUpdateInput) {
 export async function deleteUser(id: string) {
   await connectDB();
   return User.findByIdAndDelete(id);
+}
+
+export async function getUsersDueForRefresh() {
+  await connectDB();
+  const now = new Date();
+  return User.find({
+    $or: [
+      { last_data_refreshed_at: { $exists: false } },
+      { last_data_refreshed_at: null },
+      {
+        $expr: {
+          $lt: [
+            "$last_data_refreshed_at",
+            {
+              $subtract: [
+                now,
+                { $multiply: [{ $ifNull: ["$data_refresh_interval_hours", 24] }, 3600000] },
+              ],
+            },
+          ],
+        },
+      },
+    ],
+  }).lean();
 }

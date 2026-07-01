@@ -15,13 +15,13 @@ export default function Footer() {
           />
         </a>
         <div className="flex items-center gap-6">
-          <a href="/privacy" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+          <a href="/o/privacy" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
             Privacy
           </a>
-          <a href="/terms" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+          <a href="/o/terms" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
             Terms
           </a>
-          <a href="/data-deletion" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+          <a href="/o/data-deletion" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
             Data Deletion
           </a>
         </div>

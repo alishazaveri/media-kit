@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CreatorProfile, type CreatorProfileProps } from "@/components/CreatorProfile";
+import {
+  CreatorProfile,
+  type CreatorProfileProps,
+} from "@/components/CreatorProfile";
 
 export default function PreviewPage() {
   const [props, setProps] = useState<CreatorProfileProps | null>(null);
@@ -10,6 +13,11 @@ export default function PreviewPage() {
     const handler = (e: MessageEvent) => {
       if (e.data?.type === "PREVIEW_UPDATE") {
         setProps(e.data.payload);
+      } else if (e.data?.type === "SCROLL_TO_SECTION") {
+        const el = document.getElementById(e.data.sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
       }
     };
     window.addEventListener("message", handler);

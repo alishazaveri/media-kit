@@ -6,6 +6,7 @@ import { getInsightBySocialChannel } from "@/db/insight.db";
 import { getCustomization } from "@/db/customization.db";
 import { getThemeByIdentifier } from "@/constants/themes";
 import { CreatorProfile } from "@/components/CreatorProfile";
+import isLinkActive from "@/lib/isLinkActive";
 
 export default async function PublishedProfilePage(props: {
   params: Promise<{ username: string }>;
@@ -20,6 +21,9 @@ export default async function PublishedProfilePage(props: {
 
   const userId = (user as any)._id.toString();
 
+  const active = await isLinkActive(userId);
+  if (!active) return <WipPage username={username} />;
+
   const channel = await getSocialChannelByPlatform(userId, "instagram");
 
   if (!channel) {
@@ -33,9 +37,16 @@ export default async function PublishedProfilePage(props: {
   ]);
 
   const themeIdentifier = (customization as any)?.theme_identifier;
-  const resolved = themeIdentifier ? getThemeByIdentifier(themeIdentifier) : undefined;
+  const resolved = themeIdentifier
+    ? getThemeByIdentifier(themeIdentifier)
+    : undefined;
   const theme = resolved
-    ? { accent_color: resolved.accent_color, base_color: resolved.base_color, contrast_color: resolved.contrast_color }
+    ? {
+        accent_color: resolved.accent_color,
+        base_color: resolved.base_color,
+        contrast_color: resolved.contrast_color,
+        dark_mode: (customization as any)?.dark_mode ?? false,
+      }
     : undefined;
 
   const published: Record<string, any> =
@@ -47,7 +58,8 @@ export default async function PublishedProfilePage(props: {
 
   const ig: Record<string, any> = (insight as any)?.data ?? {};
 
-  const postCount = ig.post_count || (Array.isArray(ig.posts) ? ig.posts.length : 0);
+  const postCount =
+    ig.post_count || (Array.isArray(ig.posts) ? ig.posts.length : 0);
   const engagementRate =
     ig.followers_count && postCount
       ? +(
@@ -57,8 +69,6 @@ export default async function PublishedProfilePage(props: {
         ).toFixed(1)
       : null;
 
-  console.log({ userData });
-
   return (
     <main className="min-h-screen ">
       <CreatorProfile
@@ -66,26 +76,42 @@ export default async function PublishedProfilePage(props: {
         handle={ig.username ?? username}
         tagline={published.tagline ?? ig.biography}
         location={published.location}
-        profilePic={ig.profile_pic ?? null}
+        profilePic={
+          published.profile_pic ??
+          (user as any).profile_image_url ??
+          ig.profile_pic ??
+          null
+        }
         stats={{
           followers: ig.followers_count ?? null,
           avgViews: ig.impressions_30d || null,
           engagement: engagementRate,
           avgReach: ig.reach_30d || null,
           growth: ig.follower_gain_30d || null,
+          reach_daily_30d: ig.reach_daily_30d && typeof ig.reach_daily_30d === "object" ? ig.reach_daily_30d : null,
         }}
         insights={{
           gender_age: Array.isArray(ig.gender_age) ? ig.gender_age : [],
-          top_countries: Array.isArray(ig.top_countries)
-            ? ig.top_countries
-            : [],
+          gender_breakdown: Array.isArray(ig.gender_breakdown) ? ig.gender_breakdown : [],
+          age_breakdown: Array.isArray(ig.age_breakdown) ? ig.age_breakdown : [],
+          top_countries: Array.isArray(ig.top_countries) ? ig.top_countries : [],
           top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
         }}
         posts={
           Array.isArray(published.posts) && published.posts.length > 0
             ? published.posts
-            : Array.isArray(ig.posts)
-              ? ig.posts.slice(0, 4)
+            : Array.isArray(ig.top_content_by_views) && ig.top_content_by_views.length > 0
+              ? ig.top_content_by_views.slice(0, 4).map((p: any) => ({
+                  id: p.id,
+                  caption: p.caption,
+                  media_type: p.media_type,
+                  thumbnail_url: p.thumbnail_url ?? null,
+                  media_url: p.media_url ?? null,
+                  permalink: p.permalink ?? null,
+                  like_count: p.like_count,
+                  comments_count: p.comments_count,
+                  view_count: p.impressions,
+                }))
               : []
         }
         availableForCollabs={published.available_for_collabs ?? true}
@@ -109,6 +135,9 @@ export default async function PublishedProfilePage(props: {
         }
         turnaround={published.turnaround ?? "7-10 days"}
         theme={theme}
+        email={published.display_email ?? ""}
+        servicesVisible={published.services_visible !== false}
+        receiptsVisible={published.receipts_visible !== false}
       />
     </main>
   );
