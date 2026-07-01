@@ -154,6 +154,8 @@ export function AudienceSection({
               accentColor={accentColor}
               baseColor={baseColor}
               contrastColor={contrastColor}
+              cardBg={cardBg}
+              cardText={cardText}
             />
           </div>
         ) : (

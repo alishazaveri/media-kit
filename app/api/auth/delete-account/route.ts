@@ -7,6 +7,7 @@ import Token from "@/db/models/token";
 import UserData from "@/db/models/user_data";
 import User from "@/db/models/user";
 import { getSession } from "@/lib/session";
+import { cancelActiveSubscriptions } from "@/services/subscription.service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(req: NextRequest) {
@@ -16,8 +17,10 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const userId = session.userId;
-    await connectDB();
 
+    await cancelActiveSubscriptions(userId);
+
+    await connectDB();
     await Promise.all([
       SocialChannel.deleteMany({ user_id: userId }),
       Insight.deleteMany({ user_id: userId }),

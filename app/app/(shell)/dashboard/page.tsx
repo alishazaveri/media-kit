@@ -14,6 +14,7 @@ import { type ThemeData } from "@/components/CreatorProfile";
 import { getThemeByIdentifier } from "@/constants/themes";
 import { useDashboard } from "@/components/dashboard/DashboardContext";
 import { Toast } from "@/components/ui/Toast";
+import { getDefaultPackages } from "@/lib/default-packages";
 
 export default function DashboardPage() {
   const { sidebarCollapsed, setSidebarCollapsed } = useDashboard();
@@ -58,36 +59,7 @@ export default function DashboardPage() {
   const [nicheTags, setNicheTags] = useState<string[]>([]);
 
   /* Packages */
-  const [packages, setPackages] = useState<Package[]>([
-    {
-      id: 1,
-      title: "Instagram Reel",
-      description: "Single Instagram Reel",
-      price: "₹2,500",
-      popular: false,
-    },
-    {
-      id: 2,
-      title: "Instagram Story",
-      description: "Story series (3–5 frames)",
-      price: "₹800",
-      popular: false,
-    },
-    // {
-    //   id: 3,
-    //   title: "YouTube Video",
-    //   description: "Dedicated or integrated video",
-    //   price: "$5,000",
-    //   popular: true,
-    // },
-    {
-      id: 4,
-      title: "Campaign Bundle",
-      description: "Multi-platform package",
-      price: "Request Price",
-      popular: false,
-    },
-  ]);
+  const [packages, setPackages] = useState<Package[]>([]);
 
   /* Collaboration prefs */
   const [prefIndustries, setPrefIndustries] = useState([
@@ -236,7 +208,7 @@ export default function DashboardPage() {
         setDisplayName(draft.display_name ?? ig.name ?? "");
         setTagline(draft.tagline ?? ig.tagline ?? ig.biography ?? "");
         setLocation(draft.location ?? "India");
-        if (draft.display_email) setDisplayEmail(draft.display_email);
+        setDisplayEmail(draft.display_email ?? res.data?.email ?? "");
         if (typeof draft.services_visible === "boolean")
           setServicesVisible(draft.services_visible);
         if (typeof draft.receipts_visible === "boolean")
@@ -247,6 +219,8 @@ export default function DashboardPage() {
           setAvailableForCollabs(draft.available_for_collabs);
         if (Array.isArray(draft.packages) && draft.packages.length)
           setPackages(draft.packages);
+        else
+          setPackages(getDefaultPackages(ig.followers_count ?? 0));
         if (Array.isArray(draft.collabs) && draft.collabs.length)
           setCollabs(draft.collabs);
         if (Array.isArray(draft.posts) && draft.posts.length) {

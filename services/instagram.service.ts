@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getSocialChannelById } from "@/db/social_channel.db";
+import { getSocialChannelById, getSocialChannelByPlatform } from "@/db/social_channel.db";
 import { getValidInstagramToken } from "@/services/social_channel.service";
 import { saveInsight } from "@/services/insight.service";
 import {
@@ -442,4 +442,12 @@ export async function fetchAndSaveInstagramAnalytics(
   }
 
   return analyticsData;
+}
+
+export async function refreshInstagramDataForUser(userId: string): Promise<{ skipped?: boolean }> {
+  const channel = await getSocialChannelByPlatform(userId, "instagram");
+  if (!channel) return { skipped: true };
+  await fetchAndSaveInstagramAnalytics(userId, String((channel as { _id: unknown })._id));
+  await updateUser(userId, { last_data_refreshed_at: new Date() });
+  return {};
 }

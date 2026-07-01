@@ -6,13 +6,13 @@ import axios from "axios";
 import Link from "next/link";
 import Button from "@/components/reusable/Button";
 import { Toast } from "@/components/ui/Toast";
+import { useUser } from "@/contexts/UserContext";
 
 type OnboardingStatus = {
   hasInstagram: boolean;
   hasPlan: boolean;
 };
 
-// uncomment later
 function redirectAfterLogin(
   status: OnboardingStatus,
   router: ReturnType<typeof useRouter>,
@@ -28,6 +28,7 @@ function redirectAfterLogin(
 
 function LoginForm() {
   const router = useRouter();
+  const { refresh } = useUser();
   const searchParams = useSearchParams();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -39,12 +40,16 @@ function LoginForm() {
       : "",
   );
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const res = await axios.post("/api/auth/login", { identifier: identifier.trim().toLowerCase(), password });
+      const res = await axios.post("/api/auth/login", {
+        identifier: identifier.trim().toLowerCase(),
+        password,
+      });
+      refresh();
       redirectAfterLogin(res.data.onboardingStatus, router);
     } catch (err) {
       const msg = axios.isAxiosError(err)

@@ -74,7 +74,7 @@ export const NAV_ITEMS = [
   },
   { id: "account", label: "Account", Icon: AccountIcon, href: "/app/account" },
   // Uncomment later
-  // { id: "plan", label: "Plan & billing", Icon: BillingIcon, href: "/app/plan" },
+  { id: "plan", label: "Plan & billing", Icon: BillingIcon, href: "/app/plan" },
 ];
 
 interface Props {

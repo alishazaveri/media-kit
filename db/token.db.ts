@@ -1,5 +1,6 @@
 import { connectDB } from "@/db";
 import Token from "@/db/models/token";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 export async function createToken(
   userId: string,
@@ -51,17 +52,22 @@ export async function upsertToken(
   await connectDB();
   return Token.findOneAndUpdate(
     { user_id: userId, type, ...(platform && { platform }) },
-    { token, expires_at: expiresAt, ...(accountId && { account_id: accountId }) },
+    { token: encrypt(token), expires_at: expiresAt, ...(accountId && { account_id: accountId }) },
     { upsert: true, new: true }
   );
 }
 
 export async function getTokenByPlatform(userId: string, platform: string, type: string) {
   await connectDB();
-  return Token.findOne({ user_id: userId, platform, type }).lean();
+  const doc = await Token.findOne({ user_id: userId, platform, type }).lean();
+  if (!doc) return null;
+  return { ...doc, token: decrypt(doc.token) };
 }
 
 export async function updateTokenById(id: string, token: string, expiresAt: Date) {
   await connectDB();
-  return Token.findByIdAndUpdate(id, { token, expires_at: expiresAt }, { new: true });
+  const doc = await Token.findByIdAndUpdate(id, { token: encrypt(token), expires_at: expiresAt }, { new: true });
+  if (!doc) return null;
+  doc.token = decrypt(doc.token);
+  return doc;
 }

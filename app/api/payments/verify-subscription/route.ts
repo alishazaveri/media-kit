@@ -46,15 +46,14 @@ export async function POST(req: NextRequest) {
         // extract razorpay customer id if present and persist verification details + full meta
         const razorpayCustomerId = razorSub.customer_id;
 
-        const currentPeriodStart = razorSub.current_start;
-        const currentPeriodEnd = razorSub.current_end;
         const updated = await updateSubscriptionOnVerify(
           subscription_id,
           razorpay_payment_id,
           statusFromRazor,
           razorpayCustomerId,
-          currentPeriodStart,
-          currentPeriodEnd,
+          razorSub.current_start,
+          razorSub.current_end,
+          razorSub.start_at,
           { ...razorSub }
         );
 

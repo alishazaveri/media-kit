@@ -14,6 +14,8 @@ type UserUpdateInput = Partial<{
   email: string;
   username: string;
   password_hash: string;
+  phone: string;
+  phone_country_code: string;
   plan_id: Types.ObjectId;
   profile_image_url: string;
   data_refresh_interval_hours: number;

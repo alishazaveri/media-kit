@@ -68,116 +68,116 @@ export function UsernameStep({
     <div className="min-h-dvh bg-[#FAF7F2] flex flex-col">
       <OnboardingNav currentStep={1} />
 
-        {/* Content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
-          {/* Badge */}
-          {/* <div className="inline-flex items-center gap-2 bg-[#FFE8E0] text-primary rounded-full px-4 py-2 mb-8 text-sm font-medium">
+      {/* Content */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
+        {/* Badge */}
+        {/* <div className="inline-flex items-center gap-2 bg-[#FFE8E0] text-primary rounded-full px-4 py-2 mb-8 text-sm font-medium">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
           </svg>
           One link for everything you create
         </div> */}
 
-          {/* Heading */}
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 text-center mb-3 leading-tight">
-            Claim your <span className="text-primary">kloot</span> link
-          </h1>
-          <p className="text-gray-500 text-center mb-10 text-md">
-            Your unique creator URL. Share once, monetize everywhere.
-          </p>
+        {/* Heading */}
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 text-center mb-3 leading-tight">
+          Claim your <span className="text-primary">kloot</span> link
+        </h1>
+        <p className="text-gray-500 text-center mb-10 text-md">
+          Your unique creator URL. Share once, monetize everywhere.
+        </p>
 
-          {/* Input */}
-          <div className="w-full max-w-md">
-            <div
-              className={`flex items-center bg-white border rounded-2xl px-5 py-3 gap-3 shadow-sm transition-all border  ${
-                checkState === "available"
-                  ? "border-primary/40"
-                  : checkState === "unavailable" || checkState === "invalid"
-                    ? "border-red-300"
-                    : "border-gray-200"
-              }`}
+        {/* Input */}
+        <div className="w-full max-w-md">
+          <div
+            className={`flex items-center bg-white border rounded-2xl px-5 py-3 gap-3 shadow-sm transition-all border  ${
+              checkState === "available"
+                ? "border-primary/40"
+                : checkState === "unavailable" || checkState === "invalid"
+                  ? "border-red-300"
+                  : "border-gray-200"
+            }`}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#9CA3AF"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="shrink-0"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#9CA3AF"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="shrink-0"
-              >
-                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-              </svg>
-              <span className="text-gray-400 text-sm shrink-0 select-none">
-                kloot.io/
-              </span>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                placeholder="username"
-                autoFocus
-                autoComplete="off"
-                spellCheck={false}
-                className="flex-1 min-w-0 text-sm font-medium text-primary placeholder:text-primaryBF outline-none bg-transparent"
-              />
-              <Button
-                variant="primary"
-                size="sm"
-                loading={checkState === "checking"}
-                disabled={!canProceed}
-                onClick={() =>
-                  canProceed && onNext(username.trim().toLowerCase())
-                }
-                className="shrink-0 rounded-xl"
-              >
-                Claim
-              </Button>
-            </div>
-
-            {(checkState === "unavailable" || checkState === "invalid") &&
-              errorMsg && (
-                <p className="mt-2 text-xs text-red-500 font-medium pl-1">
-                  {errorMsg}
-                </p>
-              )}
-
-            <p
-              className={`mt-2 text-xs text-primary font-medium pl-1 flex items-center gap-1 ${checkState === "available" ? "visible" : "invisible"}`}
+              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+            </svg>
+            <span className="text-gray-400 text-sm shrink-0 select-none">
+              kloot.io/
+            </span>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase())}
+              placeholder="username"
+              autoFocus
+              autoComplete="off"
+              spellCheck={false}
+              className="flex-1 min-w-0 text-sm font-medium text-primary placeholder:text-primaryBF outline-none bg-transparent"
+            />
+            <Button
+              variant="primary"
+              size="sm"
+              loading={checkState === "checking"}
+              disabled={!canProceed}
+              onClick={() =>
+                canProceed && onNext(username.trim().toLowerCase())
+              }
+              className="shrink-0 rounded-xl"
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path
-                  d="M2 6L4.5 8.5L10 3"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              kloot.io/{username.trim()} is available
-            </p>
+              Claim
+            </Button>
           </div>
 
-          {/* Steps */}
-          {/* <div className="flex items-center gap-8 sm:gap-12 mt-12 text-sm text-gray-400">
+          {(checkState === "unavailable" || checkState === "invalid") &&
+            errorMsg && (
+              <p className="mt-2 text-xs text-red-500 font-medium pl-1">
+                {errorMsg}
+              </p>
+            )}
+
+          <p
+            className={`mt-2 text-xs text-primary font-medium pl-1 flex items-center gap-1 ${checkState === "available" ? "visible" : "invisible"}`}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M2 6L4.5 8.5L10 3"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            kloot.io/{username.trim()} is available
+          </p>
+        </div>
+
+        {/* Steps */}
+        {/* <div className="flex items-center gap-8 sm:gap-12 mt-12 text-sm text-gray-400">
           <span>Connect Instagram</span>
           <span>Custom theme</span>
           <span>Get paid</span>
         </div> */}
 
-          <p className="text-sm text-gray-400 mt-6">
-            Already have an account?{" "}
-            <a
-              href="/app/login"
-              className="text-primary font-semibold hover:underline"
-            >
-              Sign in
-            </a>
-          </p>
-        </div>
+        <p className="text-sm text-gray-400 mt-6">
+          Already have an account?{" "}
+          <a
+            href="/app/login"
+            className="text-primary font-semibold hover:underline"
+          >
+            Login
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

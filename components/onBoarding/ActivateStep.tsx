@@ -7,6 +7,7 @@ import Button from "@/components/reusable/Button";
 import SubscribeButtonHOC from "@/components/SubscribeButtonHOC";
 import { PLANS, type BillingFrequency } from "@/lib/plans";
 import { useUser } from "@/contexts/UserContext";
+import { getDefaultPackages } from "@/lib/default-packages";
 
 export function ActivateStep({ onNext }: { onNext: () => void }) {
   const { userId } = useUser();
@@ -52,8 +53,12 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
     nicheTags: Array.isArray(draft.niche_tags) ? draft.niche_tags : [],
     packages: Array.isArray(draft.packages) ? draft.packages : [],
     collabs: Array.isArray(draft.collabs) ? draft.collabs : [],
-    prefIndustries: Array.isArray(draft.pref_industries) ? draft.pref_industries : [],
-    restrictedIndustries: Array.isArray(draft.restricted_industries) ? draft.restricted_industries : [],
+    prefIndustries: Array.isArray(draft.pref_industries)
+      ? draft.pref_industries
+      : [],
+    restrictedIndustries: Array.isArray(draft.restricted_industries)
+      ? draft.restricted_industries
+      : [],
     deliverables: Array.isArray(draft.deliverables) ? draft.deliverables : [],
     turnaround: draft.turnaround ?? "",
     servicesVisible: draft.services_visible ?? true,
@@ -65,19 +70,25 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
       engagement: engagementRate,
       avgReach: ig.reach_30d || null,
       growth: ig.follower_gain_30d || null,
-      reach_daily_30d: ig.reach_daily_30d && typeof ig.reach_daily_30d === "object" ? ig.reach_daily_30d : null,
+      reach_daily_30d:
+        ig.reach_daily_30d && typeof ig.reach_daily_30d === "object"
+          ? ig.reach_daily_30d
+          : null,
     },
     insights: {
       gender_age: Array.isArray(ig.gender_age) ? ig.gender_age : [],
       top_countries: Array.isArray(ig.top_countries) ? ig.top_countries : [],
       top_cities: Array.isArray(ig.top_cities) ? ig.top_cities : [],
       age_breakdown: Array.isArray(ig.age_breakdown) ? ig.age_breakdown : [],
-      gender_breakdown: Array.isArray(ig.gender_breakdown) ? ig.gender_breakdown : [],
+      gender_breakdown: Array.isArray(ig.gender_breakdown)
+        ? ig.gender_breakdown
+        : [],
     },
     posts:
       Array.isArray(draft.featured_posts) && draft.featured_posts.length > 0
         ? draft.featured_posts
-        : Array.isArray(ig.top_content_by_views) && ig.top_content_by_views.length > 0
+        : Array.isArray(ig.top_content_by_views) &&
+            ig.top_content_by_views.length > 0
           ? ig.top_content_by_views.slice(0, 4).map((p: any) => ({
               id: p.id,
               caption: p.caption,
@@ -92,6 +103,10 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
           : Array.isArray(draft.posts) && draft.posts.length > 0
             ? draft.posts
             : [],
+    packages:
+      Array.isArray(draft.packages) && draft.packages.length
+        ? draft.packages
+        : getDefaultPackages(ig.followers_count ?? 0),
   };
 
   useEffect(() => {
@@ -219,7 +234,9 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
                   className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-7 flex flex-col gap-4 sm:gap-6"
                 >
                   <div>
-                    <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-0.5">{plan.name}</h2>
+                    <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-0.5">
+                      {plan.name}
+                    </h2>
                     <p className="text-sm text-gray-400">{plan.description}</p>
                   </div>
 
@@ -229,18 +246,31 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
                       <span className="text-4xl sm:text-5xl font-black text-gray-900">
                         ₹{pricing.effectiveMonthlyPrice}
                       </span>
-                      <span className="text-base sm:text-lg text-gray-400 mb-1 sm:mb-2">/month</span>
+                      <span className="text-base sm:text-lg text-gray-400 mb-1 sm:mb-2">
+                        /month
+                      </span>
                       {billing === "yearly" && pricing.originalMonthlyPrice && (
                         <span className="text-base sm:text-lg text-gray-300 line-through mb-1 sm:mb-2">
                           ₹{pricing.originalMonthlyPrice}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-400">{pricing.billingLabel}</p>
+                    <p className="text-sm text-gray-400">
+                      {pricing.billingLabel}
+                    </p>
                     {billing === "yearly" && pricing.savingsNote && (
                       <div className="mt-2 inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-lg">
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0">
-                          <path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5l3.5-.5L8 2z" fill="currentColor" />
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          className="shrink-0"
+                        >
+                          <path
+                            d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5l3.5-.5L8 2z"
+                            fill="currentColor"
+                          />
                         </svg>
                         {pricing.savingsNote}
                       </div>
@@ -250,9 +280,24 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
                   {/* Features */}
                   <ul className="space-y-2.5 sm:space-y-3">
                     {plan.features.map((f) => (
-                      <li key={f} className="flex items-center gap-3 text-sm text-gray-700">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
-                          <path d="M3 8L6.5 11.5L13 5" stroke="#E8714A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      <li
+                        key={f}
+                        className="flex items-center gap-3 text-sm text-gray-700"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          className="shrink-0"
+                        >
+                          <path
+                            d="M3 8L6.5 11.5L13 5"
+                            stroke="#E8714A"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                         {f}
                       </li>
@@ -274,7 +319,9 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
                         fullWidth
                         className="rounded-xl"
                       >
-                        {loading ? "Processing…" : `Pay ₹${pricing.price} & activate`}
+                        {loading
+                          ? "Processing…"
+                          : `Pay ₹${pricing.price} & activate`}
                       </Button>
                     )}
                   </SubscribeButtonHOC>

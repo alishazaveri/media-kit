@@ -4,6 +4,7 @@ import {
   upsertSubscriptionFromRazorpayData,
   clearCancelAtCycleEnd,
 } from "@/db/subscription.db";
+import { generateInvoiceForCharge } from "@/services/billing.service";
 import { validateWebhookSignature } from "razorpay/dist/utils/razorpay-utils";
 
 export async function POST(req: NextRequest) {
@@ -94,8 +95,19 @@ export async function POST(req: NextRequest) {
       }
 
       case "subscription.charged": {
+        console.info("[Webhook] subscription.charged received — sub:", razorId, "payment:", paymentEntity?.id ?? "MISSING", "amount:", paymentEntity?.amount);
+
         // Pass paymentEntity so last_payment_id is persisted in the same DB write
         await upsertSubscriptionFromRazorpayData(subscriptionEntity, eventId ?? undefined, paymentEntity);
+
+        // Generate invoice — fire-and-forget so a billing failure never blocks the webhook response
+        if (paymentEntity?.id) {
+          generateInvoiceForCharge(razorId, paymentEntity, subscriptionEntity).catch((err) =>
+            console.error("[Invoice] Failed to generate invoice for payment", paymentEntity.id, err)
+          );
+        } else {
+          console.warn("[Webhook] subscription.charged has no payment entity — invoice skipped for sub:", razorId);
+        }
         break;
       }
 

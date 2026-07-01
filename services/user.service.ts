@@ -38,7 +38,7 @@ export async function registerUser(
   username: string,
   password: string
 ) {
-  if (!name || !email || !username || !password) {
+  if (!email || !username || !password) {
     throw new Error("All fields are required");
   }
   if (!validateEmail(email)) throw new Error("Invalid email address");
