@@ -65,7 +65,7 @@ export function HeroSection({
                     onError={() => setImgError(true)}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-200 text-7xl font-black text-amber-500">
+                  <div className="w-full h-full flex items-center justify-center text-7xl font-black text-gray-400 bg-gray-100">
                     {initial}
                   </div>
                 )}

@@ -125,7 +125,7 @@ export function StatsSection({
                 style={{ opacity: 1, transform: "none" }}
                 className={`flex-1 min-w-[42%] min-[400px]:min-w-0 md:flex-none mb-0 md:mb-10 cursor-default min-[400px]:px-4 md:px-0 min-[400px]:first:pl-0 min-[400px]:last:pr-0 min-[400px]:border-r last:border-r-0 md:border-r-0 ${darkMode ? "border-white/10" : "border-[#1d293d]/10"}`}
               >
-                <div className="font-display text-3xl min-[425px]:text-4xl md:text-7xl font-extrabold tracking-tighter leading-none transition-transform hover:translate-x-2">
+                <div className="font-display text-xl min-[425px]:text-2xl md:text-5xl font-extrabold tracking-tighter leading-none transition-transform hover:translate-x-2">
                   <span
                     style={{
                       color:
@@ -167,7 +167,7 @@ export function StatsSection({
           </div>
 
           <div className="w-full">
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={280}>
               <AreaChart
                 data={chartData}
                 margin={{ top: 8, right: 4, left: 0, bottom: 0 }}

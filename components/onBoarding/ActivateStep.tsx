@@ -45,7 +45,20 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
     name: draft.display_name || ig.name || "",
     handle: ig.username ?? appUsername ?? "",
     tagline: draft.tagline || ig.biography || "",
-    profilePic: ig.profile_pic ?? null,
+    location: draft.location ?? "",
+    email: draft.display_email ?? "",
+    profilePic: draft.profile_pic ?? ig.profile_pic ?? null,
+    availableForCollabs: draft.available_for_collabs ?? true,
+    nicheTags: Array.isArray(draft.niche_tags) ? draft.niche_tags : [],
+    packages: Array.isArray(draft.packages) ? draft.packages : [],
+    collabs: Array.isArray(draft.collabs) ? draft.collabs : [],
+    prefIndustries: Array.isArray(draft.pref_industries) ? draft.pref_industries : [],
+    restrictedIndustries: Array.isArray(draft.restricted_industries) ? draft.restricted_industries : [],
+    deliverables: Array.isArray(draft.deliverables) ? draft.deliverables : [],
+    turnaround: draft.turnaround ?? "",
+    servicesVisible: draft.services_visible ?? true,
+    receiptsVisible: draft.receipts_visible ?? true,
+    theme: draft.theme ?? null,
     stats: {
       followers: ig.followers_count ?? null,
       avgViews: ig.impressions_30d || null,
@@ -62,21 +75,23 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
       gender_breakdown: Array.isArray(ig.gender_breakdown) ? ig.gender_breakdown : [],
     },
     posts:
-      Array.isArray(ig.top_content_by_views) && ig.top_content_by_views.length > 0
-        ? ig.top_content_by_views.slice(0, 4).map((p: any) => ({
-            id: p.id,
-            caption: p.caption,
-            media_type: p.media_type,
-            thumbnail_url: p.thumbnail_url ?? null,
-            media_url: p.media_url ?? null,
-            permalink: p.permalink ?? null,
-            like_count: p.like_count,
-            comments_count: p.comments_count,
-            view_count: p.impressions,
-          }))
-        : Array.isArray(draft.posts) && draft.posts.length > 0
-          ? draft.posts
-          : [],
+      Array.isArray(draft.featured_posts) && draft.featured_posts.length > 0
+        ? draft.featured_posts
+        : Array.isArray(ig.top_content_by_views) && ig.top_content_by_views.length > 0
+          ? ig.top_content_by_views.slice(0, 4).map((p: any) => ({
+              id: p.id,
+              caption: p.caption,
+              media_type: p.media_type,
+              thumbnail_url: p.thumbnail_url ?? null,
+              media_url: p.media_url ?? null,
+              permalink: p.permalink ?? null,
+              like_count: p.like_count,
+              comments_count: p.comments_count,
+              view_count: p.impressions,
+            }))
+          : Array.isArray(draft.posts) && draft.posts.length > 0
+            ? draft.posts
+            : [],
   };
 
   useEffect(() => {
@@ -164,17 +179,17 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-8 px-6 py-8 max-w-6xl mx-auto w-full flex-1 min-h-0">
-        <div className="w-full max-w-125 shrink-0 flex flex-col">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">
+      <div className="flex flex-col items-center px-4 sm:px-6 py-6 sm:py-8 max-w-lg mx-auto w-full flex-1">
+        <div className="w-full flex flex-col">
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-1">
             Activate your kloot link
           </h1>
-          <p className="text-gray-400 text-base mb-6">
+          <p className="text-gray-400 text-sm sm:text-base mb-5">
             One simple plan. Cancel anytime.
           </p>
 
           {/* Billing toggle */}
-          <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1 mb-6 max-w-sm">
+          <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1 mb-5">
             <button
               onClick={() => setBilling("monthly")}
               className={`cursor-pointer flex-1 text-sm font-semibold py-2 rounded-lg transition-all ${billing === "monthly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-400"}`}
@@ -195,28 +210,28 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
           </div>
 
           {/* Plan cards */}
-          <div className="flex flex-col lg:flex-row gap-4 w-full">
+          <div className="flex flex-col gap-4 w-full">
             {PLANS.map((plan) => {
               const pricing = plan.pricing[billing];
               return (
                 <div
                   key={plan.key}
-                  className="bg-white rounded-2xl border border-gray-200 p-7 flex flex-col gap-6 lg:w-[400px]"
+                  className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-7 flex flex-col gap-4 sm:gap-6"
                 >
                   <div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">{plan.name}</h2>
+                    <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-0.5">{plan.name}</h2>
                     <p className="text-sm text-gray-400">{plan.description}</p>
                   </div>
 
                   {/* Price */}
                   <div>
                     <div className="flex items-end gap-2 mb-1">
-                      <span className="text-5xl font-black text-gray-900">
+                      <span className="text-4xl sm:text-5xl font-black text-gray-900">
                         ₹{pricing.effectiveMonthlyPrice}
                       </span>
-                      <span className="text-lg text-gray-400 mb-2">/month</span>
+                      <span className="text-base sm:text-lg text-gray-400 mb-1 sm:mb-2">/month</span>
                       {billing === "yearly" && pricing.originalMonthlyPrice && (
-                        <span className="text-lg text-gray-300 line-through mb-2">
+                        <span className="text-base sm:text-lg text-gray-300 line-through mb-1 sm:mb-2">
                           ₹{pricing.originalMonthlyPrice}
                         </span>
                       )}
@@ -233,7 +248,7 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
                   </div>
 
                   {/* Features */}
-                  <ul className="space-y-3">
+                  <ul className="space-y-2.5 sm:space-y-3">
                     {plan.features.map((f) => (
                       <li key={f} className="flex items-center gap-3 text-sm text-gray-700">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
@@ -243,17 +258,6 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
                       </li>
                     ))}
                   </ul>
-
-                  {/* Mobile: preview button */}
-                  <Button
-                    variant="default"
-                    size="md"
-                    onClick={() => setShowPreview(true)}
-                    fullWidth
-                    className="rounded-xl"
-                  >
-                    Preview my page
-                  </Button>
 
                   <SubscribeButtonHOC
                     userId={userId}
@@ -274,6 +278,16 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
                       </Button>
                     )}
                   </SubscribeButtonHOC>
+
+                  <Button
+                    variant="default"
+                    size="md"
+                    onClick={() => setShowPreview(true)}
+                    fullWidth
+                    className="rounded-xl"
+                  >
+                    Preview my page
+                  </Button>
                 </div>
               );
             })}

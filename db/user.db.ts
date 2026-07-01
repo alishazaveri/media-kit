@@ -32,12 +32,12 @@ export async function getUserById(id: string) {
 
 export async function getUserByEmail(email: string) {
   await connectDB();
-  return User.findOne({ email }).lean();
+  return User.findOne({ email: { $regex: `^${email.trim()}$`, $options: "i" } }).lean();
 }
 
 export async function getUserByUsername(username: string) {
   await connectDB();
-  return User.findOne({ username }).lean();
+  return User.findOne({ username: { $regex: `^${username.trim()}$`, $options: "i" } }).lean();
 }
 
 export async function getAllUsers() {

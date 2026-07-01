@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  ComposableMap,
-  Geographies,
-  Geography,
-  Marker,
-} from "@vnedyalk0v/react19-simple-maps";
-import type { Coordinates } from "@vnedyalk0v/react19-simple-maps";
+import dynamic from "next/dynamic";
 import isoCountries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
 
@@ -15,21 +9,17 @@ isoCountries.registerLocale(enLocale);
 
 type Tab = "cities" | "countries";
 
-// India boundary per Survey of India (Kashmir as integral part of India)
 const GEO_URL = "/countries-india.json";
 
-// Display name overrides for the legend (shorter / cleaner than ISO standard)
 const DISPLAY_OVERRIDES: Record<string, string> = {
   AE: "UAE",
   TW: "Taiwan",
 };
 
-// ISO 3166-1 alpha-2 → short readable name for the legend
 function isoToDisplay(code: string): string {
   return DISPLAY_OVERRIDES[code] ?? isoCountries.getName(code, "en") ?? code;
 }
 
-// Flag emoji computed from ISO alpha-2 — no lookup table needed
 function isoToFlag(code: string): string {
   return [...code.toUpperCase()]
     .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
@@ -117,7 +107,6 @@ const CITY_COORDS: Record<string, [number, number]> = {
   casablanca: [-7.589, 33.573],
   accra: [-0.187, 5.556],
   "addis ababa": [38.737, 9.024],
-  // India — major cities and states
   ahmedabad: [72.585, 23.033],
   gandhinagar: [72.636, 23.216],
   surat: [72.831, 21.17],
@@ -158,7 +147,6 @@ const CITY_COORDS: Record<string, [number, number]> = {
   "new delhi": [77.209, 28.614],
 };
 
-// Instagram returns "City, State" — try full name then city-only part
 function getCityCoords(name: string): [number, number] | null {
   const lower = name.toLowerCase();
   if (CITY_COORDS[lower]) return CITY_COORDS[lower];
@@ -166,7 +154,6 @@ function getCityCoords(name: string): [number, number] | null {
   return CITY_COORDS[cityOnly] ?? null;
 }
 
-// Compute map center + scale to frame all known city coordinates
 function computeProjection(coords: ([number, number] | null)[]): {
   scale: number;
   center: [number, number];
@@ -184,10 +171,7 @@ function computeProjection(coords: ([number, number] | null)[]): {
   const centerLat = (minLat + maxLat) / 2;
 
   const span = Math.max(maxLon - minLon, maxLat - minLat);
-  // 1.8× padding around bounds, min 8° so single-city still shows context
   const paddedSpan = Math.max(span * 1.8, 8);
-  // scale 140 ≈ full world (360°); invert to zoom in
-
   const scale = Math.min(1500, Math.round((140 * 360) / paddedSpan));
   return { scale, center: [centerLon, centerLat] };
 }
@@ -210,6 +194,51 @@ const DUMMY_CITIES = [
   { city: "Paris", count: 60 },
 ];
 
+// Map skeleton shown while the SVG canvas chunk is downloading
+function MapSkeleton() {
+  return (
+    <div
+      className="w-full h-full flex items-center justify-center"
+      style={{ backgroundColor: "rgba(0,0,0,0.04)" }}
+    >
+      <div className="flex flex-col items-center gap-3 opacity-40">
+        <svg
+          width={48}
+          height={48}
+          viewBox="0 0 40 40"
+          fill="none"
+          className="animate-pulse"
+        >
+          <circle cx={20} cy={20} r={16} stroke="#9ca3af" strokeWidth={2} />
+          <path
+            d="M4 20 Q12 10 20 20 Q28 30 36 20"
+            stroke="#9ca3af"
+            strokeWidth={1.5}
+            fill="none"
+          />
+          <path
+            d="M4 20 Q12 28 20 20 Q28 12 36 20"
+            stroke="#9ca3af"
+            strokeWidth={1.5}
+            fill="none"
+          />
+          <line x1={20} y1={4} x2={20} y2={36} stroke="#9ca3af" strokeWidth={1.5} />
+          <line x1={4} y1={20} x2={36} y2={20} stroke="#9ca3af" strokeWidth={1.5} />
+        </svg>
+        <span className="text-[11px] font-medium text-gray-400">
+          Loading map…
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Dynamically import only the SVG map canvas
+const MapCanvas = dynamic(
+  () => import("./MapCanvas").then((m) => ({ default: m.MapCanvas })),
+  { ssr: false, loading: () => <MapSkeleton /> },
+);
+
 export function WorldAudienceMap({
   topCountries,
   topCities,
@@ -226,14 +255,11 @@ export function WorldAudienceMap({
   const rawCountries = topCountries.length > 0 ? topCountries : DUMMY_COUNTRIES;
   const rawCities = topCities.length > 0 ? topCities : DUMMY_CITIES;
 
-  // Cap both lists to min(countries, cities) for visual parity
   const n = Math.min(rawCountries.length, rawCities.length, 6);
   const countries = rawCountries.slice(0, n);
   const cities = rawCities.slice(0, n);
 
-  // Country highlighting on map (countries tab)
   const maxCountryCount = Math.max(...countries.map((c) => c.count), 1);
-  // New geography file uses iso_code (alpha-3); convert alpha-2 → alpha-3 for matching
   const countryIntensity = new Map<string, number>(
     countries.flatMap((c) => {
       const a3 = isoCountries.alpha2ToAlpha3(c.country);
@@ -241,7 +267,6 @@ export function WorldAudienceMap({
     }),
   );
 
-  // City markers
   const cityTotal = cities.reduce((s, c) => s + c.count, 0);
   const cityMarkers = cities.map((c, i) => ({
     rank: i + 1,
@@ -251,10 +276,8 @@ export function WorldAudienceMap({
     coords: getCityCoords(c.city),
   }));
 
-  // Auto-zoom the map to frame all known city coordinates
   const projection = computeProjection(cityMarkers.map((m) => m.coords));
 
-  // Country legend entries
   const countryTotal = countries.reduce((s, c) => s + c.count, 0);
   const countryItems = countries.map((c) => ({
     code: c.country,
@@ -276,13 +299,12 @@ export function WorldAudienceMap({
 
   return (
     <div
-      className="rounded-3xl overflow-hidden flex flex-col border-1 "
+      className="rounded-3xl overflow-hidden flex flex-col border-1"
       style={{ backgroundColor: "white", borderColor: "rgba(0,0,0,0.1)" }}
     >
-      {/* Header + Tabs */}
+      {/* Header + Tabs — renders immediately */}
       <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
         <h3 className="text-[17px] font-bold text-gray-900">Top locations</h3>
-        {/* Tab switcher */}
         <div
           className="flex items-center gap-0.5 p-1 rounded-xl"
           style={{ backgroundColor: "rgba(0,0,0,0.06)" }}
@@ -306,117 +328,27 @@ export function WorldAudienceMap({
 
       {/* Map + Legend side by side on md+ */}
       <div className="flex flex-col md:flex-row flex-1 min-h-0">
-        {/* Map */}
+        {/* Map canvas — lazy loaded, shows skeleton until ready */}
         <div
-          className="md:flex-1 w-full relative md:h-[430px] h-[200px] "
+          className="md:flex-1 w-full relative md:h-[430px] h-[200px]"
           style={{ backgroundColor: "rgba(0,0,0,0.04)" }}
         >
-          {/* CSS pulse animation for city markers */}
-          <style>{`
-            @keyframes rsm-city-pulse {
-              0%   { transform: scale(1);   opacity: 0.55; }
-              100% { transform: scale(3.8); opacity: 0; }
-            }
-            .rsm-city-pulse {
-              animation: rsm-city-pulse 2.2s ease-out infinite;
-              transform-box: fill-box;
-              transform-origin: center;
-            }
-          `}</style>
-
-          <ComposableMap
-            projection="geoMercator"
-            projectionConfig={
-              tab === "cities"
-                ? {
-                    scale: projection.scale,
-                    center: projection.center as Coordinates,
-                  }
-                : { scale: 130, center: [0, 35] as Coordinates }
-            }
-            style={{ width: "100%", height: "100%" }}
-          >
-            <Geographies
-              geography={geoData ?? { type: "FeatureCollection", features: [] }}
-            >
-              {({ geographies }) =>
-                geographies.map((geo) => {
-                  const isoA3: string = geo.properties?.iso_code ?? "";
-                  const intensity = countryIntensity.get(isoA3) ?? 0;
-
-                  let fill = baseColor;
-                  let fillOpacity = 1;
-
-                  if (tab === "countries" && intensity > 0) {
-                    fill = accentColor;
-                    fillOpacity = 0.35 + intensity * 0.65;
-                  }
-
-                  return (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      fill={fill}
-                      fillOpacity={fillOpacity}
-                      stroke="rgba(0,0,0,0.3)"
-                      strokeWidth={0.4}
-                      style={{
-                        default: { outline: "none" },
-                        hover: { outline: "none" },
-                        pressed: { outline: "none" },
-                      }}
-                    />
-                  );
-                })
-              }
-            </Geographies>
-
-            {/* City markers — cities tab only */}
-            {tab === "cities" &&
-              cityMarkers
-                .filter((m) => m.coords !== null)
-                .map((m) => (
-                  <Marker key={m.name} coordinates={m.coords as Coordinates}>
-                    {/* Pulsing ring via CSS animation */}
-                    <circle
-                      r={11}
-                      fill={accentColor}
-                      className="rsm-city-pulse"
-                      style={{ animationDelay: `${m.rank * 0.35}s` }}
-                    />
-                    {/* Solid dot */}
-                    <circle
-                      r={11}
-                      fill={accentColor}
-                      stroke="rgba(0, 0, 0, 0.25)"
-                      strokeWidth={2}
-                    />
-                    {/* Rank number */}
-                    <text
-                      textAnchor="middle"
-                      dy="0.35em"
-                      fill="#ffffff"
-                      style={{
-                        fontSize: "8px",
-                        fontWeight: 900,
-                        fontFamily: "sans-serif",
-                        pointerEvents: "none",
-                        userSelect: "none",
-                      }}
-                    >
-                      {m.rank}
-                    </text>
-                  </Marker>
-                ))}
-          </ComposableMap>
+          <MapCanvas
+            geoData={geoData}
+            tab={tab}
+            projection={projection}
+            cityMarkers={cityMarkers}
+            countryIntensity={countryIntensity}
+            baseColor={baseColor}
+            accentColor={accentColor}
+          />
         </div>
 
-        {/* Legend panel */}
+        {/* Legend panel — renders immediately with real data */}
         <div
           className="md:w-[38%] shrink-0 flex flex-col px-6 py-5 md:border-l border-t md:border-t-0"
           style={{ borderColor: "rgba(0,0,0,0.1)" }}
         >
-          {/* Items — spread to fill full height */}
           <div className="flex flex-col flex-1 justify-between gap-6">
             {tab === "cities"
               ? cityMarkers.map((m) => (
@@ -481,14 +413,6 @@ export function WorldAudienceMap({
                   </div>
                 ))}
           </div>
-
-          {/* Footer */}
-          {/* <p
-            className="text-[10px] font-semibold tracking-widest uppercase mt-4 shrink-0"
-            style={{ color: "rgba(0,0,0,0.35)" }}
-          >
-            Instagram · Last 30 days
-          </p> */}
         </div>
       </div>
     </div>

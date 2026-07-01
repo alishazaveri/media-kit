@@ -162,7 +162,7 @@ export function CreatorProfile({
     .map((p) => p[0]?.toUpperCase() || "")
     .join("")
     .slice(0, 2);
-  const initial = firstName[0]?.toUpperCase() ?? "?";
+  const initial = firstName[0]?.toUpperCase() ?? "";
 
   const sortedCollabs = [...collabs].sort(
     (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0),

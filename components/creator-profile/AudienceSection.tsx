@@ -1,5 +1,4 @@
 "use client";
-import dynamic from "next/dynamic";
 import {
   BarChart,
   Bar,
@@ -10,12 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { type AudienceInsights } from "./types";
-
-const WorldAudienceMap = dynamic(
-  () =>
-    import("./WorldAudienceMap").then((m) => ({ default: m.WorldAudienceMap })),
-  { ssr: false },
-);
+import { WorldAudienceMap } from "./WorldAudienceMap";
 
 const DUMMY_AGE = [
   { label: "18-24", pct: 42 },

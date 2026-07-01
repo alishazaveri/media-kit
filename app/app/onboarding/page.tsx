@@ -9,12 +9,29 @@ import { ActivateStep } from "@/components/onBoarding/ActivateStep";
 
 type Step = "username" | "signup" | "connect" | "activate";
 
+function resolveStep(searchParams: ReturnType<typeof useSearchParams>): Step {
+  if (searchParams.get("error")) return "connect";
+  if (searchParams.get("connected") === "true") return "activate";
+  const stepParam = searchParams.get("step");
+  if (stepParam === "connect") return "connect";
+  if (stepParam === "activate") return "activate";
+  return "username";
+}
+
+function resolveConnectError(searchParams: ReturnType<typeof useSearchParams>): string {
+  const errorParam = searchParams.get("error");
+  if (!errorParam) return "";
+  return errorParam === "analytics_failed"
+    ? "Something went wrong while fetching your Instagram analytics. Please try connecting again."
+    : decodeURIComponent(errorParam);
+}
+
 function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [step, setStep] = useState<Step>("username");
+  const [step, setStep] = useState<Step>(() => resolveStep(searchParams));
   const [userId, setUserId] = useState("");
-  const [connectError, setConnectError] = useState("");
+  const [connectError, setConnectError] = useState(() => resolveConnectError(searchParams));
   const [claimedUsername, setClaimedUsername] = useState("");
   const prefillUsername = searchParams.get("username") ?? undefined;
 
@@ -30,7 +47,7 @@ function OnboardingContent() {
       return;
     }
 
-    // Instagram OAuth just completed — move to activate and update the URL
+    // Instagram OAuth just completed — clean up the URL
     if (searchParams.get("connected") === "true") {
       setStep("activate");
       router.replace("/app/onboarding?step=activate");

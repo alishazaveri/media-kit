@@ -73,10 +73,11 @@ export async function registerUser(
 export async function loginUser(identifier: string, password: string) {
   if (!identifier || !password) throw new Error("Identifier and password are required");
 
-  const isEmail = identifier.includes("@");
+  const normalized = identifier.trim().toLowerCase();
+  const isEmail = normalized.includes("@");
   const user = isEmail
-    ? await getUserByEmail(identifier)
-    : await getUserByUsername(identifier);
+    ? await getUserByEmail(normalized)
+    : await getUserByUsername(normalized);
   if (!user) {
     await bcrypt.compare(password, DUMMY_HASH); // timing-safe: same cost as a real compare
     throw new Error("Invalid credentials");
