@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type Collaboration } from "./types";
 
 const GRADIENTS = [
@@ -43,11 +43,11 @@ type CardData = {
 const DUMMY_CARDS: CardData[] = [
   {
     id: "d1",
-    brand: "Glow Atelier",
-    industry: "Clean Beauty",
+    brand: "Brand Name 1",
+    industry: "Industry 1",
     featured: true,
-    goal: "Product launch awareness",
-    built: "3 Reels · 1 Carousel · 6 Stories",
+    goal: "Campaign goal 1",
+    built: "3 Reels · 6 Stories · 1 Post",
     metrics: [
       { value: "1.4M", label: "REACH" },
       { value: "8.9%", label: "INTERACTIONS" },
@@ -55,63 +55,177 @@ const DUMMY_CARDS: CardData[] = [
       { value: "+34%", label: "CONVERSIONS" },
     ],
     gradientIdx: 0,
-    caption: "the 7-step morning that changed my skin →",
+    caption: "Reel 1",
     postType: "REEL",
     dotCount: 4,
+    posts: [
+      {
+        thumbUrl: null,
+        postType: "REEL",
+        caption: "Reel 1",
+        views: 480000,
+        likes: 12400,
+        comments: 340,
+        saves: 2100,
+      },
+      {
+        thumbUrl: null,
+        postType: "REEL",
+        caption: "Reel 2",
+        views: 310000,
+        likes: 8900,
+        comments: 210,
+        saves: 1500,
+      },
+      {
+        thumbUrl: null,
+        postType: "REEL",
+        caption: "Reel 3",
+        views: 260000,
+        likes: 7200,
+        comments: 180,
+        saves: 980,
+      },
+      {
+        thumbUrl: null,
+        postType: "POST",
+        caption: "Post 1",
+        likes: 5400,
+        comments: 130,
+        saves: 620,
+      },
+    ],
   },
   {
     id: "d2",
-    brand: "Wanderwell Travel",
-    industry: "Travel · Hospitality",
+    brand: "Brand Name 2",
+    industry: "Industry 2",
     featured: false,
-    goal: "Drive shoulder-season bookings",
-    built: "2 Reels · 1 long-form YT",
+    goal: "Campaign goal 2",
+    built: "2 Reels · 4 Stories",
     metrics: [
       { value: "612K", label: "VIEWS" },
-      { value: "11.2%", label: "CTR" },
-      { value: "2.1K", label: "BOOKINGS" },
-      { value: "4.8x", label: "ROAS" },
+      { value: "11.2%", label: "INTERACTIONS" },
+      { value: "2.1K", label: "SAVES" },
+      { value: "4.8x", label: "REACH" },
     ],
     gradientIdx: 1,
-    caption: "5 days in Lisbon, off-peak, off-script.",
+    caption: "Reel 1",
     postType: "REEL",
     dotCount: 3,
+    posts: [
+      {
+        thumbUrl: null,
+        postType: "REEL",
+        caption: "Reel 1",
+        views: 390000,
+        likes: 9800,
+        comments: 270,
+        saves: 1300,
+      },
+      {
+        thumbUrl: null,
+        postType: "REEL",
+        caption: "Reel 2",
+        views: 222000,
+        likes: 6100,
+        comments: 190,
+        saves: 800,
+      },
+      { thumbUrl: null, postType: "STORY", caption: "Story 1", views: 54000 },
+    ],
   },
   {
     id: "d3",
-    brand: "Northcurrent Audio",
-    industry: "Consumer Tech",
+    brand: "Brand Name 3",
+    industry: "Industry 3",
     featured: false,
-    goal: "Position flagship headphones with creatives",
-    built: "1 Reel · 1 Carousel · 4 Stories",
+    goal: "Campaign goal 3",
+    built: "1 Reel · 1 Post · 4 Stories",
     metrics: [
       { value: "980K", label: "IMPRESSIONS" },
       { value: "21K", label: "SAVES" },
-      { value: "+58%", label: "ADD-TO-CART" },
-      { value: "94%", label: "SENTIMENT" },
+      { value: "+58%", label: "INTERACTIONS" },
+      { value: "94%", label: "REACH" },
     ],
     gradientIdx: 2,
-    caption: "studio set-up for a 3am edit session.",
+    caption: "Reel 1",
     postType: "REEL",
     dotCount: 2,
+    posts: [
+      {
+        thumbUrl: null,
+        postType: "REEL",
+        caption: "Reel 1",
+        views: 610000,
+        likes: 14200,
+        comments: 490,
+        saves: 9800,
+      },
+      {
+        thumbUrl: null,
+        postType: "POST",
+        caption: "Post 1",
+        likes: 7600,
+        comments: 220,
+        saves: 4100,
+      },
+    ],
   },
   {
     id: "d4",
-    brand: "Mira Knitwear",
-    industry: "Sustainable Fashion",
+    brand: "Brand Name 4",
+    industry: "Industry 4",
     featured: false,
-    goal: "Capsule drop · Q2 SS collection",
-    built: "4 Reels · lookbook shoot",
+    goal: "Campaign goal 4",
+    built: "4 Reels · 2 Posts · 8 Stories",
     metrics: [
       { value: "2.4M", label: "REACH" },
       { value: "9.6%", label: "INTERACTIONS" },
-      { value: "Sold out · 9d", label: "SELL-THROUGH" },
-      { value: "1.2K posts", label: "UGC" },
+      { value: "18K", label: "SAVES" },
+      { value: "1.2K", label: "VIEWS" },
     ],
     gradientIdx: 3,
-    caption: "the only knit you'll reach for this spring.",
+    caption: "Reel 1",
     postType: "REEL",
     dotCount: 4,
+    posts: [
+      {
+        thumbUrl: null,
+        postType: "REEL",
+        caption: "Reel 1",
+        views: 820000,
+        likes: 21000,
+        comments: 640,
+        saves: 5400,
+      },
+      {
+        thumbUrl: null,
+        postType: "REEL",
+        caption: "Reel 2",
+        views: 710000,
+        likes: 17800,
+        comments: 510,
+        saves: 4200,
+      },
+      {
+        thumbUrl: null,
+        postType: "REEL",
+        caption: "Reel 3",
+        views: 530000,
+        likes: 12300,
+        comments: 380,
+        saves: 3100,
+      },
+      {
+        thumbUrl: null,
+        postType: "POST",
+        caption: "Post 1",
+        likes: 8900,
+        comments: 290,
+        saves: 2600,
+      },
+    ],
   },
 ];
 
@@ -276,12 +390,27 @@ function CollabDetailModal({
   card,
   accentColor,
   onClose,
+  isDummy = false,
 }: {
   card: CardData;
   accentColor: string;
   onClose: () => void;
+  isDummy?: boolean;
 }) {
   const slides = card.posts ?? [];
+
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
   const reach = card.metrics.find((m) => m.label === "REACH");
   const engagement = card.metrics.find((m) => m.label === "ENGAGEMENT");
   const metricA = reach ?? card.metrics[0];
@@ -294,16 +423,16 @@ function CollabDetailModal({
       onClick={onClose}
     >
       <div
-        className="relative bg-white w-full sm:max-w-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl rounded-t-3xl sm:rounded-3xl"
+        className="relative bg-white w-full sm:max-w-2xl max-h-[600px] flex flex-col shadow-2xl rounded-t-3xl sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Drag handle */}
-        <div className="sm:hidden flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-gray-200" />
-        </div>
-        <div className="px-5 sm:px-6 pt-4 pb-8">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-3 mb-4">
+        {/* ── Sticky header (non-scrollable) ── */}
+        <div className="shrink-0 bg-white rounded-t-3xl sm:rounded-t-3xl px-5 sm:px-6 pt-3 pb-4 border-b border-gray-100">
+          {/* Drag handle */}
+          <div className="sm:hidden flex justify-center mb-2">
+            <div className="w-10 h-1 rounded-full bg-gray-200" />
+          </div>
+          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <h2 className="font-black text-gray-900 text-xl sm:text-2xl">
@@ -341,6 +470,10 @@ function CollabDetailModal({
               </svg>
             </button>
           </div>
+        </div>
+
+        {/* ── Scrollable body ── */}
+        <div className="overflow-y-auto overscroll-contain flex-1 px-5 sm:px-6 pt-4 pb-8">
           {/* Summary metrics */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5 sm:mb-6">
             {metricA && (
@@ -848,6 +981,7 @@ export function ReceiptsSection({
               card={card}
               accentColor={accentColor}
               onClose={() => setOpenCardId(null)}
+              isDummy={!hasCollabs}
             />
           ) : null;
         })()}
