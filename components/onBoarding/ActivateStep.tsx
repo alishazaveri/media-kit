@@ -51,7 +51,6 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
     profilePic: draft.profile_pic ?? ig.profile_pic ?? null,
     availableForCollabs: draft.available_for_collabs ?? true,
     nicheTags: Array.isArray(draft.niche_tags) ? draft.niche_tags : [],
-    packages: Array.isArray(draft.packages) ? draft.packages : [],
     collabs: Array.isArray(draft.collabs) ? draft.collabs : [],
     prefIndustries: Array.isArray(draft.pref_industries)
       ? draft.pref_industries

@@ -1,4 +1,5 @@
 import Razorpay from "razorpay";
+import type { Subscriptions } from "razorpay/dist/types/subscriptions";
 import { NextRequest, NextResponse } from "next/server";
 import { createSubscriptionRecord } from "@/db/subscription.db";
 import { PLANS } from "@/lib/plans";
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
         matchedVariant?.maxBillingCycles ??
         (matchedVariant?.freq === "yearly" ? 20 : 240);
 
-      const payload: Record<string, unknown> = {
+      const payload: Subscriptions.RazorpaySubscriptionCreateRequestBody = {
         plan_id,
         customer_notify: true,
         total_count: maxBillingCycles,
