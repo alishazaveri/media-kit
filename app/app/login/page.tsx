@@ -76,12 +76,6 @@ function LoginForm() {
               className="h-6 w-auto object-contain"
             />
           </a>
-          <a
-            href="/app/onboarding"
-            className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-          >
-            Sign up
-          </a>
         </nav>
 
         <div className="flex-1 flex items-center justify-center px-6 py-12">
