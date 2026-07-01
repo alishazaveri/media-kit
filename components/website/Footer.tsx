@@ -15,6 +15,9 @@ export default function Footer() {
           />
         </a>
         <div className="flex items-center gap-6">
+          <a href="/o/about" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+            About
+          </a>
           <a href="/o/privacy" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
             Privacy
           </a>
