@@ -30,8 +30,8 @@ export function getPricingByPlanId(planId: string): { plan: Plan; billing: Billi
 
 export const PLANS: Plan[] = [
   {
-    key: "early_bird",
-    name: "Early Bird",
+    key: "creator_pro",
+    name: "Creator Pro",
     description: "One simple plan. Cancel anytime.",
     features: [
       "Your unique kloot.io link",
@@ -40,20 +40,20 @@ export const PLANS: Plan[] = [
     ],
     pricing: {
       monthly: {
-        id: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_EARLY_BIRD_MONTHLY ?? "",
-        price: 49,
-        effectiveMonthlyPrice: 49,
+        id: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_MONTHLY ?? "",
+        price: 59,
+        effectiveMonthlyPrice: 59,
         billingLabel: "Billed monthly",
         maxBillingCycles: 240,
       },
       yearly: {
-        id: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_EARLY_BIRD_YEARLY ?? "",
-        price: 499,
-        effectiveMonthlyPrice: 42,
-        billingLabel: "Billed annually at ₹499",
-        originalMonthlyPrice: 49,
+        id: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_YEARLY ?? "",
+        price: 599,
+        effectiveMonthlyPrice: 50,
+        billingLabel: "Billed annually at ₹599",
+        originalMonthlyPrice: 59,
         discountPct: 15,
-        savingsNote: "You save ₹89 a year",
+        savingsNote: "You save ₹109 a year",
         maxBillingCycles: 20,
       },
     },
