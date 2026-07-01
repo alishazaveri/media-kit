@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { BillingDetailsModal } from "@/components/BillingDetailsModal";
+import { useUser } from "@/contexts/UserContext";
 
 declare global {
   interface Window {
@@ -47,6 +48,7 @@ export default function SubscribeButtonHOC({
   onError,
   onLoadingChange,
 }: Props) {
+  const { email } = useUser();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export default function SubscribeButtonHOC({
     loadScript("https://checkout.razorpay.com/v1/checkout.js").catch(() => {});
   }, []);
 
-  async function openRazorpay() {
+  async function openRazorpay(prefill?: { name?: string; email?: string; contact?: string }) {
     try {
       if (!planId || !planId.trim()) throw new Error("Invalid plan ID");
 
@@ -81,8 +83,14 @@ export default function SubscribeButtonHOC({
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         subscription_id: subscriptionId,
-        name: "Acme Corp.",
+        name: "Kloot",
         description: "Subscription Checkout",
+        image: `${process.env.NEXT_PUBLIC_APP_URL}/assets/images/logo/logo-k-transparent.png`,
+        prefill: {
+          name: prefill?.name ?? "",
+          email: prefill?.email ?? "",
+          contact: prefill?.contact ?? "",
+        },
         handler: async function (resp: any) {
           setPaymentResponse(resp);
           try {
@@ -185,7 +193,11 @@ export default function SubscribeButtonHOC({
     setShowBillingModal(false);
     setLoading(true);
     onLoadingChange?.(true);
-    await openRazorpay();
+    await openRazorpay({
+      name: profile.name ?? "",
+      email: email ?? "",
+      contact: `${profile.phone_country_code ?? "+91"}${profile.phone ?? ""}`,
+    });
   }
 
   return (
