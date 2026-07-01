@@ -8,9 +8,11 @@ import Button from "@/components/reusable/Button";
 export function SignupStep({
   onNext,
   claimedUsername,
+  trialToken,
 }: {
   onNext: (userId: string) => void;
   claimedUsername: string;
+  trialToken?: string;
 }) {
   const [form, setForm] = useState({
     email: "",
@@ -33,6 +35,7 @@ export function SignupStep({
         email: form.email,
         username: claimedUsername,
         password: form.password,
+        ...(trialToken && { trial_token: trialToken }),
       });
       onNext(res.data.userId);
     } catch (err) {

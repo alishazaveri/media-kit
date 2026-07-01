@@ -17,7 +17,7 @@ export async function cancelActiveSubscriptions(
   const subsToCancel = subs.filter((s) => {
     if (excludeSubscriptionId && s.razorpay_subscription_id === excludeSubscriptionId) return false;
 
-    const isPendingResume =
+    const isScheduledSubscription =
       s.status === "authenticated" &&
       s.subscription_start_at &&
       new Date(s.subscription_start_at) > now;
@@ -28,7 +28,7 @@ export async function cancelActiveSubscriptions(
       !s.cancel_at_cycle_end &&
       s.status !== "cancelled";
 
-    return isPendingResume || isActive;
+    return isScheduledSubscription || isActive;
   });
 
   if (subsToCancel.length === 0) return;

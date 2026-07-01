@@ -29,8 +29,9 @@ function formatDate(dateStr: string | null) {
 }
 
 export function PlanTab() {
-  const { userId, subscription, loading, refresh } = useUser();
+  const { userId, subscription, scheduledSubscription, trialEndsAt, loading, refresh } = useUser();
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showCancelScheduledModal, setShowCancelScheduledModal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [showResumeModal, setShowResumeModal] = useState(false);
@@ -47,6 +48,11 @@ export function PlanTab() {
 
   const matched = subscription?.planId ? getPricingByPlanId(subscription.planId) : null;
   const renewalDate = formatDate(subscription?.currentPeriodEnd ?? null);
+  const scheduledMatched = scheduledSubscription?.planId ? getPricingByPlanId(scheduledSubscription.planId) : null;
+  const scheduledStartDate = formatDate(scheduledSubscription?.startsAt ?? null);
+  const scheduledOtherBilling = scheduledMatched?.billing === "monthly" ? "yearly" : "monthly";
+  const scheduledOtherPricing = scheduledMatched ? scheduledMatched.plan.pricing[scheduledOtherBilling] : null;
+  const scheduledStartAt = scheduledSubscription?.startsAt ? Math.floor(new Date(scheduledSubscription.startsAt).getTime() / 1000) : undefined;
 
   const otherBilling = matched?.billing === "monthly" ? "yearly" : "monthly";
   const otherPricing = matched ? matched.plan.pricing[otherBilling] : null;
@@ -57,6 +63,7 @@ export function PlanTab() {
     try {
       await axios.post("/api/payments/cancel-subscription");
       setShowCancelModal(false);
+      setShowCancelScheduledModal(false);
       refresh();
     } catch (err: any) {
       setCancelError(err?.response?.data?.error ?? "Something went wrong. Please try again.");
@@ -78,6 +85,17 @@ export function PlanTab() {
         />
       )}
 
+      {showCancelScheduledModal && (
+        <ConfirmModal
+          title="Cancel scheduled plan?"
+          description="Your scheduled plan will be cancelled before it starts. No charges will be made."
+          confirmLabel={cancelling ? "Cancelling…" : "Yes, cancel plan"}
+          cancelLabel="Keep plan"
+          onConfirm={handleCancel}
+          onCancel={() => { setShowCancelScheduledModal(false); setCancelError(null); }}
+        />
+      )}
+
       <div className="h-full overflow-y-auto px-4 lg:px-6 py-5 pb-24 lg:pb-5">
         <div className="max-w-2xl mx-auto space-y-5">
           <div>
@@ -89,6 +107,11 @@ export function PlanTab() {
                 You&apos;re on the{" "}
                 <strong className="text-primary font-semibold">{matched.plan.name}</strong> plan,
                 billed {matched.billing === "yearly" ? "annually" : "monthly"}.
+              </p>
+            ) : scheduledMatched ? (
+              <p className="text-sm text-gray-500 mt-1">
+                Your <strong className="text-primary font-semibold">{scheduledMatched.plan.name}</strong> plan
+                {scheduledStartDate ? ` starts on ${scheduledStartDate}` : " is scheduled"}.
               </p>
             ) : (
               <p className="text-sm text-gray-500 mt-1">You don&apos;t have an active plan.</p>
@@ -112,7 +135,7 @@ export function PlanTab() {
             </div>
           )}
 
-          {/* Active plan card */}
+          {/* Plan card */}
           {matched ? (
             <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-4">
               <div className="flex items-start justify-between">
@@ -139,7 +162,32 @@ export function PlanTab() {
                   Renews on <span className="text-gray-600 font-medium">{renewalDate}</span>
                 </p>
               )}
-
+            </div>
+          ) : scheduledMatched && !loading ? (
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-bold text-gray-900 text-base">{scheduledMatched.plan.name}</p>
+                  <p className="text-3xl font-black text-gray-900 mt-1">
+                    ₹{scheduledMatched.pricing.effectiveMonthlyPrice}
+                    <span className="text-base font-normal text-gray-400"> /mo</span>
+                    {scheduledMatched.billing === "yearly" && (
+                      <span className="text-sm font-normal text-gray-400 ml-2">
+                        · ₹{scheduledMatched.pricing.price}/yr
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-sm text-gray-400 mt-0.5">{scheduledMatched.pricing.billingLabel}</p>
+                </div>
+                <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Scheduled
+                </span>
+              </div>
+              {scheduledStartDate && (
+                <p className="text-sm text-gray-400">
+                  Billing starts on <span className="text-gray-600 font-medium">{scheduledStartDate}</span>
+                </p>
+              )}
             </div>
           ) : !loading ? (
             <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center flex flex-col gap-3 items-center">
@@ -149,6 +197,57 @@ export function PlanTab() {
               </Button>
             </div>
           ) : null}
+
+          {/* Scheduled plan actions — switch billing or cancel before it starts */}
+          {scheduledMatched && scheduledOtherPricing && scheduledStartAt && (
+            <SubscribeButtonHOC
+              userId={userId}
+              planId={scheduledOtherPricing.id}
+              startAt={scheduledStartAt}
+              onSuccess={async (v) => {
+                const newSubId = v?.subscription?.razorpay_subscription_id;
+                await fetch("/api/payments/cancel-subscription", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ excludeSubscriptionId: newSubId }),
+                });
+                refresh();
+              }}
+            >
+              {({ onSubscribe, loading: switching }) => (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={onSubscribe}
+                  disabled={switching || !userId}
+                  loading={switching}
+                >
+                  {switching
+                    ? "Processing…"
+                    : scheduledOtherBilling === "yearly"
+                    ? `Switch to yearly · Save ${scheduledOtherPricing.discountPct ?? 15}%`
+                    : `Switch to monthly · ₹${scheduledOtherPricing.price}/mo`}
+                </Button>
+              )}
+            </SubscribeButtonHOC>
+          )}
+
+          {scheduledMatched && (
+            <div className="flex flex-col items-start gap-1">
+              {cancelError && (
+                <p className="text-sm text-red-500">{cancelError}</p>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl text-red-500 border-red-200 hover:bg-red-50"
+                onClick={() => setShowCancelScheduledModal(true)}
+              >
+                Cancel plan
+              </Button>
+            </div>
+          )}
 
           {/* Activate modal */}
           {showActivateModal && (
@@ -177,6 +276,7 @@ export function PlanTab() {
                 </div>
                 <PricingCards
                   userId={userId}
+                  startAt={trialEndsAt && new Date(trialEndsAt) > new Date() ? Math.floor(new Date(trialEndsAt).getTime() / 1000) : undefined}
                   onSuccess={() => { setShowActivateModal(false); refresh(); }}
                 />
               </div>

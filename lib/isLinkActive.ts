@@ -1,30 +1,27 @@
 import { getSubscriptionsByUserId } from "@/db/subscription.db";
+import { getUserById } from "@/db/user.db";
+import type { ISubscription } from "@/db/models/subscription";
+import type { IUser } from "@/db/models/user";
 
-// Returns whether the user has any active (paid) subscription at this moment.
-// Primary source of truth: current_period_end > now()
 export default async function isLinkActive(userId?: string) {
   if (!userId) return false;
 
-  console.log("Checking active link for userId", userId);
-
   try {
-    const subs: any[] = await getSubscriptionsByUserId(userId);
-    if (!subs || subs.length === 0) return false;
-
-    console.log(`Found ${subs.length} subscriptions for userId ${userId}`);
-
     const now = new Date();
-    for (const s of subs) {
-      // If current_period_end exists and is in the future, link is active
-      if (s && s.current_period_end) {
-        const end = new Date(s.current_period_end);
-        console.log(`Subscription ${s.razorpay_subscription_id} current_period_end: ${end}, now: ${now}`);
-        if (end > now) return true; // active while paid period remains
-        continue;
-      }
+
+    const [subs, user] = await Promise.all([
+      getSubscriptionsByUserId(userId),
+      getUserById(userId),
+    ]);
+
+    // Active paid subscription
+    for (const s of (subs as Pick<ISubscription, "current_period_end">[]) ?? []) {
+      if (s?.current_period_end && new Date(s.current_period_end) > now) return true;
     }
 
-    console.log(`No active subscriptions found for userId ${userId}`);
+    // Active free trial
+    const trialEndsAt = (user as Pick<IUser, "trial_ends_at"> | null)?.trial_ends_at;
+    if (trialEndsAt && new Date(trialEndsAt) > now) return true;
 
     return false;
   } catch (err) {

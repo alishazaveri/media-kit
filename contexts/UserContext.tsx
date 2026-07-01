@@ -16,12 +16,20 @@ export type UserSubscription = {
   cancelAtCycleEnd: boolean;
 };
 
+export type ScheduledSubscription = {
+  planId: string;
+  startsAt: string | null;
+};
+
 export type UserContextValue = {
   userId: string;
   email: string;
   username: string;
   profilePic: string | null;
   isLinkActive: boolean;
+  trialEndsAt: string | null;
+  hasScheduledSubscription: boolean;
+  scheduledSubscription: ScheduledSubscription | null;
   subscription: UserSubscription | null;
   loading: boolean;
   refresh: () => void;
@@ -33,6 +41,9 @@ const UserContext = createContext<UserContextValue>({
   username: "",
   profilePic: null,
   isLinkActive: false,
+  trialEndsAt: null,
+  hasScheduledSubscription: false,
+  scheduledSubscription: null,
   subscription: null,
   loading: true,
   refresh: () => {},
@@ -45,6 +56,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     username: "",
     profilePic: null,
     isLinkActive: false,
+    trialEndsAt: null,
+    hasScheduledSubscription: false,
+    scheduledSubscription: null,
     subscription: null,
   });
   const [loading, setLoading] = useState(true);

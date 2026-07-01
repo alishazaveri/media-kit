@@ -11,6 +11,7 @@ export interface IUser extends Document {
   profile_image_url?: string;
   data_refresh_interval_hours: number;
   last_data_refreshed_at?: Date;
+  trial_ends_at?: Date;
   created_at: Date;
   updated_at: Date;
 }
@@ -27,6 +28,7 @@ const UserSchema = new Schema<IUser>(
     profile_image_url: { type: String },
     data_refresh_interval_hours: { type: Number, default: 24 },
     last_data_refreshed_at: { type: Date },
+    trial_ends_at: { type: Date },
   },
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );

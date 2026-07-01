@@ -7,6 +7,7 @@ import { SignupStep } from "@/components/onBoarding/SignupStep";
 import { ConnectStep } from "@/components/onBoarding/ConnectStep";
 import { ActivateStep } from "@/components/onBoarding/ActivateStep";
 import { useUser } from "@/contexts/UserContext";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 type Step = "username" | "signup" | "connect" | "activate";
 
@@ -29,13 +30,14 @@ function resolveConnectError(searchParams: ReturnType<typeof useSearchParams>): 
 
 function OnboardingContent() {
   const router = useRouter();
-  const { refresh } = useUser();
+  const { refresh, isLinkActive, loading } = useUser();
   const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>(() => resolveStep(searchParams));
   const [userId, setUserId] = useState("");
   const [connectError, setConnectError] = useState(() => resolveConnectError(searchParams));
   const [claimedUsername, setClaimedUsername] = useState("");
   const prefillUsername = searchParams.get("username") ?? undefined;
+  const trialToken = searchParams.get("trial") ?? undefined;
 
   useEffect(() => {
     const errorParam = searchParams.get("error");
@@ -65,6 +67,12 @@ function OnboardingContent() {
     // signup has no URL param — reloading lands back on username (default state)
   }, [searchParams]);
 
+  useEffect(() => {
+    if (step === "activate" && !loading && isLinkActive) {
+      router.push("/app/dashboard");
+    }
+  }, [step, loading, isLinkActive, router]);
+
   return (
     <div>
       {step === "username" && (
@@ -79,6 +87,7 @@ function OnboardingContent() {
       {step === "signup" && (
         <SignupStep
           claimedUsername={claimedUsername}
+          trialToken={trialToken}
           onNext={(id) => {
             setUserId(id);
             setStep("connect");
@@ -90,7 +99,9 @@ function OnboardingContent() {
         <ConnectStep userId={userId} externalError={connectError} />
       )}
       {step === "activate" && (
-        <ActivateStep onNext={() => { refresh(); router.push("/app/dashboard"); }} />
+        loading
+          ? <PageLoader />
+          : !isLinkActive && <ActivateStep onNext={() => { refresh(); router.push("/app/dashboard"); }} />
       )}
     </div>
   );
