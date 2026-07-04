@@ -1,136 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
-import Razorpay from "razorpay";
-import { generateInvoiceForCharge } from "@/services/billing.service";
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID as string,
-  key_secret: process.env.RAZORPAY_KEY_SECRET as string,
-});
-
-type RzpInvoices = { fetch: (id: string) => Promise<Record<string, unknown>> };
+import { fetchAllPaymentsInRange, processPayment, BackfillResults } from "@/services/billing.service";
 
 // ── Date range helpers ────────────────────────────────────────────────────────
 
 type RangeLabel = "today" | "yesterday" | "this_week" | "last_week" | "this_month" | "last_month";
 
 function resolveRange(label: RangeLabel): { from: number; to: number } {
+  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
   const now = new Date();
-  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  // Express current time as IST calendar values
+  const nowIST = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  const nowTs = Math.floor(now.getTime() / 1000);
+
+  // Returns UTC Unix timestamp for midnight IST of the given IST-calendar date
+  const midnightIST = (d: Date): number =>
+    (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - IST_OFFSET_MS) / 1000;
 
   switch (label) {
-    case "today": {
-      const d = startOfDay(now);
-      return { from: d.getTime() / 1000, to: now.getTime() / 1000 };
-    }
+    case "today":
+      return { from: midnightIST(nowIST), to: nowTs };
+
     case "yesterday": {
-      const d = startOfDay(now);
-      d.setDate(d.getDate() - 1);
-      return { from: d.getTime() / 1000, to: (d.getTime() / 1000) + 86399 };
+      const yesterday = new Date(nowIST);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return { from: midnightIST(yesterday), to: midnightIST(nowIST) - 1 };
     }
+
     case "this_week": {
-      const d = startOfDay(now);
-      d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // Monday
-      return { from: d.getTime() / 1000, to: now.getTime() / 1000 };
+      const monday = new Date(nowIST);
+      monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+      return { from: midnightIST(monday), to: nowTs };
     }
+
     case "last_week": {
-      const monday = startOfDay(now);
+      const monday = new Date(nowIST);
       monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7) - 7);
-      const sunday = new Date(monday);
-      sunday.setDate(sunday.getDate() + 6);
-      return { from: monday.getTime() / 1000, to: (sunday.getTime() / 1000) + 86399 };
+      const nextMonday = new Date(monday);
+      nextMonday.setDate(nextMonday.getDate() + 7);
+      return { from: midnightIST(monday), to: midnightIST(nextMonday) - 1 };
     }
+
     case "this_month": {
-      const d = new Date(now.getFullYear(), now.getMonth(), 1);
-      return { from: d.getTime() / 1000, to: now.getTime() / 1000 };
+      const firstDay = new Date(nowIST.getFullYear(), nowIST.getMonth(), 1);
+      return { from: midnightIST(firstDay), to: nowTs };
     }
+
     case "last_month": {
-      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const end = new Date(now.getFullYear(), now.getMonth(), 0); // last day of prev month
-      return { from: start.getTime() / 1000, to: (end.getTime() / 1000) + 86399 };
+      const firstDayLastMonth = new Date(nowIST.getFullYear(), nowIST.getMonth() - 1, 1);
+      const firstDayThisMonth = new Date(nowIST.getFullYear(), nowIST.getMonth(), 1);
+      return { from: midnightIST(firstDayLastMonth), to: midnightIST(firstDayThisMonth) - 1 };
     }
-  }
-}
-
-// ── Fetch all Razorpay payments in a time window (handles pagination) ─────────
-
-async function fetchAllPaymentsInRange(from: number, to: number): Promise<Record<string, unknown>[]> {
-  const PAGE = 100;
-  const all: Record<string, unknown>[] = [];
-  let skip = 0;
-
-  while (true) {
-    const res = await (razorpay.payments as unknown as {
-      all: (opts: Record<string, unknown>) => Promise<{ items: Record<string, unknown>[] }>;
-    }).all({ from: Math.floor(from), to: Math.floor(to), count: PAGE, skip });
-
-    const items = res?.items ?? [];
-    all.push(...items);
-    if (items.length < PAGE) break;
-    skip += PAGE;
-  }
-
-  return all;
-}
-
-// ── Core: process a single payment ID ────────────────────────────────────────
-
-async function processPayment(
-  paymentId: string,
-  payment: Record<string, unknown> | null,
-  results: { generated: number; skipped: number; errors: string[] }
-) {
-  if (!payment) {
-    try {
-      payment = await razorpay.payments.fetch(paymentId) as unknown as Record<string, unknown>;
-    } catch (err: unknown) {
-      results.errors.push(`${paymentId}: failed to fetch from Razorpay — ${err instanceof Error ? err.message : String(err)}`);
-      return;
-    }
-  }
-
-  if (payment.status !== "captured") { results.skipped++; return; }
-
-  // Resolve subscription ID — may be direct or via Razorpay invoice
-  let razorpaySubscriptionId = payment.subscription_id as string | undefined;
-  if (!razorpaySubscriptionId) {
-    const invoiceId = payment.invoice_id as string | undefined;
-    if (invoiceId?.startsWith("inv_")) {
-      try {
-        const rzpInvoice = await (razorpay as unknown as { invoices: RzpInvoices }).invoices.fetch(invoiceId);
-        razorpaySubscriptionId = rzpInvoice.subscription_id as string | undefined;
-      } catch (err: unknown) {
-        results.errors.push(`${paymentId}: failed to fetch Razorpay invoice ${invoiceId} — ${err instanceof Error ? err.message : String(err)}`);
-        return;
-      }
-    }
-  }
-
-  if (!razorpaySubscriptionId) {
-    results.skipped++;
-    return;
-  }
-
-  let razorSub: Record<string, unknown> | null;
-  try {
-    razorSub = await razorpay.subscriptions.fetch(razorpaySubscriptionId) as unknown as Record<string, unknown>;
-  } catch {
-    razorSub = null;
-  }
-
-  try {
-    const status = await generateInvoiceForCharge(
-      razorpaySubscriptionId,
-      { id: paymentId, amount: payment.amount as number },
-      razorSub as { current_start?: number; current_end?: number } | null,
-      {
-        userId: (razorSub?.notes as Record<string, string> | undefined)?.user_id,
-        planId: razorSub?.plan_id as string | undefined,
-      }
-    );
-    if (status === "generated") results.generated++; else results.skipped++;
-  } catch (err: unknown) {
-    results.errors.push(`${paymentId}: ${err instanceof Error ? err.message : "unknown error"}`);
-    console.error("[Backfill] Failed to generate invoice for payment", paymentId, err);
   }
 }
 
@@ -147,7 +66,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const { payment_ids, range, from, to } = body ?? {};
 
-  const results = { generated: 0, skipped: 0, errors: [] as string[] };
+  const results: BackfillResults = { generated: 0, skipped: 0, errors: [] };
 
   if (Array.isArray(payment_ids) && payment_ids.length > 0) {
     // Mode 1: explicit payment IDs
@@ -179,8 +98,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Failed to fetch payments from Razorpay: ${err instanceof Error ? err.message : String(err)}` }, { status: 502 });
     }
 
-    for (const payment of payments) {
-      await processPayment(payment.id as string, payment, results);
+    for (const paymentEntity of payments) {
+      await processPayment(paymentEntity.id as string, paymentEntity, results);
     }
   } else {
     return NextResponse.json(
