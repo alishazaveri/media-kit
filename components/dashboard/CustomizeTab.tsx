@@ -21,6 +21,8 @@ interface Props {
   setLocation: (v: string) => void;
   displayEmail: string;
   setDisplayEmail: (v: string) => void;
+  pronouns: string;
+  setPronouns: (v: string) => void;
   servicesVisible: boolean;
   setServicesVisible: (v: boolean) => void;
   availableForCollabs: boolean;
@@ -82,6 +84,8 @@ export function CustomizeTab(props: Props) {
     setLocation,
     displayEmail,
     setDisplayEmail,
+    pronouns,
+    setPronouns,
     servicesVisible,
     setServicesVisible,
     availableForCollabs,
@@ -200,6 +204,8 @@ export function CustomizeTab(props: Props) {
     setLocation,
     displayEmail,
     setDisplayEmail,
+    pronouns,
+    setPronouns,
     servicesVisible,
     setServicesVisible,
     availableForCollabs,

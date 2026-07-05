@@ -54,6 +54,7 @@ export default function DashboardPage() {
   const [tagline, setTagline] = useState("");
   const [location, setLocation] = useState("India");
   const [displayEmail, setDisplayEmail] = useState("");
+  const [pronouns, setPronouns] = useState("");
   const [servicesVisible, setServicesVisible] = useState(true);
   const [availableForCollabs, setAvailableForCollabs] = useState(true);
   const [nicheTags, setNicheTags] = useState<string[]>([]);
@@ -209,6 +210,7 @@ export default function DashboardPage() {
         setTagline(draft.tagline ?? ig.tagline ?? ig.biography ?? "");
         setLocation(draft.location ?? "India");
         setDisplayEmail(draft.display_email ?? res.data?.email ?? "");
+        if (typeof draft.pronouns === "string") setPronouns(draft.pronouns);
         if (typeof draft.services_visible === "boolean")
           setServicesVisible(draft.services_visible);
         if (typeof draft.receipts_visible === "boolean")
@@ -289,6 +291,7 @@ export default function DashboardPage() {
           tagline,
           location,
           display_email: displayEmail,
+          pronouns,
           services_visible: servicesVisible,
           receipts_visible: receiptsVisible,
           niche_tags: nicheTags,
@@ -306,6 +309,7 @@ export default function DashboardPage() {
     tagline,
     location,
     displayEmail,
+    pronouns,
     servicesVisible,
     receiptsVisible,
     nicheTags,
@@ -328,6 +332,7 @@ export default function DashboardPage() {
         tagline,
         location,
         display_email: displayEmail,
+        pronouns,
         services_visible: servicesVisible,
         niche_tags: nicheTags,
         available_for_collabs: availableForCollabs,
@@ -539,6 +544,8 @@ export default function DashboardPage() {
           setLocation={setLocation}
           displayEmail={displayEmail}
           setDisplayEmail={setDisplayEmail}
+          pronouns={pronouns}
+          setPronouns={setPronouns}
           servicesVisible={servicesVisible}
           setServicesVisible={setServicesVisible}
           availableForCollabs={availableForCollabs}

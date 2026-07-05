@@ -15,6 +15,8 @@ interface ProfileSectionProps {
   setLocation: (v: string) => void;
   displayEmail: string;
   setDisplayEmail: (v: string) => void;
+  pronouns: string;
+  setPronouns: (v: string) => void;
   nicheTags: string[];
   setNicheTags: (v: string[]) => void;
   onProfilePicUploaded?: (url: string | null) => void;
@@ -33,6 +35,8 @@ export function ProfileSection({
   setLocation,
   displayEmail,
   setDisplayEmail,
+  pronouns,
+  setPronouns,
   nicheTags,
   setNicheTags,
   onProfilePicUploaded,
@@ -43,7 +47,6 @@ export function ProfileSection({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [picMenuOpen, setPicMenuOpen] = useState(false);
-  const [pronouns, setPronouns] = useState("she/her");
   const [prevNicheTags, setPrevNicheTags] = useState(nicheTags);
   const [nicheText, setNicheText] = useState(nicheTags.join(", "));
 
