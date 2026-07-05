@@ -12,6 +12,7 @@ export default function Nav() {
     { label: "Steps", href: "#steps" },
     { label: "Analytics", href: "#analytics" },
     { label: "Features", href: "#features" },
+    { label: "Pricing", href: "/o/pricing" },
   ];
 
   return (
