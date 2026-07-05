@@ -101,7 +101,7 @@ function OnboardingContent() {
       {step === "activate" && (
         loading
           ? <PageLoader />
-          : !isLinkActive && <ActivateStep onNext={() => { refresh(); router.push("/app/dashboard"); }} />
+          : !isLinkActive && <ActivateStep onNext={() => { refresh(); router.push("/app/dashboard"); }} onSkip={() => router.push("/app/dashboard")} />
       )}
     </div>
   );

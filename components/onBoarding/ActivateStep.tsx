@@ -9,7 +9,7 @@ import { PLANS, type BillingFrequency } from "@/lib/plans";
 import { useUser } from "@/contexts/UserContext";
 import { getDefaultPackages } from "@/lib/default-packages";
 
-export function ActivateStep({ onNext }: { onNext: () => void }) {
+export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
   const { userId } = useUser();
   const [analytics, setAnalytics] = useState<Record<string, any> | null>(null);
   const [draft, setDraft] = useState<Record<string, any>>({});
@@ -338,6 +338,13 @@ export function ActivateStep({ onNext }: { onNext: () => void }) {
               );
             })}
           </div>
+
+          <button
+            onClick={onSkip}
+            className="mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors cursor-pointer mx-auto"
+          >
+            I&apos;ll do it later →
+          </button>
         </div>
 
         {/* Right — live preview (desktop only) */}

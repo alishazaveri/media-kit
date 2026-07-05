@@ -7,30 +7,66 @@ import axios from "axios";
 import { DashboardContext } from "@/components/dashboard/DashboardContext";
 import { DashboardSidebar, NAV_ITEMS } from "@/components/dashboard/DashboardSidebar";
 import { useUser } from "@/contexts/UserContext";
+import { Banner } from "@/components/ui/Banner";
 
-function TrialBanner() {
-  const { trialEndsAt, subscription, hasScheduledSubscription } = useUser();
-  if (!trialEndsAt || subscription || hasScheduledSubscription) return null;
+function AppBanner() {
+  const { subscription, hasScheduledSubscription, trialEndsAt, loading } = useUser();
 
-  const endsAt = new Date(trialEndsAt);
-  if (endsAt <= new Date()) return null;
+  if (loading) return null;
 
-  const daysLeft = Math.ceil((endsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  const formatted = endsAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  const now = new Date();
 
-  return (
-    <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 shrink-0 text-center">
-      <p className="text-xs text-amber-800 font-medium">
-        Free trial — {daysLeft} day{daysLeft !== 1 ? "s" : ""} left · expires {formatted} ·{" "}
+  // Trial active — no subscription yet
+  if (trialEndsAt && !subscription && !hasScheduledSubscription) {
+    const endsAt = new Date(trialEndsAt);
+    if (endsAt > now) {
+      const daysLeft = Math.ceil((endsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const formatted = endsAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+      return (
+        <Banner variant="amber">
+          Free trial — {daysLeft} day{daysLeft !== 1 ? "s" : ""} left · expires {formatted} ·{" "}
+          <span className="block sm:inline">
+            <Link href="/app/plan" className="font-semibold text-amber-900 underline underline-offset-2">
+              Activate now
+            </Link>
+            {" "}· payment starts only after trial ends
+          </span>
+        </Banner>
+      );
+    }
+  }
+
+  // Subscription cancelled — still has access until period end
+  if (subscription?.cancelAtCycleEnd && subscription.currentPeriodEnd) {
+    const formatted = new Date(subscription.currentPeriodEnd).toLocaleDateString("en-IN", {
+      day: "numeric", month: "short", year: "numeric",
+    });
+    return (
+      <Banner variant="amber">
+        Your kloot link will be deactivated on <strong>{formatted}</strong> ·{" "}
         <span className="block sm:inline">
           <Link href="/app/plan" className="font-semibold text-amber-900 underline underline-offset-2">
-            Activate now
+            Resume plan
           </Link>
-          {" "}· payment starts only after trial ends
         </span>
-      </p>
-    </div>
-  );
+      </Banner>
+    );
+  }
+
+  // No subscription and trial expired or never existed
+  const trialActive = trialEndsAt && new Date(trialEndsAt) > now;
+  if (!subscription && !hasScheduledSubscription && !trialActive) {
+    return (
+      <Banner variant="primary">
+        Your kloot link is inactive ·{" "}
+        <Link href="/app/plan" className="font-semibold underline underline-offset-2">
+          Activate now →
+        </Link>
+      </Banner>
+    );
+  }
+
+  return null;
 }
 
 export default function ShellLayout({ children }: { children: React.ReactNode }) {
@@ -51,7 +87,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
       <div className="h-[100dvh] flex overflow-hidden bg-[#FAF7F2]">
         <DashboardSidebar collapsed={sidebarCollapsed} onLogout={handleLogout} />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <TrialBanner />
+          <AppBanner />
           {children}
         </div>
 
