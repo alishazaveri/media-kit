@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import Button from "@/components/reusable/Button";
 import { COUNTRY_CODES } from "@/lib/country-codes";
 import { BILLING_COUNTRIES, STATES_BY_COUNTRY } from "@/lib/states-by-country";
@@ -95,8 +96,8 @@ export function BillingDetailsModal({ initial = {}, onSave, onCancel }: Props) {
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4" onClick={onCancel}>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onCancel}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div
         className="relative bg-white rounded-3xl shadow-xl w-full max-w-md p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto"
@@ -271,7 +272,8 @@ export function BillingDetailsModal({ initial = {}, onSave, onCancel }: Props) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

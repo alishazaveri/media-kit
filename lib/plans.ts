@@ -36,7 +36,7 @@ export const PLANS: Plan[] = [
     features: [
       "Your unique kloot.io link",
       "7 customizable themes",
-      "Weekly updating analytics & insights",
+      "Daily updating analytics & insights",
     ],
     pricing: {
       monthly: {

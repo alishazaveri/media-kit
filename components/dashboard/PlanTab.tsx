@@ -96,6 +96,74 @@ export function PlanTab() {
         />
       )}
 
+      {showActivateModal && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4"
+          onClick={() => setShowActivateModal(false)}
+        >
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+          <div
+            className="relative bg-[#FAF7F2] rounded-3xl shadow-xl w-full max-w-2xl p-6 flex flex-col gap-5 max-h-[90dvh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Activate your kloot link</h2>
+                <p className="text-sm text-gray-500 mt-0.5">One simple plan. Cancel anytime.</p>
+              </div>
+              <button
+                onClick={() => setShowActivateModal(false)}
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <PricingCards
+              userId={userId}
+              startAt={trialEndsAt && new Date(trialEndsAt) > new Date() ? Math.floor(new Date(trialEndsAt).getTime() / 1000) : undefined}
+              onSuccess={() => { setShowActivateModal(false); refresh(); }}
+            />
+          </div>
+        </div>
+      )}
+
+      {showResumeModal && subscription?.currentPeriodEnd && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4"
+          onClick={() => setShowResumeModal(false)}
+        >
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+          <div
+            className="relative bg-[#FAF7F2] rounded-3xl shadow-xl w-full max-w-2xl p-6 flex flex-col gap-5 max-h-[90dvh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Resume your plan</h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  Pick a plan — payment starts after {renewalDate}.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowResumeModal(false)}
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <PricingCards
+              userId={userId}
+              startAt={Math.floor(new Date(subscription.currentPeriodEnd).getTime() / 1000)}
+              onSuccess={() => { setShowResumeModal(false); refresh(); }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="h-full overflow-y-auto px-4 lg:px-6 py-5 pb-24 lg:pb-5">
         <div className="max-w-2xl mx-auto space-y-5">
           <div>
@@ -249,40 +317,6 @@ export function PlanTab() {
             </div>
           )}
 
-          {/* Activate modal */}
-          {showActivateModal && (
-            <div
-              className="fixed inset-0 z-9999 flex items-end sm:items-center justify-center p-4"
-              onClick={() => setShowActivateModal(false)}
-            >
-              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
-              <div
-                className="relative bg-[#FAF7F2] rounded-3xl shadow-xl w-full max-w-2xl p-6 flex flex-col gap-5 max-h-[90dvh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-900">Activate your kloot link</h2>
-                    <p className="text-sm text-gray-500 mt-0.5">One simple plan. Cancel anytime.</p>
-                  </div>
-                  <button
-                    onClick={() => setShowActivateModal(false)}
-                    className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                    </svg>
-                  </button>
-                </div>
-                <PricingCards
-                  userId={userId}
-                  startAt={trialEndsAt && new Date(trialEndsAt) > new Date() ? Math.floor(new Date(trialEndsAt).getTime() / 1000) : undefined}
-                  onSuccess={() => { setShowActivateModal(false); refresh(); }}
-                />
-              </div>
-            </div>
-          )}
-
           {/* Resume — below the card, only when cancellation is scheduled */}
           {matched && subscription?.cancelAtCycleEnd && subscription.currentPeriodEnd && (
             <Button
@@ -293,42 +327,6 @@ export function PlanTab() {
             >
               Resume plan
             </Button>
-          )}
-
-          {/* Resume modal */}
-          {showResumeModal && subscription?.currentPeriodEnd && (
-            <div
-              className="fixed inset-0 z-9999 flex items-end sm:items-center justify-center p-4"
-              onClick={() => setShowResumeModal(false)}
-            >
-              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
-              <div
-                className="relative bg-[#FAF7F2] rounded-3xl shadow-xl w-full max-w-2xl p-6 flex flex-col gap-5 max-h-[90dvh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-900">Resume your plan</h2>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      Pick a plan — payment starts after {renewalDate}.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowResumeModal(false)}
-                    className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                    </svg>
-                  </button>
-                </div>
-                <PricingCards
-                  userId={userId}
-                  startAt={Math.floor(new Date(subscription.currentPeriodEnd).getTime() / 1000)}
-                  onSuccess={() => { setShowResumeModal(false); refresh(); }}
-                />
-              </div>
-            </div>
           )}
 
           {/* Switch billing — below the card, only when active and not already scheduled */}

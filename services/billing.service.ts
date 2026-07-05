@@ -1,3 +1,4 @@
+import Razorpay from "razorpay";
 import { getNextSequenceNumber } from "@/db/billing_sequence.db";
 import { createInvoice, getInvoiceByPaymentId, updateInvoicePdfUrl } from "@/db/invoice.db";
 import { getBillingProfile } from "@/db/billing_profile.db";
@@ -5,6 +6,90 @@ import { getUserById } from "@/db/user.db";
 import { getSubscriptionByRazorpayId } from "@/db/subscription.db";
 import { getPricingByPlanId } from "@/lib/plans";
 import { generateAndUploadInvoicePdf } from "@/services/pdf.service";
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID as string,
+  key_secret: process.env.RAZORPAY_KEY_SECRET as string,
+});
+
+type RzpInvoices = { fetch: (id: string) => Promise<Record<string, unknown>> };
+
+export type BackfillResults = { generated: number; skipped: number; errors: string[] };
+
+export async function fetchAllPaymentsInRange(from: number, to: number): Promise<Record<string, unknown>[]> {
+  const PAGE = 100;
+  const all: Record<string, unknown>[] = [];
+  let skip = 0;
+
+  while (true) {
+    const res = await (razorpay.payments as unknown as {
+      all: (opts: Record<string, unknown>) => Promise<{ items: Record<string, unknown>[] }>;
+    }).all({ from: Math.floor(from), to: Math.floor(to), count: PAGE, skip });
+
+    const items = res?.items ?? [];
+    all.push(...items);
+    if (items.length < PAGE) break;
+    skip += PAGE;
+  }
+
+  return all;
+}
+
+export async function processPayment(
+  paymentId: string,
+  paymentEntity: Record<string, unknown> | null,
+  results: BackfillResults
+) {
+  if (!paymentEntity) {
+    try {
+      paymentEntity = await razorpay.payments.fetch(paymentId) as unknown as Record<string, unknown>;
+    } catch (err: unknown) {
+      results.errors.push(`${paymentId}: failed to fetch from Razorpay — ${err instanceof Error ? err.message : String(err)}`);
+      return;
+    }
+  }
+
+  if (paymentEntity.status !== "captured") { results.skipped++; return; }
+
+  let razorpaySubscriptionId = paymentEntity.subscription_id as string | undefined;
+  if (!razorpaySubscriptionId) {
+    const invoiceId = paymentEntity.invoice_id as string | undefined;
+    if (invoiceId?.startsWith("inv_")) {
+      try {
+        const rzpInvoice = await (razorpay as unknown as { invoices: RzpInvoices }).invoices.fetch(invoiceId);
+        razorpaySubscriptionId = rzpInvoice.subscription_id as string | undefined;
+      } catch (err: unknown) {
+        results.errors.push(`${paymentId}: failed to fetch Razorpay invoice ${invoiceId} — ${err instanceof Error ? err.message : String(err)}`);
+        return;
+      }
+    }
+  }
+
+  if (!razorpaySubscriptionId) { results.skipped++; return; }
+
+  let subscriptionEntity: Record<string, unknown> | null;
+  try {
+    subscriptionEntity = await razorpay.subscriptions.fetch(razorpaySubscriptionId) as unknown as Record<string, unknown>;
+  } catch {
+    subscriptionEntity = null;
+  }
+
+  try {
+    const status = await generateInvoiceForCharge(
+      razorpaySubscriptionId,
+      { id: paymentId, amount: paymentEntity.amount as number },
+      subscriptionEntity as { current_start?: number; current_end?: number } | null,
+      {
+        userId: (subscriptionEntity?.notes as Record<string, string> | undefined)?.user_id,
+        planId: subscriptionEntity?.plan_id as string | undefined,
+      }
+    );
+    if (status === "generated") results.generated++; else results.skipped++;
+  } catch (err: unknown) {
+    results.errors.push(`${paymentId}: ${err instanceof Error ? err.message : "unknown error"}`);
+    console.error("[Backfill] Failed to generate invoice for payment", paymentId, err);
+  }
+}
 
 const GST_RATE = 18;
 const SAC_CODE = "9983";
@@ -14,9 +99,9 @@ import { getStateFromCode, getStateCodeFromName } from "@/lib/gst-states";
 export { getStateFromCode, getStateCodeFromName };
 
 export function getFinancialYear(): string {
-  const now = new Date();
-  const month = now.getMonth() + 1; // 1-12
-  const year = now.getFullYear();
+  const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  const month = nowIST.getMonth() + 1; // 1-12 in IST
+  const year = nowIST.getFullYear();   // calendar year in IST
   const fyStart = month >= 4 ? year : year - 1;
   const fyEnd = fyStart + 1;
   return `${String(fyStart).slice(2)}-${String(fyEnd).slice(2)}`; // "24-25"

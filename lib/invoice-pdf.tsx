@@ -25,7 +25,7 @@ function formatRupees(paise: number): string {
 
 function formatDate(d: Date | string): string {
   const date = new Date(d);
-  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
 }
 
 import { ToWords } from "to-words";
