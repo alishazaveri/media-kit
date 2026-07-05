@@ -21,6 +21,8 @@ export interface CustomizeFormProps {
   setLocation: (v: string) => void;
   displayEmail: string;
   setDisplayEmail: (v: string) => void;
+  pronouns: string;
+  setPronouns: (v: string) => void;
   servicesVisible: boolean;
   setServicesVisible: (v: boolean) => void;
   availableForCollabs: boolean;
@@ -77,6 +79,8 @@ export function CustomizeForm({
   setLocation,
   displayEmail,
   setDisplayEmail,
+  pronouns,
+  setPronouns,
   servicesVisible,
   setServicesVisible,
   nicheTags,
@@ -177,6 +181,8 @@ export function CustomizeForm({
         setLocation={setLocation}
         displayEmail={displayEmail}
         setDisplayEmail={setDisplayEmail}
+        pronouns={pronouns}
+        setPronouns={setPronouns}
         nicheTags={nicheTags}
         setNicheTags={setNicheTags}
         onProfilePicUploaded={onProfilePicUploaded}
