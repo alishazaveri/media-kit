@@ -29,6 +29,8 @@ const RESERVED_USERNAMES = [
   "500",
   "kloot",
   "www",
+  // sample/demo pages
+  "daenerystargaryen",
 ];
 
 export async function GET(req: NextRequest) {
