@@ -4,6 +4,18 @@ import { jwtVerify } from "jose";
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET);
 
+async function isAdminAuthenticated(req: NextRequest): Promise<boolean> {
+  const token = req.cookies.get("admin_session")?.value;
+  if (!token) return false;
+  try {
+    const adminSecret = new TextEncoder().encode(process.env.ADMIN_JWT_SECRET);
+    await jwtVerify(token, adminSecret);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const GUEST_ONLY = ["/app/login"];
 const PROTECTED = ["/app/dashboard", "/settings"];
 
@@ -68,6 +80,14 @@ function applyAuthGuards(
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Admin route protection
+  if (pathname.startsWith("/admin")) {
+    if (pathname === "/admin/login") return NextResponse.next();
+    const authed = await isAdminAuthenticated(req);
+    if (!authed) return NextResponse.redirect(new URL("/admin/login", req.url));
+    return NextResponse.next();
+  }
 
   const GUARDED_ROUTES = ["/app/onboarding", "/app/login", "/app/dashboard", "/settings"];
   if (GUARDED_ROUTES.some((r) => pathname.startsWith(r))) {
