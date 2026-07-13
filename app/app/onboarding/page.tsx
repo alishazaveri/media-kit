@@ -5,17 +5,19 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { UsernameStep } from "@/components/onBoarding/UsernameStep";
 import { SignupStep } from "@/components/onBoarding/SignupStep";
 import { ConnectStep } from "@/components/onBoarding/ConnectStep";
+import { PreviewStep } from "@/components/onBoarding/PreviewStep";
 import { ActivateStep } from "@/components/onBoarding/ActivateStep";
 import { useUser } from "@/contexts/UserContext";
 import { PageLoader } from "@/components/ui/PageLoader";
 
-type Step = "username" | "signup" | "connect" | "activate";
+type Step = "username" | "signup" | "connect" | "preview" | "activate";
 
 function resolveStep(searchParams: ReturnType<typeof useSearchParams>): Step {
   if (searchParams.get("error")) return "connect";
-  if (searchParams.get("connected") === "true") return "activate";
+  if (searchParams.get("connected") === "true") return "preview";
   const stepParam = searchParams.get("step");
   if (stepParam === "connect") return "connect";
+  if (stepParam === "preview") return "preview";
   if (stepParam === "activate") return "activate";
   return "username";
 }
@@ -53,14 +55,16 @@ function OnboardingContent() {
 
     // Instagram OAuth just completed — clean up the URL
     if (searchParams.get("connected") === "true") {
-      setStep("activate");
-      router.replace("/app/onboarding?step=activate");
+      setStep("preview");
+      router.replace("/app/onboarding?step=preview");
       return;
     }
 
     const stepParam = searchParams.get("step");
     if (stepParam === "connect") {
       setStep("connect");
+    } else if (stepParam === "preview") {
+      setStep("preview");
     } else if (stepParam === "activate") {
       setStep("activate");
     }
@@ -97,6 +101,14 @@ function OnboardingContent() {
       )}
       {step === "connect" && (
         <ConnectStep userId={userId} externalError={connectError} />
+      )}
+      {step === "preview" && (
+        <PreviewStep
+          onNext={() => {
+            setStep("activate");
+            router.replace("/app/onboarding?step=activate");
+          }}
+        />
       )}
       {step === "activate" && (
         loading
