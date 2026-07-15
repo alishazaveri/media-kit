@@ -9,6 +9,7 @@ import { PreviewStep } from "@/components/onBoarding/PreviewStep";
 import { ActivateStep } from "@/components/onBoarding/ActivateStep";
 import { useUser } from "@/contexts/UserContext";
 import { PageLoader } from "@/components/ui/PageLoader";
+import { trackPixelEvent } from "@/lib/pixel";
 
 type Step = "username" | "signup" | "connect" | "preview" | "activate";
 
@@ -93,6 +94,7 @@ function OnboardingContent() {
           claimedUsername={claimedUsername}
           trialToken={trialToken}
           onNext={(id) => {
+            trackPixelEvent("Lead");
             setUserId(id);
             setStep("connect");
             router.replace("/app/onboarding?step=connect");
