@@ -4,6 +4,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — Kloot",
+  description: "Read Kloot's privacy policy to understand how we collect, use, and protect your data.",
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

@@ -4,6 +4,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "About — Kloot",
+  description: "Learn about Kloot — the platform that helps creators build stunning media kits and attract brand deals effortlessly.",
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

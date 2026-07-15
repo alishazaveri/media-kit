@@ -27,6 +27,14 @@ export const metadata: Metadata = {
   icons: {
     icon: "/assets/images/logo/logo-k-transparent.png",
   },
+  openGraph: {
+    siteName: "Kloot",
+    images: [{ url: "/kloot-og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/kloot-og-image.png"],
+  },
 };
 
 export default function RootLayout({
