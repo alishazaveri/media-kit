@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { BillingDetailsModal } from "@/components/BillingDetailsModal";
 import { useUser } from "@/contexts/UserContext";
+import { trackPixelEvent } from "@/lib/pixel";
+import { getPricingByPlanId } from "@/lib/plans";
 
 declare global {
   interface Window {
@@ -105,6 +107,11 @@ export default function SubscribeButtonHOC({
             });
             const v = await verify.json().catch(() => ({}));
             if (verify.ok && v.success) {
+              const pricing = getPricingByPlanId(planId);
+              trackPixelEvent("Purchase", {
+                currency: "INR",
+                value: pricing?.pricing.price ?? 0,
+              });
               setSuccess(true);
               onSuccess?.(v);
             } else {
@@ -153,6 +160,11 @@ export default function SubscribeButtonHOC({
     setError(null);
     setSuccess(null);
     onLoadingChange?.(true);
+    const pricing = getPricingByPlanId(planId);
+    trackPixelEvent("InitiateCheckout", {
+      currency: "INR",
+      value: pricing?.pricing.price ?? 0,
+    });
 
     try {
       const res = await fetch("/api/billing/profile");
