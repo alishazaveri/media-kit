@@ -4,6 +4,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions — Kloot",
+  description: "Read Kloot's terms and conditions governing the use of our platform and services.",
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
