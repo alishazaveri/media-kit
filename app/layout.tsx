@@ -20,6 +20,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://kloot.io"),
   title: "Kloot — Your brand deal magnet",
   description:
     "Create a stunning creator portfolio page that brands love. Showcase your stats, content, and pricing — all in one beautiful shareable link.",
