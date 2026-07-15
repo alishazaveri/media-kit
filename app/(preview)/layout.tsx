@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Sample Creator Media Kit | Kloot",
+  description: "See what a Kloot creator media kit looks like — stats, content, packages, and collaboration rates all in one beautiful shareable link.",
+  robots: { index: false },
+};
 
 export default function PreviewLayout({ children }: { children: React.ReactNode }) {
   return (

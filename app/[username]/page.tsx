@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import type { Metadata } from "next";
 import { getUserByUsername } from "@/db/user.db";
 import { getSocialChannelByPlatform } from "@/db/social_channel.db";
 import { getUserData } from "@/db/user_data.db";
@@ -7,6 +9,87 @@ import { getCustomization } from "@/db/customization.db";
 import { getThemeByIdentifier } from "@/constants/themes";
 import { CreatorProfile } from "@/components/CreatorProfile";
 import isLinkActive from "@/lib/isLinkActive";
+
+function fmtFollowers(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
+  return String(n);
+}
+
+export async function generateMetadata(
+  props: { params: Promise<{ username: string }> }
+): Promise<Metadata> {
+  const { username } = await props.params;
+  const headersList = await headers();
+  const host = headersList.get("host") ?? "kloot.io";
+  const metadataBase = new URL(host.startsWith("localhost") ? `http://${host}` : `https://${host}`);
+
+  const fallback = (title: string): Metadata => ({
+    metadataBase,
+    title,
+    robots: { index: false },
+  });
+
+  const user = await getUserByUsername(username);
+  if (!user) return fallback("Creator Not Found | Kloot");
+
+  const userId = (user as any)._id.toString();
+  const active = await isLinkActive(userId);
+  if (!active) return fallback(`@${username} | Kloot`);
+
+  const [channel, userData] = await Promise.all([
+    getSocialChannelByPlatform(userId, "instagram"),
+    getUserData(userId, "profile"),
+  ]);
+
+  const published: Record<string, any> = (userData as any)?.published_data ?? {};
+  if (!Object.keys(published).length) return fallback(`@${username} | Kloot`);
+
+  const channelId = channel ? (channel as any)._id.toString() : null;
+  const insight = channelId ? await getInsightBySocialChannel(channelId) : null;
+  const ig: Record<string, any> = (insight as any)?.data ?? {};
+
+  const name     = published.display_name ?? ig.name ?? username;
+  const handle   = ig.username ?? username;
+  const tagline  = published.tagline ?? null;
+  const location = published.location ?? null;
+  const niches   = (Array.isArray(published.niche_tags) ? published.niche_tags : []).slice(0, 2);
+  const followers = ig.followers_count ? fmtFollowers(ig.followers_count) : null;
+
+  const title = `${name} (@${handle}) — Creator Media Kit | Kloot`;
+
+  const parts: string[] = [];
+  if (niches.length)  parts.push(niches.join(" & ") + " creator");
+  else                parts.push("creator");
+  if (location)       parts.push(`based in ${location}`);
+  if (followers)      parts.push(`${followers} Instagram followers`);
+
+  let description = `${name} is a ${parts.join(", ")}.`;
+  if (tagline)        description += ` ${tagline}.`;
+  description += " View their media kit on Kloot.";
+
+  if (description.length > 160) description = description.slice(0, 157) + "…";
+
+  const url = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://kloot.io"}/${username}`;
+
+  return {
+    metadataBase,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "profile",
+      siteName: "Kloot",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function PublishedProfilePage(props: {
   params: Promise<{ username: string }>;

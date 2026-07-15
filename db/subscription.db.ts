@@ -125,3 +125,12 @@ export async function getSubscriptionByCustomerId(customerId: string) {
   if (!customerId) return null;
   return Subscription.findOne({ razorpay_customer_id: customerId }).lean();
 }
+
+export async function getActiveSubscriptionUserIds(): Promise<string[]> {
+  await connectDB();
+  const subs = await Subscription.find(
+    { current_period_end: { $gt: new Date() } },
+    { user_id: 1 }
+  ).lean();
+  return (subs as { user_id: { toString(): string } }[]).map(s => s.user_id.toString());
+}
