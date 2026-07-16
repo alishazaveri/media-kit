@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import "react-day-picker/style.css";
@@ -47,17 +48,18 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
     >
-      <head>
-        {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-8QN2KBZLZK"></script>
-        <script dangerouslySetInnerHTML={{ __html: `
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        {children}
+        {/* Google Analytics */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-8QN2KBZLZK" strategy="afterInteractive" />
+        <Script id="ga4-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           gtag('config', 'G-8QN2KBZLZK');
         `}} />
         {/* Meta Pixel */}
-        <script dangerouslySetInnerHTML={{ __html: `
+        <Script id="meta-pixel" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
           !function(f,b,e,v,n,t,s)
           {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
           n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -69,9 +71,7 @@ export default function RootLayout({
           fbq('init', '1511166927154634');
           fbq('track', 'PageView');
         `}} />
-        <noscript dangerouslySetInnerHTML={{ __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1511166927154634&ev=PageView&noscript=1" />` }} />
-      </head>
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>{children}</body>
+      </body>
     </html>
   );
 }
