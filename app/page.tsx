@@ -1,6 +1,7 @@
 import Nav from "../components/website/Nav";
 import Hero from "../components/website/Hero";
 import StepsSection from "../components/website/StepsSection";
+import SocialProofSection from "../components/website/SocialProofSection";
 import AnalyticsSection from "../components/website/AnalyticsSection";
 import FeatureCardsSection from "../components/website/FeatureCardsSection";
 import TestimonialsSection from "../components/website/TestimonialsSection";
@@ -13,6 +14,7 @@ export default function Home() {
     <main>
       <Nav />
       <Hero />
+      <SocialProofSection />
       <StepsSection />
       <AnalyticsSection />
       <FeatureCardsSection />
