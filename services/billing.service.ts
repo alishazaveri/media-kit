@@ -1,6 +1,7 @@
 import Razorpay from "razorpay";
 import { getNextSequenceNumber } from "@/db/billing_sequence.db";
 import { createInvoice, getInvoiceByPaymentId, updateInvoicePdfUrl } from "@/db/invoice.db";
+import type { IInvoice } from "@/db/models/invoice";
 import { getBillingProfile } from "@/db/billing_profile.db";
 import { getUserById } from "@/db/user.db";
 import { getSubscriptionByRazorpayId } from "@/db/subscription.db";
@@ -14,7 +15,7 @@ const razorpay = new Razorpay({
 
 type RzpInvoices = { fetch: (id: string) => Promise<Record<string, unknown>> };
 
-export type BackfillResults = { generated: number; skipped: number; errors: string[] };
+export type BackfillResults = { generated: number; pdf_regenerated: number; skipped: number; errors: string[] };
 
 export async function fetchAllPaymentsInRange(from: number, to: number): Promise<Record<string, unknown>[]> {
   const PAGE = 100;
@@ -38,7 +39,8 @@ export async function fetchAllPaymentsInRange(from: number, to: number): Promise
 export async function processPayment(
   paymentId: string,
   paymentEntity: Record<string, unknown> | null,
-  results: BackfillResults
+  results: BackfillResults,
+  options?: { awaitPdf?: boolean }
 ) {
   if (!paymentEntity) {
     try {
@@ -82,9 +84,12 @@ export async function processPayment(
       {
         userId: (subscriptionEntity?.notes as Record<string, string> | undefined)?.user_id,
         planId: subscriptionEntity?.plan_id as string | undefined,
-      }
+      },
+      options
     );
-    if (status === "generated") results.generated++; else results.skipped++;
+    if (status === "generated") results.generated++;
+    else if (status === "pdf_regenerated") results.pdf_regenerated++;
+    else results.skipped++;
   } catch (err: unknown) {
     results.errors.push(`${paymentId}: ${err instanceof Error ? err.message : "unknown error"}`);
     console.error("[Backfill] Failed to generate invoice for payment", paymentId, err);
@@ -132,6 +137,7 @@ export async function generateInvoice({
   totalAmountPaise,
   subscriptionPeriodStart,
   subscriptionPeriodEnd,
+  awaitPdf = false,
 }: {
   userId: string;
   razorpayPaymentId: string;
@@ -140,6 +146,7 @@ export async function generateInvoice({
   totalAmountPaise: number;
   subscriptionPeriodStart?: Date;
   subscriptionPeriodEnd?: Date;
+  awaitPdf?: boolean;
 }) {
   const [user, billingProfile] = await Promise.all([
     getUserById(userId),
@@ -230,10 +237,11 @@ export async function generateInvoice({
     status: "paid",
   } as Parameters<typeof createInvoice>[0]);
 
-  // Generate PDF and upload — failure is non-fatal, invoice is already created
-  generateAndUploadInvoicePdf(invoice)
+  const pdfPromise = generateAndUploadInvoicePdf(invoice)
     .then((pdfUrl) => updateInvoicePdfUrl(invoice._id.toString(), pdfUrl))
     .catch((err) => console.error("[Invoice] PDF generation failed for", invoice.invoice_number, err));
+
+  if (awaitPdf) await pdfPromise;
 
   return invoice;
 }
@@ -242,12 +250,21 @@ export async function generateInvoiceForCharge(
   razorpaySubscriptionId: string,
   paymentEntity: { id: string; amount: number },
   subscriptionEntity: { current_start?: number; current_end?: number } | null,
-  fallback?: { userId?: string; planId?: string }
-): Promise<"generated" | "skipped"> {
+  fallback?: { userId?: string; planId?: string },
+  options?: { awaitPdf?: boolean }
+): Promise<"generated" | "pdf_regenerated" | "skipped"> {
   const paymentId = paymentEntity.id;
 
   const existing = await getInvoiceByPaymentId(paymentId);
   if (existing) {
+    if (!existing.pdf_url) {
+      console.info("[Invoice] Regenerating missing PDF for payment", paymentId);
+      const pdfPromise = generateAndUploadInvoicePdf(existing as unknown as IInvoice)
+        .then((pdfUrl) => updateInvoicePdfUrl(existing._id.toString(), pdfUrl))
+        .catch((err) => console.error("[Invoice] PDF regeneration failed for", existing.invoice_number, err));
+      if (options?.awaitPdf) await pdfPromise;
+      return "pdf_regenerated";
+    }
     console.info("[Invoice] Already exists for payment", paymentId);
     return "skipped";
   }
@@ -277,6 +294,7 @@ export async function generateInvoiceForCharge(
     subscriptionPeriodEnd: subscriptionEntity?.current_end
       ? new Date(subscriptionEntity.current_end * 1000)
       : undefined,
+    awaitPdf: options?.awaitPdf,
   });
 
   return "generated";

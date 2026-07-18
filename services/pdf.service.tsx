@@ -13,6 +13,7 @@ export async function generateAndUploadInvoicePdf(invoice: IInvoice): Promise<st
   const blob = await put(pathname, buffer, {
     access: "public",
     contentType: "application/pdf",
+    allowOverwrite: true,
   });
 
   return blob.url;
