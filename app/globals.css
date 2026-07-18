@@ -48,6 +48,29 @@ body {
   to   { transform: rotate(360deg); }
 }
 
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.marquee__track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  gap: 3rem;
+  animation: marquee 35s linear infinite;
+}
+
+.marquee__track:hover {
+  animation-play-state: paused;
+}
+
 .animate-spin-slow {
   animation: spin 1.4s linear infinite;
 }

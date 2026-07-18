@@ -30,12 +30,12 @@ export async function GET(req: NextRequest) {
 
   console.log(`[Cron] daily-invoices: processing ${payments.length} payment(s)`);
 
-  const results: BackfillResults = { generated: 0, skipped: 0, errors: [] };
+  const results: BackfillResults = { generated: 0, pdf_regenerated: 0, skipped: 0, errors: [] };
   for (const paymentEntity of payments) {
-    await processPayment(paymentEntity.id as string, paymentEntity, results);
+    await processPayment(paymentEntity.id as string, paymentEntity, results, { awaitPdf: true });
   }
 
-  console.log(`[Cron] daily-invoices: done — generated=${results.generated} skipped=${results.skipped} errors=${results.errors.length}`);
+  console.log(`[Cron] daily-invoices: done — generated=${results.generated} pdf_regenerated=${results.pdf_regenerated} skipped=${results.skipped} errors=${results.errors.length}`);
 
   return NextResponse.json(results);
 }

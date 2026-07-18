@@ -66,12 +66,12 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const { payment_ids, range, from, to } = body ?? {};
 
-  const results: BackfillResults = { generated: 0, skipped: 0, errors: [] };
+  const results: BackfillResults = { generated: 0, pdf_regenerated: 0, skipped: 0, errors: [] };
 
   if (Array.isArray(payment_ids) && payment_ids.length > 0) {
     // Mode 1: explicit payment IDs
     for (const id of payment_ids) {
-      await processPayment(id, null, results);
+      await processPayment(id, null, results, { awaitPdf: true });
     }
   } else if (range || (from && to)) {
     // Mode 2: date range
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
     }
 
     for (const paymentEntity of payments) {
-      await processPayment(paymentEntity.id as string, paymentEntity, results);
+      await processPayment(paymentEntity.id as string, paymentEntity, results, { awaitPdf: true });
     }
   } else {
     return NextResponse.json(
