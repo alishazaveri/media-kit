@@ -25,7 +25,7 @@ const ALL = [...BRANDS, ...BRANDS];
 
 export default function SocialProofSection() {
   return (
-    <section className="bg-white pt-12 pb-20 overflow-hidden">
+    <section className="bg-white py-24 overflow-hidden">
       <div className="max-w-3xl mx-auto px-6 text-center mb-14">
         <h2
           className="font-black text-gray-900 leading-[1.1] tracking-tight"
