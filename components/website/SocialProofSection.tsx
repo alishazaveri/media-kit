@@ -25,17 +25,17 @@ const ALL = [...BRANDS, ...BRANDS];
 
 export default function SocialProofSection() {
   return (
-    <section className="bg-white py-12 overflow-hidden">
-      <div className="max-w-6xl mx-auto px-6 text-center mb-8">
-        <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-1">
-          Social proof
-        </p>
-        <p className="text-2xl font-black text-gray-900 tracking-tight">
-          120+ creators. Brands that mean business.
-        </p>
-        <p className="text-sm text-gray-400 mt-2">
-          Brands that have worked with creators on Kloot
-        </p>
+    <section className="bg-white pt-12 pb-20 overflow-hidden">
+      <div className="max-w-3xl mx-auto px-6 text-center mb-14">
+        <h2
+          className="font-black text-gray-900 leading-[1.1] tracking-tight"
+          style={{
+            fontFamily: "var(--font-playfair), serif",
+            fontSize: "clamp(1.9rem, 4.5vw, 56px)",
+          }}
+        >
+          Brands that have worked with <span className="text-primary">creators on Kloot</span>
+        </h2>
       </div>
 
       <div className="relative">
@@ -50,7 +50,7 @@ export default function SocialProofSection() {
                   src={`https://cdn.brandfetch.io/${brand.domain}/w/200/h/80/logo`}
                   alt={i < BRANDS.length ? brand.name : ""}
                   aria-hidden={i >= BRANDS.length}
-                  style={{ height: 28, width: "auto", maxWidth: 110 }}
+                  style={{ height: "clamp(24px, 5vw, 40px)", width: "auto", maxWidth: "clamp(90px, 18vw, 150px)" }}
                   className="grayscale opacity-50 hover:opacity-90 hover:grayscale-0 transition-all duration-300 object-contain"
                 />
               </div>
