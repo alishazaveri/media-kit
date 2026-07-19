@@ -50,16 +50,18 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {children}
-        {/* Google Analytics */}
-        <Script src="https://www.googletagmanager.com/gtag/js?id=G-8QN2KBZLZK" strategy="afterInteractive" />
-        <Script id="ga4-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-8QN2KBZLZK');
-        `}} />
-        {/* Meta Pixel */}
-        <Script id="meta-pixel" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+        {/* Google Analytics — production only */}
+        {process.env.NODE_ENV === "production" && <>
+          <Script src="https://www.googletagmanager.com/gtag/js?id=G-8QN2KBZLZK" strategy="afterInteractive" />
+          <Script id="ga4-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-8QN2KBZLZK');
+          `}} />
+        </>}
+        {/* Meta Pixel — production only */}
+        {process.env.NODE_ENV === "production" && <Script id="meta-pixel" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
           !function(f,b,e,v,n,t,s)
           {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
           n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -70,7 +72,7 @@ export default function RootLayout({
           'https://connect.facebook.net/en_US/fbevents.js');
           fbq('init', '1511166927154634');
           fbq('track', 'PageView');
-        `}} />
+        `}} />}
       </body>
     </html>
   );
