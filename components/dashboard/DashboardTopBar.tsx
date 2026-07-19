@@ -9,6 +9,7 @@ interface Props {
   profilePic: string | null;
   publishing?: boolean;
   hasUnpublishedChanges?: boolean;
+  isInactive?: boolean;
   onPublish?: () => void;
   onToggleCollapse: () => void;
   onLogout: () => void;
@@ -19,6 +20,7 @@ export function DashboardTopBar({
   profilePic,
   publishing = false,
   hasUnpublishedChanges = false,
+  isInactive = false,
   onPublish,
   onToggleCollapse,
   onLogout,

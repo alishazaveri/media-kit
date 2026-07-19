@@ -62,6 +62,7 @@ export interface CustomizeFormProps {
   onPublish?: () => void;
   publishing?: boolean;
   hasUnpublishedChanges?: boolean;
+  isInactive?: boolean;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
   onProfilePicUploaded?: (url: string | null) => void;
   onSectionFocus?: (sectionId: string) => void;
@@ -102,6 +103,7 @@ export function CustomizeForm({
   onPublish,
   publishing = false,
   hasUnpublishedChanges = false,
+  isInactive = false,
   onThemeChange,
   onProfilePicUploaded,
   onSectionFocus,
@@ -141,7 +143,7 @@ export function CustomizeForm({
             variant="primary"
             size="md"
             onClick={onPublish}
-            disabled={publishing || !hasUnpublishedChanges}
+            disabled={publishing || (!hasUnpublishedChanges && !isInactive)}
             loading={publishing}
             fullWidth
             icon={
