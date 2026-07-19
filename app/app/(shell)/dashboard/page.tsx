@@ -13,11 +13,14 @@ import {
 import { type ThemeData } from "@/components/CreatorProfile";
 import { getThemeByIdentifier } from "@/constants/themes";
 import { useDashboard } from "@/components/dashboard/DashboardContext";
+import { useUser } from "@/contexts/UserContext";
 import { Toast } from "@/components/ui/Toast";
 import { getDefaultPackages } from "@/lib/default-packages";
 
 export default function DashboardPage() {
-  const { sidebarCollapsed, setSidebarCollapsed } = useDashboard();
+  const { sidebarCollapsed, setSidebarCollapsed, openActivateModal } = useDashboard();
+  const { subscription, trialEndsAt, hasScheduledSubscription } = useUser();
+  const isInactive = !subscription && !hasScheduledSubscription && !(trialEndsAt && new Date(trialEndsAt) > new Date());
 
   const [analyticsLoaded, setAnalyticsLoaded] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -321,6 +324,7 @@ export default function DashboardPage() {
 
   /* Publish */
   const handlePublish = async () => {
+    if (isInactive) { openActivateModal(); return; }
     setPublishing(true);
     try {
       await Promise.all([
@@ -584,6 +588,7 @@ export default function DashboardPage() {
           onProfilePicUploaded={() => setProfilePicChanged(true)}
           publishing={publishing}
           hasUnpublishedChanges={hasUnpublishedChanges}
+          isInactive={isInactive}
           onPublish={handlePublish}
         />
       </div>

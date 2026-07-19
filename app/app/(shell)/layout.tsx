@@ -8,6 +8,7 @@ import { DashboardContext } from "@/components/dashboard/DashboardContext";
 import { DashboardSidebar, NAV_ITEMS } from "@/components/dashboard/DashboardSidebar";
 import { useUser } from "@/contexts/UserContext";
 import { Banner } from "@/components/ui/Banner";
+import { PricingCards } from "@/components/PricingCards";
 
 function AppBanner() {
   const { subscription, hasScheduledSubscription, trialEndsAt, loading } = useUser();
@@ -69,8 +70,41 @@ function AppBanner() {
   return null;
 }
 
+function ActivateModal({ onClose }: { onClose: () => void }) {
+  const { userId, refresh } = useUser();
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-[#FAF7F2] rounded-2xl w-full max-w-3xl max-h-[90dvh] overflow-y-auto p-6 md:p-8">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Close"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+          </svg>
+        </button>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-gray-900">Your Kloot link is inactive</h2>
+          <p className="text-sm text-gray-400 mt-1">Subscribe to make your media kit live and visible to brands</p>
+        </div>
+        <PricingCards
+          userId={userId}
+          onSuccess={() => {
+            refresh();
+            onClose();
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function ShellLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [activateModalOpen, setActivateModalOpen] = useState(false);
 
   useEffect(() => {
     if (window.innerWidth <= 1100) setSidebarCollapsed(true);
@@ -83,7 +117,12 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <DashboardContext.Provider value={{ sidebarCollapsed, setSidebarCollapsed, onLogout: handleLogout }}>
+    <DashboardContext.Provider value={{
+      sidebarCollapsed,
+      setSidebarCollapsed,
+      onLogout: handleLogout,
+      openActivateModal: () => setActivateModalOpen(true),
+    }}>
       <div className="h-[100dvh] flex overflow-hidden bg-[#FAF7F2]">
         <DashboardSidebar collapsed={sidebarCollapsed} onLogout={handleLogout} />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -110,6 +149,8 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
       </div>
+
+      {activateModalOpen && <ActivateModal onClose={() => setActivateModalOpen(false)} />}
     </DashboardContext.Provider>
   );
 }

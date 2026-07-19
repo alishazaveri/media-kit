@@ -65,6 +65,7 @@ interface Props {
   onProfilePicUploaded?: (url: string | null) => void;
   publishing?: boolean;
   hasUnpublishedChanges?: boolean;
+  isInactive?: boolean;
   onPublish?: () => void;
 }
 
@@ -119,6 +120,7 @@ export function CustomizeTab(props: Props) {
     onThemeChange,
     publishing = false,
     hasUnpublishedChanges = false,
+    isInactive = false,
     onPublish,
   } = props;
 
@@ -237,6 +239,7 @@ export function CustomizeTab(props: Props) {
     onPublish,
     publishing,
     hasUnpublishedChanges,
+    isInactive,
     onThemeChange,
     onProfilePicUploaded: props.onProfilePicUploaded,
     onSectionFocus: (sectionId: string) => {
@@ -279,7 +282,7 @@ export function CustomizeTab(props: Props) {
                   variant="primary"
                   size="xs"
                   onClick={onPublish}
-                  disabled={publishing || !hasUnpublishedChanges}
+                  disabled={publishing || (!hasUnpublishedChanges && !isInactive)}
                   loading={publishing}
                   icon={
                     !publishing && (
@@ -385,7 +388,7 @@ export function CustomizeTab(props: Props) {
                     variant="primary"
                     size="sm"
                     onClick={onPublish}
-                    disabled={publishing || !hasUnpublishedChanges}
+                    disabled={publishing || (!hasUnpublishedChanges && !isInactive)}
                     loading={publishing}
                     icon={
                       !publishing && (
