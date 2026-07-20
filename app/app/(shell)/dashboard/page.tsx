@@ -301,6 +301,7 @@ export default function DashboardPage() {
           available_for_collabs: availableForCollabs,
           packages,
           collabs,
+          posts: featuredPosts,
         })
         .catch(() => {});
     }, 1500);
@@ -319,6 +320,7 @@ export default function DashboardPage() {
     availableForCollabs,
     packages,
     collabs,
+    featuredPosts,
     analyticsLoaded,
   ]);
 
