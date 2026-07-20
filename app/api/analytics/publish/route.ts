@@ -23,8 +23,12 @@ export async function POST() {
 
     const published = await publishUserData(session.userId, "profile");
 
-    // Sync profile_image_url on the User model to match what was just published
-    await updateUser(session.userId, { profile_image_url: (newDraftPic as string) ?? "" });
+    // Sync profile_image_url only when the user has an actual custom pic.
+    // When newDraftPic is null (no custom pic uploaded), leave profile_image_url
+    // untouched so the Instagram CDN URL from onboarding/cron refresh is preserved.
+    if (newDraftPic) {
+      await updateUser(session.userId, { profile_image_url: newDraftPic as string });
+    }
 
     // Delete old published blob now that it's been replaced
     if (isVercelBlobUrl(oldPublishedPic) && oldPublishedPic !== newDraftPic) {

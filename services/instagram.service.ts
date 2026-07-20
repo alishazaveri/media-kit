@@ -404,7 +404,7 @@ export async function fetchAndSaveInstagramAnalytics(
   if (freshProfilePic) {
     const user = await getUserById(userId);
     const current = (user as any)?.profile_image_url as string | undefined;
-    if (current && !current.includes(".public.blob.vercel-storage.com")) {
+    if (!current?.includes(".public.blob.vercel-storage.com")) {
       await updateUser(userId, { profile_image_url: freshProfilePic });
     }
   }
