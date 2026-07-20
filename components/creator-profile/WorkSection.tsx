@@ -30,7 +30,7 @@ function buildCardData(posts: PostItem[] | undefined, fallback: boolean) {
       title: p.caption
         ? p.caption.split("\n")[0].slice(0, 28)
         : `Post ${i + 1}`,
-      metric: fmt(p.impressions ?? p.like_count),
+      metric: fmt(p.impressions ?? p.view_count ?? p.like_count),
       gradient: DUMMY_GRADIENTS[i % DUMMY_GRADIENTS.length],
     }));
   }

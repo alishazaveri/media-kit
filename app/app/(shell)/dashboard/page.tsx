@@ -196,6 +196,7 @@ export default function DashboardPage() {
               like_count: p.like_count,
               comments_count: p.comments_count,
               view_count: p.impressions,
+              impressions: p.impressions,
             })),
           );
         }
@@ -243,6 +244,7 @@ export default function DashboardPage() {
               like_count: p.like_count,
               comments_count: p.comments_count,
               view_count: p.impressions,
+              impressions: p.impressions,
             })),
           );
         } else {
