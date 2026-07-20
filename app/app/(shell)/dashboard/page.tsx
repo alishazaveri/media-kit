@@ -196,6 +196,7 @@ export default function DashboardPage() {
               like_count: p.like_count,
               comments_count: p.comments_count,
               view_count: p.impressions,
+              impressions: p.impressions,
             })),
           );
         }
@@ -243,6 +244,7 @@ export default function DashboardPage() {
               like_count: p.like_count,
               comments_count: p.comments_count,
               view_count: p.impressions,
+              impressions: p.impressions,
             })),
           );
         } else {
@@ -301,6 +303,7 @@ export default function DashboardPage() {
           available_for_collabs: availableForCollabs,
           packages,
           collabs,
+          posts: featuredPosts,
         })
         .catch(() => {});
     }, 1500);
@@ -319,6 +322,7 @@ export default function DashboardPage() {
     availableForCollabs,
     packages,
     collabs,
+    featuredPosts,
     analyticsLoaded,
   ]);
 
