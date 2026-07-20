@@ -85,7 +85,7 @@ export function StatsSection({
   const bigStats = [
     {
       value: fmt(Math.round(followersTarget * progress)),
-      label: "ACTIVE COMMUNITY",
+      label: "FOLLOWERS",
       blue: true,
     },
     {
