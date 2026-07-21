@@ -154,7 +154,12 @@ export function HeroSection({
 
             {/* Meta pills */}
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-black/5 text-gray-700">
+              <a
+                href={handle ? `https://www.instagram.com/${handle}/` : "https://www.instagram.com/"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-black/5 text-gray-700 hover:border-black/20 transition-colors"
+              >
                 <svg
                   width="14"
                   height="14"
@@ -170,7 +175,7 @@ export function HeroSection({
                   <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
                 </svg>
                 {handle || "yourhandle"}
-              </span>
+              </a>
 
               {location && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-black/5 text-gray-700">
