@@ -22,7 +22,7 @@ async function getStats() {
     User.countDocuments({ trial_ends_at: { $gt: now } }),
     Invoice.aggregate([
       { $match: { status: "paid", created_at: { $gte: startOfMonth } } },
-      { $group: { _id: null, total: { $sum: "$total_amount" } } },
+      { $group: { _id: "$currency", total: { $sum: "$total_amount" } } },
     ]),
     User.find()
       .sort({ created_at: -1 })
@@ -32,22 +32,27 @@ async function getStats() {
     Invoice.find({ status: "paid" })
       .sort({ created_at: -1 })
       .limit(8)
-      .select("customer_name plan_name total_amount created_at invoice_number")
+      .select("customer_name plan_name total_amount created_at invoice_number currency")
       .lean(),
   ]);
+
+  const revenueINR = (revenueAgg.find((r: any) => r._id === "INR" || r._id == null)?.total ?? 0);
+  const revenueUSD = (revenueAgg.find((r: any) => r._id === "USD")?.total ?? 0);
 
   return {
     totalUsers,
     activeSubscriptions,
     trialUsers,
-    revenueThisMonth: revenueAgg[0]?.total ?? 0,
+    revenueINR,
+    revenueUSD,
     recentUsers,
     recentInvoices,
   };
 }
 
-function fmtPaise(paise: number) {
-  return `₹${(paise / 100).toLocaleString("en-IN")}`;
+function fmtAmount(amount: number, currency: string) {
+  if (currency === "USD") return `$${(amount / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `₹${(amount / 100).toLocaleString("en-IN")}`;
 }
 
 function timeAgo(date: Date | string) {
@@ -59,14 +64,15 @@ function timeAgo(date: Date | string) {
 }
 
 export default async function AdminDashboardPage() {
-  const { totalUsers, activeSubscriptions, trialUsers, revenueThisMonth, recentUsers, recentInvoices } =
+  const { totalUsers, activeSubscriptions, trialUsers, revenueINR, revenueUSD, recentUsers, recentInvoices } =
     await getStats();
 
   const stats = [
     { label: "Total creators", value: totalUsers.toLocaleString() },
     { label: "Active subscribers", value: activeSubscriptions.toLocaleString() },
     { label: "On trial", value: trialUsers.toLocaleString() },
-    { label: "Revenue this month", value: fmtPaise(revenueThisMonth) },
+    { label: "Revenue this month (INR)", value: fmtAmount(revenueINR, "INR") },
+    { label: "Revenue this month (USD)", value: fmtAmount(revenueUSD, "USD") },
   ];
 
   return (
@@ -77,7 +83,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         {stats.map((s) => (
           <div key={s.label} className="bg-white rounded-2xl border border-gray-100 px-5 py-5 shadow-sm">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{s.label}</p>
@@ -122,7 +128,7 @@ export default async function AdminDashboardPage() {
                   <p className="text-xs text-gray-400">{inv.plan_name}</p>
                 </div>
                 <div className="text-right shrink-0 ml-4">
-                  <p className="text-sm font-black text-gray-900">{fmtPaise(inv.total_amount)}</p>
+                  <p className="text-sm font-black text-gray-900">{fmtAmount(inv.total_amount, inv.currency ?? "INR")}</p>
                   <p className="text-xs text-gray-400">{timeAgo(inv.created_at)}</p>
                 </div>
               </div>

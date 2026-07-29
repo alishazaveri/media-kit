@@ -28,6 +28,7 @@ type SubscriptionDetail = {
     invoiceNumber: string;
     planName: string;
     totalAmount: number;
+    currency: string;
     status: string;
     invoiceDate: string;
     periodStart: string | null;
@@ -51,8 +52,9 @@ function fmtDate(d: string | null | undefined) {
   return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function fmtPaise(paise: number) {
-  return `₹${(paise / 100).toLocaleString("en-IN")}`;
+function fmtAmount(amount: number, currency: string) {
+  if (currency === "USD") return `$${(amount / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `₹${(amount / 100).toLocaleString("en-IN")}`;
 }
 
 function initials(name: string) {
@@ -226,7 +228,7 @@ export default function SubscriptionDetailPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 ml-3">
-                    <p className="text-sm font-black text-gray-900">{fmtPaise(inv.totalAmount)}</p>
+                    <p className="text-sm font-black text-gray-900">{fmtAmount(inv.totalAmount, inv.currency)}</p>
                     {inv.pdfUrl && (
                       <a
                         href={inv.pdfUrl}

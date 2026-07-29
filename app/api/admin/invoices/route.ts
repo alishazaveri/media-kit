@@ -33,6 +33,8 @@ export async function GET() {
       periodStart: inv.subscription_period_start ?? null,
       periodEnd: inv.subscription_period_end ?? null,
       totalAmount: inv.total_amount,
+      currency: inv.currency ?? "INR",
+      prefix: inv.prefix,
       status: inv.status,
       pdfUrl: inv.pdf_url ?? null,
       razorpaySubscriptionId: inv.razorpay_subscription_id,

@@ -52,6 +52,7 @@ type UserDetail = {
     invoiceNumber: string;
     planName: string;
     totalAmount: number;
+    currency: string;
     status: string;
     invoiceDate: string;
     pdfUrl: string | null;
@@ -99,8 +100,9 @@ function fmtFollowers(n: number) {
   return String(n);
 }
 
-function fmtPaise(paise: number) {
-  return `₹${(paise / 100).toLocaleString("en-IN")}`;
+function fmtAmount(amount: number, currency: string) {
+  if (currency === "USD") return `$${(amount / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `₹${(amount / 100).toLocaleString("en-IN")}`;
 }
 
 function initials(name: string) {
@@ -480,7 +482,7 @@ export default function UserDetailPage() {
                       <p className="text-xs text-gray-400">{inv.planName} · {fmtDate(inv.invoiceDate)}</p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0 ml-3">
-                      <p className="text-sm font-black text-gray-900">{fmtPaise(inv.totalAmount)}</p>
+                      <p className="text-sm font-black text-gray-900">{fmtAmount(inv.totalAmount, inv.currency)}</p>
                       {inv.pdfUrl && (
                         <a
                           href={inv.pdfUrl}

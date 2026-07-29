@@ -19,6 +19,8 @@ type Invoice = {
   periodStart: string | null;
   periodEnd: string | null;
   totalAmount: number;
+  currency: string;
+  prefix: string;
   pdfUrl: string | null;
   razorpaySubscriptionId: string;
   user: { id: string; name: string; email: string; username: string } | null;
@@ -29,8 +31,9 @@ function fmtDate(d: string | null | undefined) {
   return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function fmtPaise(paise: number) {
-  return `₹${(paise / 100).toLocaleString("en-IN")}`;
+function fmtAmount(amount: number, currency: string) {
+  if (currency === "USD") return `$${(amount / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `₹${(amount / 100).toLocaleString("en-IN")}`;
 }
 
 function initials(name: string) {
@@ -48,6 +51,7 @@ export default function AdminInvoicesPage() {
   const [search, setSearch] = useState("");
   const [dateRange, setDateRange] = useState<DateRange | null>(null);
   const [planFilter, setPlanFilter] = useState<string>("all");
+  const [prefixFilter, setPrefixFilter] = useState<string>("all");
 
   useEffect(() => {
     axios.get("/api/admin/invoices")
@@ -66,6 +70,7 @@ export default function AdminInvoicesPage() {
   const filtered = useMemo(() => {
     const toDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
     return invoices.filter((inv) => {
+      if (prefixFilter !== "all" && inv.prefix !== prefixFilter) return false;
       if (planFilter !== "all" && inv.planId !== planFilter) return false;
       if (dateRange?.from) {
         const d = toDay(new Date(inv.invoiceDate));
@@ -81,9 +86,10 @@ export default function AdminInvoicesPage() {
         inv.user?.username?.toLowerCase().includes(q)
       );
     });
-  }, [invoices, search, dateRange, planFilter]);
+  }, [invoices, search, dateRange, planFilter, prefixFilter]);
 
-  const totalFiltered = filtered.reduce((sum, inv) => sum + inv.totalAmount, 0);
+  const inrTotal = filtered.filter((i) => i.currency !== "USD").reduce((sum, i) => sum + i.totalAmount, 0);
+  const usdTotal = filtered.filter((i) => i.currency === "USD").reduce((sum, i) => sum + i.totalAmount, 0);
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -104,6 +110,26 @@ export default function AdminInvoicesPage() {
           className="border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 outline-none focus:border-gray-400 transition-colors bg-white w-full sm:w-72"
         />
         <DateRangePicker value={dateRange} onChange={setDateRange} />
+        {/* Prefix filter */}
+        <div className="flex rounded-xl border border-gray-200 overflow-hidden text-sm">
+          {[
+            { value: "all",  label: "All" },
+            { value: "KLT",  label: "INR" },
+            { value: "KLTI", label: "USD" },
+          ].map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setPrefixFilter(opt.value)}
+              className={`px-3 py-2 font-semibold transition-colors ${
+                prefixFilter === opt.value
+                  ? "bg-gray-900 text-white"
+                  : "bg-white text-gray-500 hover:bg-gray-50"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
         {planOptions.length > 1 && (
           <PlanSelect value={planFilter} onChange={setPlanFilter} options={planOptions} />
         )}
@@ -113,7 +139,10 @@ export default function AdminInvoicesPage() {
       {!loading && filtered.length > 0 && (
         <div className="flex items-center justify-between mb-3 px-1">
           <p className="text-xs text-gray-400">{filtered.length} invoice{filtered.length !== 1 ? "s" : ""} shown</p>
-          <p className="text-sm font-black text-gray-900">{fmtPaise(totalFiltered)}</p>
+          <div className="flex items-center gap-3">
+            {inrTotal > 0 && <p className="text-sm font-black text-gray-900">{fmtAmount(inrTotal, "INR")}</p>}
+            {usdTotal > 0 && <p className="text-sm font-black text-gray-900">{fmtAmount(usdTotal, "USD")}</p>}
+          </div>
         </div>
       )}
 
@@ -192,7 +221,7 @@ export default function AdminInvoicesPage() {
 
                 {/* Amount */}
                 <div className="w-24 text-right">
-                  <p className="text-sm font-black text-gray-900">{fmtPaise(inv.totalAmount)}</p>
+                  <p className="text-sm font-black text-gray-900">{fmtAmount(inv.totalAmount, inv.currency)}</p>
                 </div>
 
                 {/* PDF */}
