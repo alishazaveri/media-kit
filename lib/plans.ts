@@ -11,18 +11,24 @@ export type PricingVariant = {
   maxBillingCycles?: number;
 };
 
+export type Currency = "INR" | "USD";
+
 export type Plan = {
   key: string;
   name: string;
   description: string;
   features: string[];
-  pricing: Record<BillingFrequency, PricingVariant>;
+  pricingINR: Record<BillingFrequency, PricingVariant>;
+  pricingUSD: Record<BillingFrequency, PricingVariant>;
 };
 
-export function getPricingByPlanId(planId: string): { plan: Plan; billing: BillingFrequency; pricing: PricingVariant } | null {
+export function getPricingByPlanId(planId: string): { plan: Plan; billing: BillingFrequency; pricing: PricingVariant; currency: Currency } | null {
   for (const plan of PLANS) {
-    for (const [billing, pricing] of Object.entries(plan.pricing) as [BillingFrequency, PricingVariant][]) {
-      if (pricing.id === planId) return { plan, billing, pricing };
+    for (const [billing, pricing] of Object.entries(plan.pricingINR) as [BillingFrequency, PricingVariant][]) {
+      if (pricing.id === planId) return { plan, billing, pricing, currency: "INR" };
+    }
+    for (const [billing, pricing] of Object.entries(plan.pricingUSD) as [BillingFrequency, PricingVariant][]) {
+      if (pricing.id === planId) return { plan, billing, pricing, currency: "USD" };
     }
   }
   return null;
@@ -38,7 +44,7 @@ export const PLANS: Plan[] = [
       "7 customizable themes",
       "Daily updating analytics & insights",
     ],
-    pricing: {
+    pricingINR: {
       monthly: {
         id: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_MONTHLY ?? "",
         price: 59,
@@ -54,6 +60,25 @@ export const PLANS: Plan[] = [
         originalMonthlyPrice: 59,
         discountPct: 15,
         savingsNote: "You save ₹109 a year",
+        maxBillingCycles: 20,
+      },
+    },
+    pricingUSD: {
+      monthly: {
+        id: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_MONTHLY_USD ?? "",
+        price: 5.99,
+        effectiveMonthlyPrice: 5.99,
+        billingLabel: "Billed monthly",
+        maxBillingCycles: 240,
+      },
+      yearly: {
+        id: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_YEARLY_USD ?? "",
+        price: 59.99,
+        effectiveMonthlyPrice: 5,
+        billingLabel: "Billed annually at $59.99",
+        originalMonthlyPrice: 5.99,
+        discountPct: 16,
+        savingsNote: "You save $11.89 a year",
         maxBillingCycles: 20,
       },
     },

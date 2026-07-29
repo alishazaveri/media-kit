@@ -23,6 +23,14 @@ function formatRupees(paise: number): string {
   return `₹${formatted}.${dec}`;
 }
 
+function formatDollars(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function formatAmount(amount: number, currency: string): string {
+  return currency === "INR" ? formatRupees(amount) : formatDollars(amount);
+}
+
 function formatDate(d: Date | string): string {
   const date = new Date(d);
   return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
@@ -30,10 +38,12 @@ function formatDate(d: Date | string): string {
 
 import { ToWords } from "to-words";
 
-const toWords = new ToWords({ localeCode: "en-IN" });
+const toWordsIN = new ToWords({ localeCode: "en-IN" });
+const toWordsUS = new ToWords({ localeCode: "en-US" });
 
-function amountInWords(paise: number): string {
-  return toWords.convert(paise / 100, { currency: true });
+function amountInWords(amount: number, currency: string): string {
+  const converter = currency === "INR" ? toWordsIN : toWordsUS;
+  return converter.convert(amount / 100, { currency: true });
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
@@ -108,9 +118,11 @@ interface Props {
 }
 
 export function InvoicePDF({ invoice }: Props) {
+  const currency = invoice.currency ?? "USD";
+  const isGst = invoice.tax_type !== "none";
   const taxRate = invoice.tax_type === "cgst_sgst"
     ? `${invoice.cgst_rate}% + ${invoice.sgst_rate}%`
-    : `${invoice.igst_rate}%`;
+    : invoice.tax_type === "igst" ? `${invoice.igst_rate}%` : null;
 
   const billedTo = invoice.customer_company_name || invoice.customer_name;
   const hasAddress = invoice.customer_address_line1 || invoice.customer_city;
@@ -134,7 +146,7 @@ export function InvoicePDF({ invoice }: Props) {
           </View>
 
           <View style={{ width: 140 }}>
-            <Text style={s.invoiceTitle}>TAX INVOICE</Text>
+            <Text style={s.invoiceTitle}>{isGst ? "TAX INVOICE" : "INVOICE"}</Text>
             <View style={s.invoiceMetaRow}>
               <Text style={s.invoiceMeta}>Invoice No:</Text>
               <Text style={s.invoiceMetaValue}>{invoice.invoice_number}</Text>
@@ -195,54 +207,58 @@ export function InvoicePDF({ invoice }: Props) {
           <View style={s.tableRow}>
             <Text style={[s.colDesc]}>{invoice.service_description}</Text>
             <Text style={[s.colSac]}>{invoice.sac_code}</Text>
-            <Text style={[s.colTaxable]}>{formatRupees(invoice.taxable_amount)}</Text>
-            <Text style={[s.colTax]}>{taxRate}</Text>
-            <Text style={[s.colTotal]}>{formatRupees(invoice.total_amount)}</Text>
+            <Text style={[s.colTaxable]}>{formatAmount(invoice.taxable_amount, currency)}</Text>
+            <Text style={[s.colTax]}>{taxRate ?? "—"}</Text>
+            <Text style={[s.colTotal]}>{formatAmount(invoice.total_amount, currency)}</Text>
           </View>
         </View>
 
         {/* ── Tax summary ── */}
         <View style={{ marginBottom: 20 }}>
-          <View style={s.summaryRow}>
-            <Text style={s.summaryLabel}>Taxable Amount</Text>
-            <Text style={s.summaryValue}>{formatRupees(invoice.taxable_amount)}</Text>
-          </View>
+          {isGst && (
+            <View style={s.summaryRow}>
+              <Text style={s.summaryLabel}>Taxable Amount</Text>
+              <Text style={s.summaryValue}>{formatAmount(invoice.taxable_amount, currency)}</Text>
+            </View>
+          )}
 
           {invoice.tax_type === "cgst_sgst" ? (
             <>
               <View style={s.summaryRow}>
                 <Text style={s.summaryLabel}>CGST @ {invoice.cgst_rate}%</Text>
-                <Text style={s.summaryValue}>{formatRupees(invoice.cgst_amount ?? 0)}</Text>
+                <Text style={s.summaryValue}>{formatAmount(invoice.cgst_amount ?? 0, currency)}</Text>
               </View>
               <View style={s.summaryRow}>
                 <Text style={s.summaryLabel}>SGST @ {invoice.sgst_rate}%</Text>
-                <Text style={s.summaryValue}>{formatRupees(invoice.sgst_amount ?? 0)}</Text>
+                <Text style={s.summaryValue}>{formatAmount(invoice.sgst_amount ?? 0, currency)}</Text>
               </View>
             </>
-          ) : (
+          ) : invoice.tax_type === "igst" ? (
             <View style={s.summaryRow}>
               <Text style={s.summaryLabel}>IGST @ {invoice.igst_rate}%</Text>
-              <Text style={s.summaryValue}>{formatRupees(invoice.igst_amount ?? 0)}</Text>
+              <Text style={s.summaryValue}>{formatAmount(invoice.igst_amount ?? 0, currency)}</Text>
             </View>
-          )}
+          ) : null}
 
           <View style={s.summaryTotalRow}>
             <Text style={s.summaryTotalLabel}>Total Amount</Text>
-            <Text style={s.summaryTotalValue}>{formatRupees(invoice.total_amount)}</Text>
+            <Text style={s.summaryTotalValue}>{formatAmount(invoice.total_amount, currency)}</Text>
           </View>
         </View>
 
         <View style={s.amountWords}>
           <Text style={s.amountWordsLabel}>Amount in Words</Text>
-          <Text style={s.amountWordsValue}>{amountInWords(invoice.total_amount)}</Text>
+          <Text style={s.amountWordsValue}>{amountInWords(invoice.total_amount, currency)}</Text>
         </View>
 
         <View style={s.divider} />
         <View style={s.footerMeta}>
-          <View>
-            <Text style={s.footerLabel}>Place of Supply</Text>
-            <Text>{invoice.place_of_supply}</Text>
-          </View>
+          {invoice.place_of_supply && (
+            <View>
+              <Text style={s.footerLabel}>Place of Supply</Text>
+              <Text>{invoice.place_of_supply}</Text>
+            </View>
+          )}
           <View>
             <Text style={s.footerLabel}>Payment Reference</Text>
             <Text>{invoice.razorpay_payment_id}</Text>

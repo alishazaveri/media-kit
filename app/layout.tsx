@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { LocaleServer } from "./_locale";
 import "./globals.css";
 import "react-day-picker/style.css";
 
@@ -49,7 +50,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        {children}
+        <LocaleServer>
+          {children}
+        </LocaleServer>
         {/* Google Analytics — production only */}
         {process.env.NODE_ENV === "production" && <>
           <Script src="https://www.googletagmanager.com/gtag/js?id=G-8QN2KBZLZK" strategy="afterInteractive" />

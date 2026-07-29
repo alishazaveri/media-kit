@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { BillingDetailsModal } from "@/components/BillingDetailsModal";
 import { useUser } from "@/contexts/UserContext";
+import { useLocale } from "@/contexts/LocaleContext";
 import { trackPixelEvent } from "@/lib/pixel";
 import { getPricingByPlanId } from "@/lib/plans";
 
@@ -51,6 +52,7 @@ export default function SubscribeButtonHOC({
   onLoadingChange,
 }: Props) {
   const { email } = useUser();
+  const { country: localeCountry } = useLocale();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -109,7 +111,7 @@ export default function SubscribeButtonHOC({
             if (verify.ok && v.success) {
               const pricing = getPricingByPlanId(planId);
               trackPixelEvent("Purchase", {
-                currency: "INR",
+                currency: pricing?.currency ?? "USD",
                 value: pricing?.pricing.price ?? 0,
               });
               setSuccess(true);
@@ -162,7 +164,7 @@ export default function SubscribeButtonHOC({
     onLoadingChange?.(true);
     const pricing = getPricingByPlanId(planId);
     trackPixelEvent("InitiateCheckout", {
-      currency: "INR",
+      currency: pricing?.currency ?? "USD",
       value: pricing?.pricing.price ?? 0,
     });
 
@@ -173,13 +175,13 @@ export default function SubscribeButtonHOC({
       setBillingInitial({
         name: profile?.name ?? "",
         phone: profile?.phone ?? "",
-        phone_country_code: profile?.phone_country_code ?? "+91",
+        phone_country_code: profile?.phone_country_code ?? "+1",
         gstin: profile?.gstin ?? "",
         company_name: profile?.company_name ?? "",
         address_line1: profile?.address_line1 ?? "",
         address_line2: profile?.address_line2 ?? "",
         city: profile?.city ?? "",
-        country: profile?.country ?? "IN",
+        country: profile?.country ?? localeCountry ?? "US",
         state: profile?.state ?? "",
         pincode: profile?.pincode ?? "",
       });
@@ -208,7 +210,7 @@ export default function SubscribeButtonHOC({
     await openRazorpay({
       name: profile.name ?? "",
       email: email ?? "",
-      contact: `${profile.phone_country_code ?? "+91"}${profile.phone ?? ""}`,
+      contact: `${profile.phone_country_code ?? "+1"}${profile.phone ?? ""}`,
     });
   }
 

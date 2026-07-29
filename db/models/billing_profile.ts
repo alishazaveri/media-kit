@@ -23,7 +23,7 @@ const BillingProfileSchema = new Schema<IBillingProfile>(
     user_id: { type: Schema.Types.ObjectId, ref: "User", required: true, unique: true },
     name: { type: String, required: true },
     phone: { type: String, required: true },
-    phone_country_code: { type: String, required: true, default: "+91" },
+    phone_country_code: { type: String, required: true, default: "+1" },
     gstin: { type: String },
     company_name: { type: String },
     address_line1: { type: String },
@@ -32,7 +32,7 @@ const BillingProfileSchema = new Schema<IBillingProfile>(
     state: { type: String },
     pincode: { type: String },
     state_code: { type: String },
-    country: { type: String, default: "IN" },
+    country: { type: String, default: "US" },
   },
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );

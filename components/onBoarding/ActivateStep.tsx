@@ -6,11 +6,15 @@ import { OnboardingNav } from "./OnboardingNav";
 import Button from "@/components/reusable/Button";
 import SubscribeButtonHOC from "@/components/SubscribeButtonHOC";
 import { PLANS, type BillingFrequency } from "@/lib/plans";
+import { useLocale } from "@/contexts/LocaleContext";
 import { useUser } from "@/contexts/UserContext";
 import { buildProfilePreviewProps } from "@/lib/buildProfilePreviewProps";
 
 export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
   const { userId } = useUser();
+  const { currency } = useLocale();
+  const symbol = currency === "INR" ? "₹" : "$";
+  const discountPct = (currency === "INR" ? PLANS[0].pricingINR.yearly : PLANS[0].pricingUSD.yearly).discountPct ?? 15;
   const [analytics, setAnalytics] = useState<Record<string, any> | null>(null);
   const [draft, setDraft] = useState<Record<string, any>>({});
   const [appUsername, setAppUsername] = useState<string | undefined>(undefined);
@@ -145,7 +149,7 @@ export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: (
               <span
                 className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${billing === "yearly" ? "bg-primary/10 text-primary" : "bg-gray-200 text-gray-400"}`}
               >
-                Save 15%
+                Save {discountPct}%
               </span>
             </button>
           </div>
@@ -153,7 +157,7 @@ export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: (
           {/* Plan cards */}
           <div className="flex flex-col gap-4 w-full">
             {PLANS.map((plan) => {
-              const pricing = plan.pricing[billing];
+              const pricing = (currency === "INR" ? plan.pricingINR : plan.pricingUSD)[billing];
               return (
                 <div
                   key={plan.key}
@@ -170,14 +174,14 @@ export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: (
                   <div>
                     <div className="flex items-end gap-2 mb-1">
                       <span className="text-4xl sm:text-5xl font-black text-gray-900">
-                        ₹{pricing.effectiveMonthlyPrice}
+                        {symbol}{pricing.effectiveMonthlyPrice}
                       </span>
                       <span className="text-base sm:text-lg text-gray-400 mb-1 sm:mb-2">
                         /month
                       </span>
                       {billing === "yearly" && pricing.originalMonthlyPrice && (
                         <span className="text-base sm:text-lg text-gray-300 line-through mb-1 sm:mb-2">
-                          ₹{pricing.originalMonthlyPrice}
+                          {symbol}{pricing.originalMonthlyPrice}
                         </span>
                       )}
                     </div>
@@ -247,7 +251,7 @@ export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: (
                       >
                         {loading
                           ? "Processing…"
-                          : `Pay ₹${pricing.price} & activate`}
+                          : `Pay ${symbol}${pricing.price} & activate`}
                       </Button>
                     )}
                   </SubscribeButtonHOC>

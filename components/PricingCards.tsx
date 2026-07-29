@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PLANS, type BillingFrequency } from "@/lib/plans";
+import { useLocale } from "@/contexts/LocaleContext";
 import SubscribeButtonHOC from "@/components/SubscribeButtonHOC";
 import Button from "@/components/reusable/Button";
 
@@ -13,6 +14,9 @@ type Props = {
 
 export function PricingCards({ userId, onSuccess, startAt }: Props) {
   const [billing, setBilling] = useState<BillingFrequency>("yearly");
+  const { currency } = useLocale();
+  const symbol = currency === "INR" ? "₹" : "$";
+  const discountPct = (currency === "INR" ? PLANS[0].pricingINR.yearly : PLANS[0].pricingUSD.yearly).discountPct ?? 15;
 
   return (
     <div className="flex flex-col gap-6">
@@ -30,7 +34,7 @@ export function PricingCards({ userId, onSuccess, startAt }: Props) {
         >
           Yearly
           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${billing === "yearly" ? "bg-primary/10 text-primary" : "bg-gray-200 text-gray-400"}`}>
-            Save 15%
+            Save {discountPct}%
           </span>
         </button>
       </div>
@@ -38,7 +42,7 @@ export function PricingCards({ userId, onSuccess, startAt }: Props) {
       {/* Plan cards */}
       <div className="flex flex-col lg:flex-row gap-4 w-full">
         {PLANS.map((plan) => {
-          const pricing = plan.pricing[billing];
+          const pricing = currency === "INR" ? plan.pricingINR[billing] : plan.pricingUSD[billing];
           return (
             <div
               key={plan.key}
@@ -52,12 +56,12 @@ export function PricingCards({ userId, onSuccess, startAt }: Props) {
               <div>
                 <div className="flex items-end gap-2 mb-1">
                   <span className="text-5xl font-black text-gray-900">
-                    ₹{pricing.effectiveMonthlyPrice}
+                    {symbol}{pricing.effectiveMonthlyPrice}
                   </span>
                   <span className="text-lg text-gray-400 mb-2">/month</span>
                   {billing === "yearly" && pricing.originalMonthlyPrice && (
                     <span className="text-lg text-gray-300 line-through mb-2">
-                      ₹{pricing.originalMonthlyPrice}
+                      {symbol}{pricing.originalMonthlyPrice}
                     </span>
                   )}
                 </div>
@@ -99,7 +103,7 @@ export function PricingCards({ userId, onSuccess, startAt }: Props) {
                     fullWidth
                     className="rounded-xl"
                   >
-                    {loading ? "Processing…" : `Pay ₹${pricing.price} & activate`}
+                    {loading ? "Processing…" : `Pay ${symbol}${pricing.price} & activate`}
                   </Button>
                 )}
               </SubscribeButtonHOC>

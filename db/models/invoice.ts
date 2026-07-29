@@ -32,8 +32,8 @@ export interface IInvoice extends Document {
   customer_pincode?: string;
   customer_state_code?: string;
 
-  // GST mandatory fields
-  place_of_supply: string;
+  // GST mandatory fields (optional for international/USD invoices)
+  place_of_supply?: string;
   reverse_charge: boolean;
 
   // Razorpay
@@ -50,7 +50,7 @@ export interface IInvoice extends Document {
 
   // Amounts in paise
   taxable_amount: number;
-  tax_type: "cgst_sgst" | "igst";
+  tax_type: "cgst_sgst" | "igst" | "none";
   cgst_rate?: number;
   cgst_amount?: number;
   sgst_rate?: number;
@@ -99,7 +99,7 @@ const InvoiceSchema = new Schema<IInvoice>(
     customer_pincode: { type: String },
     customer_state_code: { type: String },
 
-    place_of_supply: { type: String, required: true },
+    place_of_supply: { type: String },
     reverse_charge: { type: Boolean, required: true, default: false },
 
     razorpay_payment_id: { type: String, required: true, unique: true },
@@ -113,7 +113,7 @@ const InvoiceSchema = new Schema<IInvoice>(
     subscription_period_end: { type: Date },
 
     taxable_amount: { type: Number, required: true },
-    tax_type: { type: String, enum: ["cgst_sgst", "igst"], required: true },
+    tax_type: { type: String, enum: ["cgst_sgst", "igst", "none"], required: true },
     cgst_rate: { type: Number },
     cgst_amount: { type: Number },
     sgst_rate: { type: Number },
@@ -121,7 +121,7 @@ const InvoiceSchema = new Schema<IInvoice>(
     igst_rate: { type: Number },
     igst_amount: { type: Number },
     total_amount: { type: Number, required: true },
-    currency: { type: String, required: true, default: "INR" },
+    currency: { type: String, required: true, default: "USD" },
 
     status: { type: String, enum: ["paid", "refunded"], required: true, default: "paid" },
     refund_reason: { type: String },

@@ -99,6 +99,7 @@ export async function processPayment(
 const GST_RATE = 18;
 const SAC_CODE = "9983";
 const PREFIX = process.env.INVOICE_PREFIX ?? "KLT";
+const INTL_PREFIX = process.env.INVOICE_INTL_PREFIX ?? "KLTI";
 
 import { getStateFromCode, getStateCodeFromName } from "@/lib/gst-states";
 export { getStateFromCode, getStateCodeFromName };
@@ -112,8 +113,8 @@ export function getFinancialYear(): string {
   return `${String(fyStart).slice(2)}-${String(fyEnd).slice(2)}`; // "24-25"
 }
 
-export function formatInvoiceNumber(prefix: string, fy: string, seq: number): string {
-  return `${prefix}/${fy}/${String(seq).padStart(6, "0")}`;
+export function formatInvoiceNumber(prefix: string, fy: string, seq: number, digits = 5): string {
+  return `${prefix}/${fy}/${String(seq).padStart(digits, "0")}`;
 }
 
 function getSupplierDetails() {
@@ -190,7 +191,7 @@ export async function generateInvoice({
   // Invoice number
   const fy = getFinancialYear();
   const seq = await getNextSequenceNumber(PREFIX, fy);
-  const invoiceNumber = formatInvoiceNumber(PREFIX, fy, seq);
+  const invoiceNumber = formatInvoiceNumber(PREFIX, fy, seq, 6);
 
   const invoice = await createInvoice({
     invoice_number: invoiceNumber,
@@ -246,6 +247,91 @@ export async function generateInvoice({
   return invoice;
 }
 
+export async function generateInternationalInvoice({
+  userId,
+  razorpayPaymentId,
+  razorpaySubscriptionId,
+  planId,
+  totalAmountCents,
+  subscriptionPeriodStart,
+  subscriptionPeriodEnd,
+  awaitPdf = false,
+}: {
+  userId: string;
+  razorpayPaymentId: string;
+  razorpaySubscriptionId: string;
+  planId: string;
+  totalAmountCents: number;
+  subscriptionPeriodStart?: Date;
+  subscriptionPeriodEnd?: Date;
+  awaitPdf?: boolean;
+}) {
+  const [user, billingProfile] = await Promise.all([
+    getUserById(userId),
+    getBillingProfile(userId),
+  ]);
+
+  if (!user) throw new Error(`User not found: ${userId}`);
+
+  const planData = getPricingByPlanId(planId);
+  const planName = planData ? `${planData.plan.name} (${planData.billing})` : planId;
+  const serviceDescription = `Kloot – ${planName} Subscription`;
+
+  const fy = getFinancialYear();
+  const seq = await getNextSequenceNumber(INTL_PREFIX, fy);
+  const invoiceNumber = formatInvoiceNumber(INTL_PREFIX, fy, seq);
+
+  const invoice = await createInvoice({
+    invoice_number: invoiceNumber,
+    prefix: INTL_PREFIX,
+    financial_year: fy,
+    sequence_number: seq,
+    invoice_date: new Date(),
+
+    ...getSupplierDetails(),
+
+    user_id: user._id,
+    customer_name: billingProfile?.name ?? user.name,
+    customer_email: user.email,
+    customer_phone: billingProfile
+      ? `${billingProfile.phone_country_code}${billingProfile.phone}`
+      : (user.phone ?? ""),
+    customer_company_name: billingProfile?.company_name,
+    customer_address_line1: billingProfile?.address_line1,
+    customer_address_line2: billingProfile?.address_line2,
+    customer_city: billingProfile?.city,
+    customer_state: billingProfile?.state,
+    customer_pincode: billingProfile?.pincode,
+
+    reverse_charge: false,
+
+    razorpay_payment_id: razorpayPaymentId,
+    razorpay_subscription_id: razorpaySubscriptionId,
+
+    plan_id: planId,
+    plan_name: planName,
+    service_description: serviceDescription,
+    sac_code: SAC_CODE,
+    subscription_period_start: subscriptionPeriodStart,
+    subscription_period_end: subscriptionPeriodEnd,
+
+    taxable_amount: totalAmountCents,
+    tax_type: "none",
+    total_amount: totalAmountCents,
+    currency: "USD",
+
+    status: "paid",
+  } as Parameters<typeof createInvoice>[0]);
+
+  const pdfPromise = generateAndUploadInvoicePdf(invoice)
+    .then((pdfUrl) => updateInvoicePdfUrl(invoice._id.toString(), pdfUrl))
+    .catch((err) => console.error("[Invoice] PDF generation failed for", invoice.invoice_number, err));
+
+  if (awaitPdf) await pdfPromise;
+
+  return invoice;
+}
+
 export async function generateInvoiceForCharge(
   razorpaySubscriptionId: string,
   paymentEntity: { id: string; amount: number },
@@ -280,22 +366,40 @@ export async function generateInvoiceForCharge(
     throw new Error(`Could not determine plan_id for subscription ${razorpaySubscriptionId}`);
   }
 
-  console.info("[Invoice] Generating for payment", paymentId, "subscription", razorpaySubscriptionId, "plan", planId);
+  const currency = getPricingByPlanId(planId)?.currency ?? "USD";
 
-  await generateInvoice({
-    userId,
-    razorpayPaymentId: paymentId,
-    razorpaySubscriptionId,
-    planId,
-    totalAmountPaise: paymentEntity.amount,
-    subscriptionPeriodStart: subscriptionEntity?.current_start
-      ? new Date(subscriptionEntity.current_start * 1000)
-      : undefined,
-    subscriptionPeriodEnd: subscriptionEntity?.current_end
-      ? new Date(subscriptionEntity.current_end * 1000)
-      : undefined,
-    awaitPdf: options?.awaitPdf,
-  });
+  console.info("[Invoice] Generating for payment", paymentId, "subscription", razorpaySubscriptionId, "plan", planId, "currency", currency);
+
+  const periodStart = subscriptionEntity?.current_start
+    ? new Date(subscriptionEntity.current_start * 1000)
+    : undefined;
+  const periodEnd = subscriptionEntity?.current_end
+    ? new Date(subscriptionEntity.current_end * 1000)
+    : undefined;
+
+  if (currency === "USD") {
+    await generateInternationalInvoice({
+      userId,
+      razorpayPaymentId: paymentId,
+      razorpaySubscriptionId,
+      planId,
+      totalAmountCents: paymentEntity.amount,
+      subscriptionPeriodStart: periodStart,
+      subscriptionPeriodEnd: periodEnd,
+      awaitPdf: options?.awaitPdf,
+    });
+  } else {
+    await generateInvoice({
+      userId,
+      razorpayPaymentId: paymentId,
+      razorpaySubscriptionId,
+      planId,
+      totalAmountPaise: paymentEntity.amount,
+      subscriptionPeriodStart: periodStart,
+      subscriptionPeriodEnd: periodEnd,
+      awaitPdf: options?.awaitPdf,
+    });
+  }
 
   return "generated";
 }

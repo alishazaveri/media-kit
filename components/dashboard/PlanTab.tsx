@@ -51,11 +51,14 @@ export function PlanTab() {
   const scheduledMatched = scheduledSubscription?.planId ? getPricingByPlanId(scheduledSubscription.planId) : null;
   const scheduledStartDate = formatDate(scheduledSubscription?.startsAt ?? null);
   const scheduledOtherBilling = scheduledMatched?.billing === "monthly" ? "yearly" : "monthly";
-  const scheduledOtherPricing = scheduledMatched ? scheduledMatched.plan.pricing[scheduledOtherBilling] : null;
+  const scheduledOtherPricing = scheduledMatched ? (scheduledMatched.currency === "INR" ? scheduledMatched.plan.pricingINR : scheduledMatched.plan.pricingUSD)[scheduledOtherBilling] : null;
   const scheduledStartAt = scheduledSubscription?.startsAt ? Math.floor(new Date(scheduledSubscription.startsAt).getTime() / 1000) : undefined;
 
   const otherBilling = matched?.billing === "monthly" ? "yearly" : "monthly";
-  const otherPricing = matched ? matched.plan.pricing[otherBilling] : null;
+  const otherPricing = matched ? (matched.currency === "INR" ? matched.plan.pricingINR : matched.plan.pricingUSD)[otherBilling] : null;
+
+  const subSymbol = matched?.currency === "INR" ? "₹" : "$";
+  const scheduledSubSymbol = scheduledMatched?.currency === "INR" ? "₹" : "$";
 
   async function handleCancel() {
     setCancelling(true);
@@ -210,11 +213,11 @@ export function PlanTab() {
                 <div>
                   <p className="font-bold text-gray-900 text-base">{matched.plan.name}</p>
                   <p className="text-3xl font-black text-gray-900 mt-1">
-                    ₹{matched.pricing.effectiveMonthlyPrice}
+                    {subSymbol}{matched.pricing.effectiveMonthlyPrice}
                     <span className="text-base font-normal text-gray-400"> /mo</span>
                     {matched.billing === "yearly" && (
                       <span className="text-sm font-normal text-gray-400 ml-2">
-                        · ₹{matched.pricing.price}/yr
+                        · {subSymbol}{matched.pricing.price}/yr
                       </span>
                     )}
                   </p>
@@ -237,11 +240,11 @@ export function PlanTab() {
                 <div>
                   <p className="font-bold text-gray-900 text-base">{scheduledMatched.plan.name}</p>
                   <p className="text-3xl font-black text-gray-900 mt-1">
-                    ₹{scheduledMatched.pricing.effectiveMonthlyPrice}
+                    {scheduledSubSymbol}{scheduledMatched.pricing.effectiveMonthlyPrice}
                     <span className="text-base font-normal text-gray-400"> /mo</span>
                     {scheduledMatched.billing === "yearly" && (
                       <span className="text-sm font-normal text-gray-400 ml-2">
-                        · ₹{scheduledMatched.pricing.price}/yr
+                        · {scheduledSubSymbol}{scheduledMatched.pricing.price}/yr
                       </span>
                     )}
                   </p>
@@ -295,7 +298,7 @@ export function PlanTab() {
                     ? "Processing…"
                     : scheduledOtherBilling === "yearly"
                     ? `Switch to yearly · Save ${scheduledOtherPricing.discountPct ?? 15}%`
-                    : `Switch to monthly · ₹${scheduledOtherPricing.price}/mo`}
+                    : `Switch to monthly · ${scheduledSubSymbol}${scheduledOtherPricing.price}/mo`}
                 </Button>
               )}
             </SubscribeButtonHOC>
@@ -358,7 +361,7 @@ export function PlanTab() {
                     ? "Processing…"
                     : otherBilling === "yearly"
                     ? `Switch to yearly · Save ${otherPricing.discountPct ?? 15}%`
-                    : `Switch to monthly · ₹${otherPricing.price}/mo`}
+                    : `Switch to monthly · ${subSymbol}${otherPricing.price}/mo`}
                 </Button>
               )}
             </SubscribeButtonHOC>
@@ -399,7 +402,7 @@ export function PlanTab() {
                         <p className="text-xs text-gray-400">
                           {new Date(inv.invoice_date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
                           <span className="mx-1.5">·</span>
-                          ₹{(inv.total_amount / 100).toLocaleString("en-IN")}
+                          {inv.currency === "INR" ? "₹" : "$"}{(inv.total_amount / 100).toLocaleString("en-IN")}
                         </p>
                       </div>
                       {inv.pdf_url ? (

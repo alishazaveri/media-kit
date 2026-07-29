@@ -4,6 +4,7 @@ import { useState } from "react";
 import Nav from "@/components/website/Nav";
 import Footer from "@/components/website/Footer";
 import { PLANS, type BillingFrequency } from "@/lib/plans";
+import { useLocale } from "@/contexts/LocaleContext";
 
 const FAQS = [
   {
@@ -27,6 +28,8 @@ const FAQS = [
 export default function PricingPage() {
   const [billing, setBilling] = useState<BillingFrequency>("yearly");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const { currency } = useLocale();
+  const discountPct = (currency === "INR" ? PLANS[0].pricingINR.yearly : PLANS[0].pricingUSD.yearly).discountPct ?? 15;
 
   return (
     <div className="min-h-screen bg-[#FAF8F5]">
@@ -58,7 +61,7 @@ export default function PricingPage() {
             >
               Yearly
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${billing === "yearly" ? "bg-primary/10 text-primary" : "bg-gray-200 text-gray-400"}`}>
-                Save 15%
+                Save {discountPct}%
               </span>
             </button>
           </div>
@@ -67,7 +70,8 @@ export default function PricingPage() {
         {/* Plan cards */}
         <div className="max-w-sm mx-auto flex flex-col gap-4">
           {PLANS.map((plan) => {
-            const pricing = plan.pricing[billing];
+            const pricing = currency === "INR" ? plan.pricingINR[billing] : plan.pricingUSD[billing];
+            const symbol = currency === "INR" ? "₹" : "$";
             return (
               <div
                 key={plan.key}
@@ -81,12 +85,12 @@ export default function PricingPage() {
                 <div>
                   <div className="flex items-end gap-2 mb-1">
                     <span className="text-5xl font-black text-gray-900">
-                      ₹{pricing.effectiveMonthlyPrice}
+                      {symbol}{pricing.effectiveMonthlyPrice}
                     </span>
                     <span className="text-lg text-gray-400 mb-2">/month</span>
                     {billing === "yearly" && pricing.originalMonthlyPrice && (
                       <span className="text-lg text-gray-300 line-through mb-2">
-                        ₹{pricing.originalMonthlyPrice}
+                        {symbol}{pricing.originalMonthlyPrice}
                       </span>
                     )}
                   </div>

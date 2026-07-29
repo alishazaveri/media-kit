@@ -2,7 +2,7 @@ import Razorpay from "razorpay";
 import type { Subscriptions } from "razorpay/dist/types/subscriptions";
 import { NextRequest, NextResponse } from "next/server";
 import { createSubscriptionRecord } from "@/db/subscription.db";
-import { PLANS } from "@/lib/plans";
+import { getPricingByPlanId } from "@/lib/plans";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID as string,
@@ -24,12 +24,10 @@ export async function POST(req: NextRequest) {
 
     try {
       // Use maxBillingCycles from plan config; fall back to 240 (monthly) or 20 (yearly)
-      const matchedVariant = PLANS.flatMap((p) =>
-        Object.entries(p.pricing).map(([freq, v]) => ({ freq, ...v }))
-      ).find((x) => x.id === plan_id);
+      const matchedVariant = getPricingByPlanId(plan_id);
       const maxBillingCycles =
-        matchedVariant?.maxBillingCycles ??
-        (matchedVariant?.freq === "yearly" ? 20 : 240);
+        matchedVariant?.pricing.maxBillingCycles ??
+        (matchedVariant?.billing === "yearly" ? 20 : 240);
 
       const payload: Subscriptions.RazorpaySubscriptionCreateRequestBody = {
         plan_id,
