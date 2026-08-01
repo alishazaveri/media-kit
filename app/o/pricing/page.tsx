@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Nav from "@/components/website/Nav";
 import Footer from "@/components/website/Footer";
-import { PLANS, type BillingFrequency } from "@/lib/plans";
+import { getPlans, type BillingFrequency } from "@/lib/plans";
 import { useLocale } from "@/contexts/LocaleContext";
 
 const FAQS = [
@@ -28,8 +28,9 @@ const FAQS = [
 export default function PricingPage() {
   const [billing, setBilling] = useState<BillingFrequency>("yearly");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const { currency } = useLocale();
-  const discountPct = (currency === "INR" ? PLANS[0].pricingINR.yearly : PLANS[0].pricingUSD.yearly).discountPct ?? 15;
+  const { country } = useLocale();
+  const plans = getPlans(country);
+  const discountPct = plans[0]?.billingOptions.find((b) => b.frequency === "yearly")?.discountPct ?? 15;
 
   return (
     <div className="min-h-screen bg-[#FAF8F5]">
@@ -69,12 +70,13 @@ export default function PricingPage() {
 
         {/* Plan cards */}
         <div className="max-w-sm mx-auto flex flex-col gap-4">
-          {PLANS.map((plan) => {
-            const pricing = currency === "INR" ? plan.pricingINR[billing] : plan.pricingUSD[billing];
-            const symbol = currency === "INR" ? "₹" : "$";
+          {plans.map((plan) => {
+            const billingOption = plan.billingOptions.find((b) => b.frequency === billing);
+            if (!billingOption) return null;
+            const symbol = plan.currency === "INR" ? "₹" : "$";
             return (
               <div
-                key={plan.key}
+                key={plan.id}
                 className="bg-white rounded-3xl border border-gray-200 p-8 flex flex-col gap-6 shadow-sm"
               >
                 <div>
@@ -85,22 +87,22 @@ export default function PricingPage() {
                 <div>
                   <div className="flex items-end gap-2 mb-1">
                     <span className="text-5xl font-black text-gray-900">
-                      {symbol}{pricing.effectiveMonthlyPrice}
+                      {symbol}{billingOption.effectiveMonthlyAmount}
                     </span>
                     <span className="text-lg text-gray-400 mb-2">/month</span>
-                    {billing === "yearly" && pricing.originalMonthlyPrice && (
+                    {billing === "yearly" && billingOption.originalMonthlyAmount && (
                       <span className="text-lg text-gray-300 line-through mb-2">
-                        {symbol}{pricing.originalMonthlyPrice}
+                        {symbol}{billingOption.originalMonthlyAmount}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-400">{pricing.billingLabel}</p>
-                  {billing === "yearly" && pricing.savingsNote && (
+                  <p className="text-sm text-gray-400">{billingOption.billingLabel}</p>
+                  {billing === "yearly" && billingOption.savingsNote && (
                     <div className="mt-2 inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-lg">
                       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0">
                         <path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5l3.5-.5L8 2z" fill="currentColor" />
                       </svg>
-                      {pricing.savingsNote}
+                      {billingOption.savingsNote}
                     </div>
                   )}
                 </div>

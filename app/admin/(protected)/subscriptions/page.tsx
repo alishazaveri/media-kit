@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import axios from "axios";
-import { getPricingByPlanId } from "@/lib/plans";
+import { findPlanByGatewayPlanId } from "@/lib/plans";
 
 type Subscription = {
   id: string;
@@ -46,9 +46,9 @@ function initials(name: string) {
 }
 
 function planName(planId: string) {
-  const result = getPricingByPlanId(planId);
+  const result = findPlanByGatewayPlanId("razorpay", planId);
   if (!result) return planId;
-  return `${result.plan.name} · ${result.billing.charAt(0).toUpperCase() + result.billing.slice(1)}`;
+  return `${result.plan.name} · ${result.billingOption.frequency.charAt(0).toUpperCase() + result.billingOption.frequency.slice(1)}`;
 }
 
 export default function AdminSubscriptionsPage() {

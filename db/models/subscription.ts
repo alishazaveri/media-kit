@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface ISubscription extends Document {
   user_id: mongoose.Types.ObjectId;
   plan_id: string;
+  payment_gateway?: string;
   razorpay_subscription_id: string;
   razorpay_customer_id?: string;
   status?: string;
@@ -23,6 +24,7 @@ const SubscriptionSchema = new Schema<ISubscription>(
   {
     user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
     plan_id: { type: String, required: true },
+    payment_gateway: { type: String },
     razorpay_subscription_id: { type: String, required: true, index: true },
     razorpay_customer_id: { type: String },
     current_period_start: { type: Date },

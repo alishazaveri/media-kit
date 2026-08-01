@@ -5,7 +5,7 @@ import type { IInvoice } from "@/db/models/invoice";
 import { getBillingProfile } from "@/db/billing_profile.db";
 import { getUserById } from "@/db/user.db";
 import { getSubscriptionByRazorpayId } from "@/db/subscription.db";
-import { getPricingByPlanId } from "@/lib/plans";
+import { findPlanByGatewayPlanId } from "@/lib/plans";
 import { generateAndUploadInvoicePdf } from "@/services/pdf.service";
 
 const razorpay = new Razorpay({
@@ -40,7 +40,8 @@ export async function processPayment(
   paymentId: string,
   paymentEntity: Record<string, unknown> | null,
   results: BackfillResults,
-  options?: { awaitPdf?: boolean }
+  options?: { awaitPdf?: boolean },
+  paymentGateway = "razorpay"
 ) {
   if (!paymentEntity) {
     try {
@@ -85,7 +86,8 @@ export async function processPayment(
         userId: (subscriptionEntity?.notes as Record<string, string> | undefined)?.user_id,
         planId: subscriptionEntity?.plan_id as string | undefined,
       },
-      options
+      options,
+      paymentGateway
     );
     if (status === "generated") results.generated++;
     else if (status === "pdf_regenerated") results.pdf_regenerated++;
@@ -139,6 +141,7 @@ export async function generateInvoice({
   subscriptionPeriodStart,
   subscriptionPeriodEnd,
   awaitPdf = false,
+  paymentGateway = "razorpay",
 }: {
   userId: string;
   razorpayPaymentId: string;
@@ -148,6 +151,7 @@ export async function generateInvoice({
   subscriptionPeriodStart?: Date;
   subscriptionPeriodEnd?: Date;
   awaitPdf?: boolean;
+  paymentGateway?: string;
 }) {
   const [user, billingProfile] = await Promise.all([
     getUserById(userId),
@@ -156,8 +160,8 @@ export async function generateInvoice({
 
   if (!user) throw new Error(`User not found: ${userId}`);
 
-  const planData = getPricingByPlanId(planId);
-  const planName = planData ? `${planData.plan.name} (${planData.billing})` : planId;
+  const planData = findPlanByGatewayPlanId(paymentGateway, planId);
+  const planName = planData ? `${planData.plan.name} (${planData.billingOption.frequency})` : planId;
   const serviceDescription = `Kloot – ${planName} Subscription`;
 
   // Tax calculation
@@ -220,6 +224,7 @@ export async function generateInvoice({
     place_of_supply: placeOfSupply,
     reverse_charge: false,
 
+    payment_gateway: paymentGateway,
     razorpay_payment_id: razorpayPaymentId,
     razorpay_subscription_id: razorpaySubscriptionId,
 
@@ -256,6 +261,7 @@ export async function generateInternationalInvoice({
   subscriptionPeriodStart,
   subscriptionPeriodEnd,
   awaitPdf = false,
+  paymentGateway = "razorpay",
 }: {
   userId: string;
   razorpayPaymentId: string;
@@ -265,6 +271,7 @@ export async function generateInternationalInvoice({
   subscriptionPeriodStart?: Date;
   subscriptionPeriodEnd?: Date;
   awaitPdf?: boolean;
+  paymentGateway?: string;
 }) {
   const [user, billingProfile] = await Promise.all([
     getUserById(userId),
@@ -273,8 +280,8 @@ export async function generateInternationalInvoice({
 
   if (!user) throw new Error(`User not found: ${userId}`);
 
-  const planData = getPricingByPlanId(planId);
-  const planName = planData ? `${planData.plan.name} (${planData.billing})` : planId;
+  const planData = findPlanByGatewayPlanId(paymentGateway, planId);
+  const planName = planData ? `${planData.plan.name} (${planData.billingOption.frequency})` : planId;
   const serviceDescription = `Kloot – ${planName} Subscription`;
 
   const fy = getFinancialYear();
@@ -305,6 +312,7 @@ export async function generateInternationalInvoice({
 
     reverse_charge: false,
 
+    payment_gateway: paymentGateway,
     razorpay_payment_id: razorpayPaymentId,
     razorpay_subscription_id: razorpaySubscriptionId,
 
@@ -337,7 +345,8 @@ export async function generateInvoiceForCharge(
   paymentEntity: { id: string; amount: number },
   subscriptionEntity: { current_start?: number; current_end?: number } | null,
   fallback?: { userId?: string; planId?: string },
-  options?: { awaitPdf?: boolean }
+  options?: { awaitPdf?: boolean },
+  paymentGateway = "razorpay"
 ): Promise<"generated" | "pdf_regenerated" | "skipped"> {
   const paymentId = paymentEntity.id;
 
@@ -366,7 +375,7 @@ export async function generateInvoiceForCharge(
     throw new Error(`Could not determine plan_id for subscription ${razorpaySubscriptionId}`);
   }
 
-  const currency = getPricingByPlanId(planId)?.currency ?? "USD";
+  const currency = findPlanByGatewayPlanId(paymentGateway, planId)?.currency ?? "USD";
 
   console.info("[Invoice] Generating for payment", paymentId, "subscription", razorpaySubscriptionId, "plan", planId, "currency", currency);
 
@@ -387,6 +396,7 @@ export async function generateInvoiceForCharge(
       subscriptionPeriodStart: periodStart,
       subscriptionPeriodEnd: periodEnd,
       awaitPdf: options?.awaitPdf,
+      paymentGateway,
     });
   } else {
     await generateInvoice({
@@ -398,6 +408,7 @@ export async function generateInvoiceForCharge(
       subscriptionPeriodStart: periodStart,
       subscriptionPeriodEnd: periodEnd,
       awaitPdf: options?.awaitPdf,
+      paymentGateway,
     });
   }
 

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import type { JourneyStage, SubscriptionSlotStage } from "@/app/api/admin/users/route";
-import { getPricingByPlanId } from "@/lib/plans";
+import { findPlanByGatewayPlanId } from "@/lib/plans";
 
 type UserDetail = {
   user: {
@@ -431,8 +431,8 @@ export default function UserDetailPage() {
                   }
                 />
                 <Row label="Plan" value={(() => {
-                  const r = getPricingByPlanId(subscription.planId);
-                  return r ? `${r.plan.name} · ${r.billing.charAt(0).toUpperCase() + r.billing.slice(1)}` : subscription.planId;
+                  const r = findPlanByGatewayPlanId("razorpay", subscription.planId);
+                  return r ? `${r.plan.name} · ${r.billingOption.frequency.charAt(0).toUpperCase() + r.billingOption.frequency.slice(1)}` : subscription.planId;
                 })()} />
                 <Row label="Plan ID" value={<span className="font-mono text-[11px]">{subscription.planId}</span>} />
                 <Row label="Started" value={fmtDate(subscription.subscriptionStartAt)} />

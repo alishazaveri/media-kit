@@ -36,7 +36,8 @@ export interface IInvoice extends Document {
   place_of_supply?: string;
   reverse_charge: boolean;
 
-  // Razorpay
+  // Payment gateway
+  payment_gateway?: string;
   razorpay_payment_id: string;
   razorpay_subscription_id: string;
 
@@ -102,6 +103,7 @@ const InvoiceSchema = new Schema<IInvoice>(
     place_of_supply: { type: String },
     reverse_charge: { type: Boolean, required: true, default: false },
 
+    payment_gateway: { type: String },
     razorpay_payment_id: { type: String, required: true, unique: true },
     razorpay_subscription_id: { type: String, required: true },
 

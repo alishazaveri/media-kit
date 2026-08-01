@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/admin-session";
 import { connectDB } from "@/db";
 import Invoice from "@/db/models/invoice";
-import { PLANS } from "@/lib/plans";
+import { getAllBillingOptions } from "@/lib/plans";
 
 function fyStart(now: Date): Date {
   const m = now.getMonth() + 1;
@@ -106,19 +106,23 @@ export async function GET() {
   const inrInvoices = invoices.filter((i) => i.currency === "INR");
   const usdInvoices = invoices.filter((i) => i.currency === "USD");
 
-  const inrPlans = PLANS.flatMap((p) =>
-    (["monthly", "yearly"] as const).map((billing) => ({
-      id:   p.pricingINR[billing].id,
-      name: `${p.name} · ${billing.charAt(0).toUpperCase() + billing.slice(1)}`,
-    }))
-  ).filter((p) => p.id);
+  const allOptions = getAllBillingOptions();
 
-  const usdPlans = PLANS.flatMap((p) =>
-    (["monthly", "yearly"] as const).map((billing) => ({
-      id:   p.pricingUSD[billing].id,
-      name: `${p.name} · ${billing.charAt(0).toUpperCase() + billing.slice(1)}`,
+  const inrPlans = allOptions
+    .filter(({ plan }) => plan.currency === "INR")
+    .map(({ plan, billingOption }) => ({
+      id:   billingOption.razorpayDetails?.planId ?? "",
+      name: `${plan.name} · ${billingOption.frequency.charAt(0).toUpperCase() + billingOption.frequency.slice(1)}`,
     }))
-  ).filter((p) => p.id);
+    .filter((p) => p.id);
+
+  const usdPlans = allOptions
+    .filter(({ plan }) => plan.currency === "USD")
+    .map(({ plan, billingOption }) => ({
+      id:   billingOption.razorpayDetails?.planId ?? "",
+      name: `${plan.name} · ${billingOption.frequency.charAt(0).toUpperCase() + billingOption.frequency.slice(1)}`,
+    }))
+    .filter((p) => p.id);
 
   return NextResponse.json({
     data: {

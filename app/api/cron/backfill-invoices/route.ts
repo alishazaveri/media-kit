@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
   const results: BackfillResults = { generated: 0, pdf_regenerated: 0, skipped: 0, errors: [] };
   for (const paymentEntity of payments) {
-    await processPayment(paymentEntity.id as string, paymentEntity, results, { awaitPdf: true });
+    await processPayment(paymentEntity.id as string, paymentEntity, results, { awaitPdf: true }, "razorpay");
   }
 
   console.log(`[Cron] daily-invoices: done — generated=${results.generated} pdf_regenerated=${results.pdf_regenerated} skipped=${results.skipped} errors=${results.errors.length}`);

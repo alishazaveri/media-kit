@@ -6,11 +6,12 @@ import Button from "@/components/reusable/Button";
 import { COUNTRY_CODES } from "@/lib/country-codes";
 import { BILLING_COUNTRIES, STATES_BY_COUNTRY } from "@/lib/states-by-country";
 import { getStateFromGstin } from "@/lib/gst-states";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface BillingProfile {
   name: string;
   phone: string;
-  phone_country_code: string;
+  phone_country_code?: string;
   gstin?: string;
   company_name?: string;
   address_line1?: string;
@@ -28,15 +29,21 @@ interface Props {
 }
 
 export function BillingDetailsModal({ initial = {}, onSave, onCancel }: Props) {
+  const { country: detectedCountry } = useLocale();
+  const defaultCountry = initial.country || detectedCountry || "US";
+  const defaultPhoneCode = initial.phone_country_code
+    || COUNTRY_CODES.find((c) => c.iso === defaultCountry)?.code
+    || "+1";
+
   const [name, setName] = useState(initial.name ?? "");
-  const [countryCode, setCountryCode] = useState(initial.phone_country_code ?? "+1");
+  const [countryCode, setCountryCode] = useState(defaultPhoneCode);
   const [phone, setPhone] = useState(initial.phone ?? "");
   const [gstin, setGstin] = useState(initial.gstin ?? "");
   const [companyName, setCompanyName] = useState(initial.company_name ?? "");
   const [addressLine1, setAddressLine1] = useState(initial.address_line1 ?? "");
   const [addressLine2, setAddressLine2] = useState(initial.address_line2 ?? "");
   const [city, setCity] = useState(initial.city ?? "");
-  const [country, setCountry] = useState(initial.country ?? "US");
+  const [country, setCountry] = useState(defaultCountry);
   const [state, setState] = useState(initial.state ?? "");
   const [pincode, setPincode] = useState(initial.pincode ?? "");
   const [saving, setSaving] = useState(false);

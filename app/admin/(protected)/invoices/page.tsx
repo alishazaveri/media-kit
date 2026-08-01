@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import axios from "axios";
-import { getPricingByPlanId } from "@/lib/plans";
+import { findPlanByGatewayPlanId } from "@/lib/plans";
 import { DateRangePicker, type DateRange } from "@/components/admin/DateRangePicker";
 import { PlanSelect } from "@/components/admin/PlanSelect";
 
@@ -41,8 +41,8 @@ function initials(name: string) {
 }
 
 function planLabel(planId: string, fallback: string) {
-  const r = getPricingByPlanId(planId);
-  return r ? `${r.plan.name} · ${r.billing.charAt(0).toUpperCase() + r.billing.slice(1)}` : fallback;
+  const r = findPlanByGatewayPlanId("razorpay", planId);
+  return r ? `${r.plan.name} · ${r.billingOption.frequency.charAt(0).toUpperCase() + r.billingOption.frequency.slice(1)}` : fallback;
 }
 
 export default function AdminInvoicesPage() {

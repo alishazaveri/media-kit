@@ -5,7 +5,7 @@ import { BillingDetailsModal } from "@/components/BillingDetailsModal";
 import { useUser } from "@/contexts/UserContext";
 import { useLocale } from "@/contexts/LocaleContext";
 import { trackPixelEvent } from "@/lib/pixel";
-import { getPricingByPlanId } from "@/lib/plans";
+import { findPlanByGatewayPlanId } from "@/lib/plans";
 
 declare global {
   interface Window {
@@ -109,10 +109,10 @@ export default function SubscribeButtonHOC({
             });
             const v = await verify.json().catch(() => ({}));
             if (verify.ok && v.success) {
-              const pricing = getPricingByPlanId(planId);
+              const planData = findPlanByGatewayPlanId("razorpay", planId);
               trackPixelEvent("Purchase", {
-                currency: pricing?.currency ?? "USD",
-                value: pricing?.pricing.price ?? 0,
+                currency: planData?.currency ?? "USD",
+                value: planData?.billingOption.amount ?? 0,
               });
               setSuccess(true);
               onSuccess?.(v);
@@ -162,10 +162,10 @@ export default function SubscribeButtonHOC({
     setError(null);
     setSuccess(null);
     onLoadingChange?.(true);
-    const pricing = getPricingByPlanId(planId);
+    const planData = findPlanByGatewayPlanId("razorpay", planId);
     trackPixelEvent("InitiateCheckout", {
-      currency: pricing?.currency ?? "USD",
-      value: pricing?.pricing.price ?? 0,
+      currency: planData?.currency ?? "USD",
+      value: planData?.billingOption.amount ?? 0,
     });
 
     try {
@@ -175,7 +175,7 @@ export default function SubscribeButtonHOC({
       setBillingInitial({
         name: profile?.name ?? "",
         phone: profile?.phone ?? "",
-        phone_country_code: profile?.phone_country_code ?? "+1",
+        phone_country_code: profile?.phone_country_code,
         gstin: profile?.gstin ?? "",
         company_name: profile?.company_name ?? "",
         address_line1: profile?.address_line1 ?? "",

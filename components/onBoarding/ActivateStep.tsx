@@ -5,16 +5,17 @@ import axios from "axios";
 import { OnboardingNav } from "./OnboardingNav";
 import Button from "@/components/reusable/Button";
 import SubscribeButtonHOC from "@/components/SubscribeButtonHOC";
-import { PLANS, type BillingFrequency } from "@/lib/plans";
+import { getPlans, type BillingFrequency } from "@/lib/plans";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useUser } from "@/contexts/UserContext";
 import { buildProfilePreviewProps } from "@/lib/buildProfilePreviewProps";
 
 export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
   const { userId } = useUser();
-  const { currency } = useLocale();
-  const symbol = currency === "INR" ? "₹" : "$";
-  const discountPct = (currency === "INR" ? PLANS[0].pricingINR.yearly : PLANS[0].pricingUSD.yearly).discountPct ?? 15;
+  const { country } = useLocale();
+  const plans = getPlans(country);
+  const symbol = plans[0]?.currency === "INR" ? "₹" : "$";
+  const discountPct = plans[0]?.billingOptions.find((b) => b.frequency === "yearly")?.discountPct ?? 15;
   const [analytics, setAnalytics] = useState<Record<string, any> | null>(null);
   const [draft, setDraft] = useState<Record<string, any>>({});
   const [appUsername, setAppUsername] = useState<string | undefined>(undefined);
@@ -156,11 +157,12 @@ export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: (
 
           {/* Plan cards */}
           <div className="flex flex-col gap-4 w-full">
-            {PLANS.map((plan) => {
-              const pricing = (currency === "INR" ? plan.pricingINR : plan.pricingUSD)[billing];
+            {plans.map((plan) => {
+              const billingOption = plan.billingOptions.find((b) => b.frequency === billing);
+              if (!billingOption) return null;
               return (
                 <div
-                  key={plan.key}
+                  key={plan.id}
                   className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-7 flex flex-col gap-4 sm:gap-6"
                 >
                   <div>
@@ -174,21 +176,21 @@ export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: (
                   <div>
                     <div className="flex items-end gap-2 mb-1">
                       <span className="text-4xl sm:text-5xl font-black text-gray-900">
-                        {symbol}{pricing.effectiveMonthlyPrice}
+                        {symbol}{billingOption.effectiveMonthlyAmount}
                       </span>
                       <span className="text-base sm:text-lg text-gray-400 mb-1 sm:mb-2">
                         /month
                       </span>
-                      {billing === "yearly" && pricing.originalMonthlyPrice && (
+                      {billing === "yearly" && billingOption.originalMonthlyAmount && (
                         <span className="text-base sm:text-lg text-gray-300 line-through mb-1 sm:mb-2">
-                          {symbol}{pricing.originalMonthlyPrice}
+                          {symbol}{billingOption.originalMonthlyAmount}
                         </span>
                       )}
                     </div>
                     <p className="text-sm text-gray-400">
-                      {pricing.billingLabel}
+                      {billingOption.billingLabel}
                     </p>
-                    {billing === "yearly" && pricing.savingsNote && (
+                    {billing === "yearly" && billingOption.savingsNote && (
                       <div className="mt-2 inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-lg">
                         <svg
                           width="12"
@@ -202,7 +204,7 @@ export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: (
                             fill="currentColor"
                           />
                         </svg>
-                        {pricing.savingsNote}
+                        {billingOption.savingsNote}
                       </div>
                     )}
                   </div>
@@ -236,7 +238,7 @@ export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: (
 
                   <SubscribeButtonHOC
                     userId={userId}
-                    planId={pricing.id}
+                    planId={billingOption.razorpayDetails?.planId ?? ""}
                     onSuccess={() => onNext()}
                   >
                     {({ onSubscribe, loading }) => (
@@ -251,7 +253,7 @@ export function ActivateStep({ onNext, onSkip }: { onNext: () => void; onSkip: (
                       >
                         {loading
                           ? "Processing…"
-                          : `Pay ${symbol}${pricing.price} & activate`}
+                          : `Pay ${symbol}${billingOption.amount} & activate`}
                       </Button>
                     )}
                   </SubscribeButtonHOC>

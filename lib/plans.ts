@@ -1,87 +1,158 @@
 export type BillingFrequency = "monthly" | "yearly";
+export type Currency = "INR" | "USD";
 
-export type PricingVariant = {
-  id: string;
-  price: number;
-  effectiveMonthlyPrice: number;
+export type BillingOption = {
+  id: string;                                    // internal: "creator_pro_monthly_inr"
+  frequency: BillingFrequency;
+  amount: number;                                // total billing amount in display units (e.g. 599, 59.99)
+  effectiveMonthlyAmount: number;                // per-month display (e.g. 50, 5.00)
   billingLabel: string;
-  originalMonthlyPrice?: number;
+  originalMonthlyAmount?: number;
   discountPct?: number;
   savingsNote?: string;
   maxBillingCycles?: number;
+  paymentGateways: string[];
+  razorpayDetails?: { planId: string };
+  stripeDetails?: { priceId: string };
 };
 
-export type Currency = "INR" | "USD";
-
-export type Plan = {
-  key: string;
+export type LocalizedPlan = {
+  id: string;                                    // internal: "creator_pro"
   name: string;
   description: string;
   features: string[];
-  pricingINR: Record<BillingFrequency, PricingVariant>;
-  pricingUSD: Record<BillingFrequency, PricingVariant>;
+  currency: Currency;
+  billingOptions: BillingOption[];
 };
 
-export function getPricingByPlanId(planId: string): { plan: Plan; billing: BillingFrequency; pricing: PricingVariant; currency: Currency } | null {
-  for (const plan of PLANS) {
-    for (const [billing, pricing] of Object.entries(plan.pricingINR) as [BillingFrequency, PricingVariant][]) {
-      if (pricing.id === planId) return { plan, billing, pricing, currency: "INR" };
-    }
-    for (const [billing, pricing] of Object.entries(plan.pricingUSD) as [BillingFrequency, PricingVariant][]) {
-      if (pricing.id === planId) return { plan, billing, pricing, currency: "USD" };
+export type PlanLookupResult = {
+  plan: LocalizedPlan;
+  billingOption: BillingOption;
+  currency: Currency;
+};
+
+const CREATOR_PRO_FEATURES = [
+  "Your unique kloot.io link",
+  "7 customizable themes",
+  "Daily updating analytics & insights",
+];
+
+const COUNTRY_PLANS: Record<string, LocalizedPlan[]> = {
+  IN: [
+    {
+      id: "creator_pro",
+      name: "Creator Pro",
+      description: "One simple plan. Cancel anytime.",
+      features: CREATOR_PRO_FEATURES,
+      currency: "INR",
+      billingOptions: [
+        {
+          id: "creator_pro_monthly_inr",
+          frequency: "monthly",
+          amount: 59,
+          effectiveMonthlyAmount: 59,
+          billingLabel: "Billed monthly",
+          maxBillingCycles: 240,
+          paymentGateways: ["razorpay"],
+          razorpayDetails: { planId: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_MONTHLY ?? "" },
+        },
+        {
+          id: "creator_pro_yearly_inr",
+          frequency: "yearly",
+          amount: 599,
+          effectiveMonthlyAmount: 50,
+          billingLabel: "Billed annually at ₹599",
+          originalMonthlyAmount: 59,
+          discountPct: 15,
+          savingsNote: "You save ₹109 a year",
+          maxBillingCycles: 20,
+          paymentGateways: ["razorpay"],
+          razorpayDetails: { planId: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_YEARLY ?? "" },
+        },
+      ],
+    },
+  ],
+  US: [
+    {
+      id: "creator_pro",
+      name: "Creator Pro",
+      description: "One simple plan. Cancel anytime.",
+      features: CREATOR_PRO_FEATURES,
+      currency: "USD",
+      billingOptions: [
+        {
+          id: "creator_pro_monthly_usd",
+          frequency: "monthly",
+          amount: 5.99,
+          effectiveMonthlyAmount: 5.99,
+          billingLabel: "Billed monthly",
+          maxBillingCycles: 240,
+          paymentGateways: ["razorpay"],
+          razorpayDetails: { planId: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_MONTHLY_USD ?? "" },
+        },
+        {
+          id: "creator_pro_yearly_usd",
+          frequency: "yearly",
+          amount: 59.99,
+          effectiveMonthlyAmount: 5,
+          billingLabel: "Billed annually at $59.99",
+          originalMonthlyAmount: 5.99,
+          discountPct: 16,
+          savingsNote: "You save $11.89 a year",
+          maxBillingCycles: 20,
+          paymentGateways: ["razorpay"],
+          razorpayDetails: { planId: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_YEARLY_USD ?? "" },
+        },
+      ],
+    },
+  ],
+};
+
+export function getPlans(country = "US"): LocalizedPlan[] {
+  return COUNTRY_PLANS[country] ?? COUNTRY_PLANS["US"];
+}
+
+function getGatewayPlanId(opt: BillingOption, gateway: string): string | undefined {
+  if (gateway === "razorpay") return opt.razorpayDetails?.planId;
+  if (gateway === "stripe") return opt.stripeDetails?.priceId;
+  return undefined;
+}
+
+export function findPlanByGatewayPlanId(gateway: string, gatewayPlanId: string): PlanLookupResult | null {
+  if (!gatewayPlanId) return null;
+  for (const plans of Object.values(COUNTRY_PLANS)) {
+    for (const plan of plans) {
+      for (const billingOption of plan.billingOptions) {
+        if (getGatewayPlanId(billingOption, gateway) === gatewayPlanId) {
+          return { plan, billingOption, currency: plan.currency };
+        }
+      }
     }
   }
   return null;
 }
 
-export const PLANS: Plan[] = [
-  {
-    key: "creator_pro",
-    name: "Creator Pro",
-    description: "One simple plan. Cancel anytime.",
-    features: [
-      "Your unique kloot.io link",
-      "7 customizable themes",
-      "Daily updating analytics & insights",
-    ],
-    pricingINR: {
-      monthly: {
-        id: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_MONTHLY ?? "",
-        price: 59,
-        effectiveMonthlyPrice: 59,
-        billingLabel: "Billed monthly",
-        maxBillingCycles: 240,
-      },
-      yearly: {
-        id: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_YEARLY ?? "",
-        price: 599,
-        effectiveMonthlyPrice: 50,
-        billingLabel: "Billed annually at ₹599",
-        originalMonthlyPrice: 59,
-        discountPct: 15,
-        savingsNote: "You save ₹109 a year",
-        maxBillingCycles: 20,
-      },
-    },
-    pricingUSD: {
-      monthly: {
-        id: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_MONTHLY_USD ?? "",
-        price: 5.99,
-        effectiveMonthlyPrice: 5.99,
-        billingLabel: "Billed monthly",
-        maxBillingCycles: 240,
-      },
-      yearly: {
-        id: process.env.NEXT_PUBLIC_RAZORPAY_PLAN_CREATOR_PRO_YEARLY_USD ?? "",
-        price: 59.99,
-        effectiveMonthlyPrice: 5,
-        billingLabel: "Billed annually at $59.99",
-        originalMonthlyPrice: 5.99,
-        discountPct: 16,
-        savingsNote: "You save $11.89 a year",
-        maxBillingCycles: 20,
-      },
-    },
-  },
-];
+export function findPlanByBillingId(billingId: string): PlanLookupResult | null {
+  for (const plans of Object.values(COUNTRY_PLANS)) {
+    for (const plan of plans) {
+      for (const billingOption of plan.billingOptions) {
+        if (billingOption.id === billingId) {
+          return { plan, billingOption, currency: plan.currency };
+        }
+      }
+    }
+  }
+  return null;
+}
 
+export function getAllBillingOptions(): { plan: LocalizedPlan; billingOption: BillingOption }[] {
+  const result: { plan: LocalizedPlan; billingOption: BillingOption }[] = [];
+  for (const plans of Object.values(COUNTRY_PLANS)) {
+    for (const plan of plans) {
+      for (const billingOption of plan.billingOptions) {
+        result.push({ plan, billingOption });
+      }
+    }
+  }
+  return result;
+}

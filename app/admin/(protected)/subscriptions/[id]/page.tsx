@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
-import { getPricingByPlanId } from "@/lib/plans";
+import { findPlanByGatewayPlanId } from "@/lib/plans";
 
 type SubscriptionDetail = {
   id: string;
@@ -113,9 +113,9 @@ export default function SubscriptionDetailPage() {
     );
   }
 
-  const planResult = getPricingByPlanId(data.planId);
+  const planResult = findPlanByGatewayPlanId("razorpay", data.planId);
   const resolvedPlanName = planResult
-    ? `${planResult.plan.name} · ${planResult.billing.charAt(0).toUpperCase() + planResult.billing.slice(1)}`
+    ? `${planResult.plan.name} · ${planResult.billingOption.frequency.charAt(0).toUpperCase() + planResult.billingOption.frequency.slice(1)}`
     : data.planId;
 
   const statusClass = STATUS_BADGE[data.status] ?? "bg-gray-100 text-gray-500";
