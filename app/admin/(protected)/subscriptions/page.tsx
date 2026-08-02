@@ -121,7 +121,7 @@ function SubscriptionsContent() {
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-black text-gray-900">Subscriptions</h1>
         <p className="text-sm text-gray-400 mt-1">
@@ -132,7 +132,7 @@ function SubscriptionsContent() {
       </div>
 
       {/* Search + filter */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <div className="flex flex-col gap-3 mb-6">
         <input
           type="text"
           value={searchInput}
@@ -140,7 +140,18 @@ function SubscriptionsContent() {
           placeholder="Search by name, email or Razorpay ID…"
           className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-gray-400 transition-colors bg-white w-full sm:w-80"
         />
-        <div className="flex flex-wrap gap-1.5">
+        {/* Mobile: dropdown */}
+        <select
+          className="sm:hidden border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 bg-white outline-none capitalize"
+          value={status}
+          onChange={(e) => setParam("status", e.target.value)}
+        >
+          {STATUSES.map((s) => (
+            <option key={s} value={s} className="capitalize">{s === "all" ? "All" : s}</option>
+          ))}
+        </select>
+        {/* Desktop: pills */}
+        <div className="hidden sm:flex flex-wrap gap-1.5">
           {STATUSES.map((s) => (
             <button
               key={s}
@@ -164,7 +175,8 @@ function SubscriptionsContent() {
         ) : subs.length === 0 ? (
           <p className="px-6 py-12 text-sm text-gray-400 text-center">No subscriptions found</p>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="overflow-x-auto">
+          <div className="min-w-4xl divide-y divide-gray-50">
             {/* Header */}
             <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-5 py-3 bg-gray-50">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide w-36">Razorpay ID</p>
@@ -247,6 +259,7 @@ function SubscriptionsContent() {
               );
             })}
           </div>
+          </div>
         )}
       </div>
 
@@ -266,7 +279,7 @@ function SubscriptionsContent() {
 
 export default function AdminSubscriptionsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-sm text-gray-400">Loading…</div>}>
+    <Suspense fallback={<div className="p-4 sm:p-8 text-sm text-gray-400">Loading…</div>}>
       <SubscriptionsContent />
     </Suspense>
   );

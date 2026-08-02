@@ -127,7 +127,7 @@ export default function SubscriptionDetailPage() {
   const statusClass = STATUS_BADGE[data.status] ?? "bg-gray-100 text-gray-500";
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-6">
         <Link
