@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
   if (Array.isArray(payment_ids) && payment_ids.length > 0) {
     // Mode 1: explicit payment IDs
     for (const id of payment_ids) {
-      await processPayment(id, null, results, { awaitPdf: true });
+      await processPayment(id, null, results, { awaitPdf: true }, "razorpay");
     }
   } else if (range || (from && to)) {
     // Mode 2: date range
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
     }
 
     for (const paymentEntity of payments) {
-      await processPayment(paymentEntity.id as string, paymentEntity, results, { awaitPdf: true });
+      await processPayment(paymentEntity.id as string, paymentEntity, results, { awaitPdf: true }, "razorpay");
     }
   } else {
     return NextResponse.json(

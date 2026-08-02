@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { PLANS, type BillingFrequency } from "@/lib/plans";
+import { getPlans, type BillingFrequency } from "@/lib/plans";
+import { useLocale } from "@/contexts/LocaleContext";
 import SubscribeButtonHOC from "@/components/SubscribeButtonHOC";
 import Button from "@/components/reusable/Button";
 
@@ -13,6 +14,10 @@ type Props = {
 
 export function PricingCards({ userId, onSuccess, startAt }: Props) {
   const [billing, setBilling] = useState<BillingFrequency>("yearly");
+  const { country } = useLocale();
+  const plans = getPlans(country);
+  const symbol = plans[0]?.currency === "INR" ? "₹" : "$";
+  const discountPct = plans[0]?.billingOptions.find((b) => b.frequency === "yearly")?.discountPct ?? 15;
 
   return (
     <div className="flex flex-col gap-6">
@@ -30,18 +35,19 @@ export function PricingCards({ userId, onSuccess, startAt }: Props) {
         >
           Yearly
           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${billing === "yearly" ? "bg-primary/10 text-primary" : "bg-gray-200 text-gray-400"}`}>
-            Save 15%
+            Save {discountPct}%
           </span>
         </button>
       </div>
 
       {/* Plan cards */}
       <div className="flex flex-col lg:flex-row gap-4 w-full">
-        {PLANS.map((plan) => {
-          const pricing = plan.pricing[billing];
+        {plans.map((plan) => {
+          const billingOption = plan.billingOptions.find((b) => b.frequency === billing);
+          if (!billingOption) return null;
           return (
             <div
-              key={plan.key}
+              key={plan.id}
               className="bg-white rounded-2xl border border-gray-200 p-7 flex flex-col gap-6 lg:flex-1"
             >
               <div>
@@ -52,22 +58,22 @@ export function PricingCards({ userId, onSuccess, startAt }: Props) {
               <div>
                 <div className="flex items-end gap-2 mb-1">
                   <span className="text-5xl font-black text-gray-900">
-                    ₹{pricing.effectiveMonthlyPrice}
+                    {symbol}{billingOption.effectiveMonthlyAmount}
                   </span>
                   <span className="text-lg text-gray-400 mb-2">/month</span>
-                  {billing === "yearly" && pricing.originalMonthlyPrice && (
+                  {billing === "yearly" && billingOption.originalMonthlyAmount && (
                     <span className="text-lg text-gray-300 line-through mb-2">
-                      ₹{pricing.originalMonthlyPrice}
+                      {symbol}{billingOption.originalMonthlyAmount}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-400">{pricing.billingLabel}</p>
-                {billing === "yearly" && pricing.savingsNote && (
+                <p className="text-sm text-gray-400">{billingOption.billingLabel}</p>
+                {billing === "yearly" && billingOption.savingsNote && (
                   <div className="mt-2 inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-lg">
                     <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0">
                       <path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5l3.5-.5L8 2z" fill="currentColor" />
                     </svg>
-                    {pricing.savingsNote}
+                    {billingOption.savingsNote}
                   </div>
                 )}
               </div>
@@ -85,7 +91,7 @@ export function PricingCards({ userId, onSuccess, startAt }: Props) {
 
               <SubscribeButtonHOC
                 userId={userId}
-                planId={pricing.id}
+                planId={billingOption.razorpayDetails?.planId ?? ""}
                 startAt={startAt}
                 onSuccess={onSuccess}
               >
@@ -99,7 +105,7 @@ export function PricingCards({ userId, onSuccess, startAt }: Props) {
                     fullWidth
                     className="rounded-xl"
                   >
-                    {loading ? "Processing…" : `Pay ₹${pricing.price} & activate`}
+                    {loading ? "Processing…" : `Pay ${symbol}${billingOption.amount} & activate`}
                   </Button>
                 )}
               </SubscribeButtonHOC>

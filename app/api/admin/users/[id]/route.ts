@@ -153,6 +153,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         invoiceNumber: inv.invoice_number,
         planName: inv.plan_name,
         totalAmount: inv.total_amount,
+        currency: inv.currency ?? "INR",
         status: inv.status,
         invoiceDate: inv.invoice_date,
         pdfUrl: inv.pdf_url ?? null,

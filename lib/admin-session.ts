@@ -8,10 +8,10 @@ export type AdminSessionPayload = {
 };
 
 const COOKIE_NAME = "admin_session";
-const MAX_AGE = 8 * 60 * 60; // 8 hours
+const MAX_AGE = 7 * 24 * 60 * 60; // 1 week
 
 export function signAdminToken(payload: AdminSessionPayload): string {
-  return jwt.sign(payload, process.env.ADMIN_JWT_SECRET!, { expiresIn: "8h" });
+  return jwt.sign(payload, process.env.ADMIN_JWT_SECRET!, { expiresIn: "7d" });
 }
 
 export async function getAdminSession(): Promise<AdminSessionPayload | null> {

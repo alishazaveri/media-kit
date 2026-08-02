@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import axios from "axios";
-import { getPricingByPlanId } from "@/lib/plans";
+import useSWR from "swr";
+import { findPlanByGatewayPlanId } from "@/lib/plans";
 
 type SubscriptionDetail = {
   id: string;
@@ -28,6 +27,7 @@ type SubscriptionDetail = {
     invoiceNumber: string;
     planName: string;
     totalAmount: number;
+    currency: string;
     status: string;
     invoiceDate: string;
     periodStart: string | null;
@@ -51,8 +51,9 @@ function fmtDate(d: string | null | undefined) {
   return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function fmtPaise(paise: number) {
-  return `₹${(paise / 100).toLocaleString("en-IN")}`;
+function fmtAmount(amount: number, currency: string) {
+  if (currency === "USD") return `$${(amount / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `₹${(amount / 100).toLocaleString("en-IN")}`;
 }
 
 function initials(name: string) {
@@ -81,21 +82,28 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 
 export default function SubscriptionDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [data, setData] = useState<SubscriptionDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const { data: response, isLoading, error } = useSWR<{ data: SubscriptionDetail }>(
+    `/api/admin/subscriptions/${id}`
+  );
 
-  useEffect(() => {
-    axios.get(`/api/admin/subscriptions/${id}`)
-      .then((res) => setData(res.data.data))
-      .catch((err) => { if (err.response?.status === 404) setNotFound(true); })
-      .finally(() => setLoading(false));
-  }, [id]);
+  const data = response?.data ?? null;
+  const notFound = error?.response?.status === 404;
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-64">
         <p className="text-sm text-gray-400">Loading…</p>
+      </div>
+    );
+  }
+
+  if (error && !notFound) {
+    return (
+      <div className="p-8">
+        <p className="text-sm text-gray-400">Failed to load subscription.</p>
+        <Link href="/admin/subscriptions" className="text-sm text-primary font-semibold mt-2 block">
+          ← Back to subscriptions
+        </Link>
       </div>
     );
   }
@@ -111,9 +119,9 @@ export default function SubscriptionDetailPage() {
     );
   }
 
-  const planResult = getPricingByPlanId(data.planId);
+  const planResult = findPlanByGatewayPlanId("razorpay", data.planId);
   const resolvedPlanName = planResult
-    ? `${planResult.plan.name} · ${planResult.billing.charAt(0).toUpperCase() + planResult.billing.slice(1)}`
+    ? `${planResult.plan.name} · ${planResult.billingOption.frequency.charAt(0).toUpperCase() + planResult.billingOption.frequency.slice(1)}`
     : data.planId;
 
   const statusClass = STATUS_BADGE[data.status] ?? "bg-gray-100 text-gray-500";
@@ -226,7 +234,7 @@ export default function SubscriptionDetailPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 ml-3">
-                    <p className="text-sm font-black text-gray-900">{fmtPaise(inv.totalAmount)}</p>
+                    <p className="text-sm font-black text-gray-900">{fmtAmount(inv.totalAmount, inv.currency)}</p>
                     {inv.pdfUrl && (
                       <a
                         href={inv.pdfUrl}

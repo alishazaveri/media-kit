@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import axios from "axios";
+import useSWR from "swr";
+import { Pagination } from "@/components/admin/Pagination";
 import type { JourneyStage, SubscriptionSlotStage } from "@/app/api/admin/users/route";
 
 type User = {
@@ -18,6 +20,8 @@ type User = {
   stage: JourneyStage;
   createdAt: string;
 };
+
+type PaginationInfo = { page: number; total: number; totalPages: number };
 
 const STAGES: { key: JourneyStage | "all"; label: string }[] = [
   { key: "all",                 label: "All" },
@@ -57,44 +61,84 @@ function fmtDate(d: string) {
   return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function AdminUsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [stageFilter, setStageFilter] = useState<JourneyStage | "all">("all");
+function SortIcon({ field, sort, sortDir }: { field: string; sort: string; sortDir: string }) {
+  if (sort !== field) return <span className="text-gray-300 ml-0.5 text-[10px]">↕</span>;
+  return <span className="ml-0.5 text-[10px]">{sortDir === "asc" ? "↑" : "↓"}</span>;
+}
 
-  useEffect(() => {
-    axios.get("/api/admin/users").then((res) => {
-      setUsers(res.data.data);
-    }).finally(() => setLoading(false));
-  }, []);
+function UsersContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const filtered = useMemo(() => {
-    return users.filter((u) => {
-      const matchesStage = stageFilter === "all" || u.stage === stageFilter;
-      const q = search.toLowerCase();
-      const matchesSearch =
-        !q ||
-        u.name?.toLowerCase().includes(q) ||
-        u.email?.toLowerCase().includes(q) ||
-        u.username?.toLowerCase().includes(q) ||
-        u.handle?.toLowerCase().includes(q);
-      return matchesStage && matchesSearch;
-    });
-  }, [users, search, stageFilter]);
+  const stage   = searchParams.get("stage") ?? "all";
+  const sort    = searchParams.get("sort") ?? "createdAt";
+  const sortDir = searchParams.get("sortDir") ?? "desc";
+  const limit   = parseInt(searchParams.get("limit") ?? "25");
 
-  // Hide trial-related stages from filter if no trial users exist
-  const hasTrialUsers = users.some((u) => u.hasTrial);
-  const visibleStages = STAGES.filter(
-    (s) => hasTrialUsers || !["trial_started", "trial_expired", "scheduled"].includes(s.key),
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
+
+  const { data: result, isLoading } = useSWR<{ data: User[]; pagination: PaginationInfo }>(
+    `/api/admin/users?${searchParams.toString()}`,
   );
+
+  const users      = result?.data ?? [];
+  const pagination = result?.pagination ?? null;
+
+  // Debounce search input → URL
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("page");
+      if (searchInput) params.set("search", searchInput);
+      else params.delete("search");
+      router.replace(`${pathname}?${params.toString()}`);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function setParam(key: string, value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("page");
+    if (value && value !== "all") params.set(key, value);
+    else params.delete(key);
+    router.replace(`${pathname}?${params.toString()}`);
+  }
+
+  function setPage(p: number) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (p > 1) params.set("page", String(p));
+    else params.delete("page");
+    router.replace(`${pathname}?${params.toString()}`);
+  }
+
+  function setLimit(n: number) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("page");
+    params.set("limit", String(n));
+    router.replace(`${pathname}?${params.toString()}`);
+  }
+
+  function handleSort(field: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("page");
+    params.set("sort", field);
+    if (sort === field) {
+      params.set("sortDir", sortDir === "asc" ? "desc" : "asc");
+    } else {
+      params.set("sortDir", "desc");
+    }
+    router.replace(`${pathname}?${params.toString()}`);
+  }
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-black text-gray-900">Users</h1>
         <p className="text-sm text-gray-400 mt-1">
-          {loading ? "Loading…" : `${users.length} creator${users.length !== 1 ? "s" : ""} total`}
+          {isLoading
+            ? "Loading…"
+            : `${(pagination?.total ?? 0).toLocaleString()} creator${pagination?.total !== 1 ? "s" : ""} total`}
         </p>
       </div>
 
@@ -102,18 +146,18 @@ export default function AdminUsersPage() {
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by name, email or handle…"
           className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-gray-400 transition-colors bg-white w-full sm:w-72"
         />
         <div className="flex flex-wrap gap-1.5">
-          {visibleStages.map((s) => (
+          {STAGES.map((s) => (
             <button
               key={s.key}
-              onClick={() => setStageFilter(s.key)}
+              onClick={() => setParam("stage", s.key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                stageFilter === s.key
+                stage === s.key || (s.key === "all" && !searchParams.get("stage"))
                   ? "bg-gray-900 text-white"
                   : "bg-white border border-gray-200 text-gray-500 hover:border-gray-400"
               }`}
@@ -126,20 +170,30 @@ export default function AdminUsersPage() {
 
       {/* Table */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {loading ? (
+        {isLoading ? (
           <p className="px-6 py-12 text-sm text-gray-400 text-center">Loading users…</p>
-        ) : filtered.length === 0 ? (
+        ) : users.length === 0 ? (
           <p className="px-6 py-12 text-sm text-gray-400 text-center">No users found</p>
         ) : (
           <div className="divide-y divide-gray-50">
             {/* Header */}
             <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-3 bg-gray-50">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Creator</p>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide w-20 text-right">Followers</p>
+              <button
+                onClick={() => handleSort("followers")}
+                className="text-xs font-semibold text-gray-400 uppercase tracking-wide w-20 text-right cursor-pointer hover:text-gray-600 transition-colors"
+              >
+                Followers <SortIcon field="followers" sort={sort} sortDir={sortDir} />
+              </button>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide w-56 text-center">Stage</p>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide w-28 text-right">Joined</p>
+              <button
+                onClick={() => handleSort("createdAt")}
+                className="text-xs font-semibold text-gray-400 uppercase tracking-wide w-28 text-right cursor-pointer hover:text-gray-600 transition-colors"
+              >
+                Joined <SortIcon field="createdAt" sort={sort} sortDir={sortDir} />
+              </button>
             </div>
-            {filtered.map((u) => {
+            {users.map((u) => {
               const badge = STAGE_BADGE[u.stage];
               return (
                 <Link
@@ -175,6 +229,25 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
+
+      {pagination && (
+        <Pagination
+          page={pagination.page}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          limit={limit}
+          onPageChange={setPage}
+          onLimitChange={setLimit}
+        />
+      )}
     </div>
+  );
+}
+
+export default function AdminUsersPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-sm text-gray-400">Loading…</div>}>
+      <UsersContent />
+    </Suspense>
   );
 }

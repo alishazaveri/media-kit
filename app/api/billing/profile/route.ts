@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       name: name.trim(),
       phone: phone.trim(),
       phone_country_code: phone_country_code.trim(),
-      country: country?.trim() || "IN",
+      country: country?.trim() || "US",
       state: state.trim(),
       state_code,
       ...(gstin?.trim() ? {

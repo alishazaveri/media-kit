@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 
         // Generate invoice — fire-and-forget so a billing failure never blocks the webhook response
         if (paymentEntity?.id) {
-          generateInvoiceForCharge(razorId, paymentEntity, subscriptionEntity).catch((err) =>
+          generateInvoiceForCharge(razorId, paymentEntity, subscriptionEntity, undefined, undefined, "razorpay").catch((err) =>
             console.error("[Invoice] Failed to generate invoice for payment", paymentEntity.id, err)
           );
         } else {

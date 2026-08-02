@@ -14,8 +14,7 @@ type MonthData = {
   byPlan: Record<string, PeriodResult>;
 };
 
-type RevenueData = {
-  plans: { id: string; name: string }[];
+type CurrencyData = {
   stats: {
     week:    { all: PeriodResult; byPlan: Record<string, PeriodResult> };
     month:   { all: PeriodResult; byPlan: Record<string, PeriodResult> };
@@ -23,25 +22,34 @@ type RevenueData = {
     fy:      { all: PeriodResult; byPlan: Record<string, PeriodResult> };
   };
   monthly: MonthData[];
+  plans: { id: string; name: string }[];
+};
+
+type RevenueData = {
+  INR: CurrencyData;
+  USD: CurrencyData;
 };
 
 function fmtRupees(paise: number) {
   return `₹${(paise / 100).toLocaleString("en-IN")}`;
 }
 
-function fmtCompact(paise: number) {
+function fmtDollars(cents: number) {
+  return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function fmtCompactINR(paise: number) {
   const r = paise / 100;
   if (r >= 100000) return `₹${(r / 100000).toFixed(1).replace(/\.0$/, "")}L`;
   if (r >= 1000)   return `₹${(r / 1000).toFixed(1).replace(/\.0$/, "")}K`;
   return `₹${r.toFixed(0)}`;
 }
 
-function niceMax(n: number): number {
-  if (n <= 0) return 10000;
-  const mag = Math.pow(10, Math.floor(Math.log10(n)));
-  const norm = n / mag;
-  const nice = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10;
-  return nice * mag * (n === nice * mag ? 1 : 1); // ensure we always ceil
+function fmtCompactUSD(cents: number) {
+  const d = cents / 100;
+  if (d >= 1000000) return `$${(d / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (d >= 1000)    return `$${(d / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+  return `$${d.toFixed(0)}`;
 }
 
 function ceilNice(n: number): number {
@@ -52,8 +60,14 @@ function ceilNice(n: number): number {
   return nice * mag;
 }
 
-// -- Stat card --
-function StatCard({ label, revenue, count, loading }: { label: string; revenue: number; count: number; loading: boolean }) {
+// ── Stat card ──────────────────────────────────────────────────────────────────
+
+function StatCard({
+  label, revenue, count, loading, currency,
+}: {
+  label: string; revenue: number; count: number; loading: boolean; currency: "INR" | "USD";
+}) {
+  const fmt = currency === "INR" ? fmtRupees : fmtDollars;
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-5">
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{label}</p>
@@ -61,7 +75,7 @@ function StatCard({ label, revenue, count, loading }: { label: string; revenue: 
         <div className="h-8 w-24 bg-gray-100 rounded animate-pulse" />
       ) : (
         <>
-          <p className="text-2xl font-black text-gray-900">{fmtRupees(revenue)}</p>
+          <p className="text-2xl font-black text-gray-900">{fmt(revenue)}</p>
           <p className="text-xs text-gray-400 mt-1">{count} invoice{count !== 1 ? "s" : ""}</p>
         </>
       )}
@@ -69,7 +83,8 @@ function StatCard({ label, revenue, count, loading }: { label: string; revenue: 
   );
 }
 
-// -- Bar chart (SVG, single series) --
+// ── Bar chart ──────────────────────────────────────────────────────────────────
+
 const VW = 800;
 const VH = 260;
 const PAD = { left: 68, right: 16, top: 20, bottom: 36 };
@@ -78,26 +93,36 @@ const PLOT_H = VH - PAD.top - PAD.bottom;
 const BAR_COLOR = "#ff7350";
 const BAR_COLOR_MUTED = "#ffe4de";
 
-function BarChart({ months, planFilter }: { months: MonthData[]; planFilter: string }) {
-  const [tooltip, setTooltip] = useState<null | { slotX: number; barTop: number; label: string; revenue: number; count: number }>(null);
+function BarChart({
+  months, planFilter, currency,
+}: {
+  months: MonthData[];
+  planFilter: string;
+  currency: "INR" | "USD";
+}) {
+  const [tooltip, setTooltip] = useState<null | {
+    slotX: number; barTop: number; label: string; revenue: number; count: number;
+  }>(null);
+
+  const fmtFull  = currency === "INR" ? fmtRupees   : fmtDollars;
+  const fmtShort = currency === "INR" ? fmtCompactINR : fmtCompactUSD;
 
   const data = useMemo(() => months.map((m) => ({
-    label: m.label,
+    label:   m.label,
     revenue: planFilter === "all" ? m.all.revenue : (m.byPlan[planFilter]?.revenue ?? 0),
     count:   planFilter === "all" ? m.all.count   : (m.byPlan[planFilter]?.count   ?? 0),
   })), [months, planFilter]);
 
   const maxRev = Math.max(...data.map((d) => d.revenue), 1);
-  const yMax = ceilNice(maxRev * 1.15);
+  const yMax   = ceilNice(maxRev * 1.15);
 
-  const n = data.length;
+  const n    = data.length;
   const slotW = n > 0 ? PLOT_W / n : PLOT_W;
-  const barW = Math.min(slotW * 0.5, 24);
+  const barW  = Math.min(slotW * 0.5, 24);
 
   const yTicks = [0, 0.25, 0.5, 0.75, 1].map((t) => Math.round(t * yMax / 100) * 100);
-
-  const toY = (rev: number) => PAD.top + PLOT_H - (rev / yMax) * PLOT_H;
-  const slotX = (i: number) => PAD.left + i * slotW + slotW / 2;
+  const toY    = (rev: number) => PAD.top + PLOT_H - (rev / yMax) * PLOT_H;
+  const slotX  = (i: number)   => PAD.left + i * slotW + slotW / 2;
 
   return (
     <div className="relative select-none">
@@ -106,87 +131,44 @@ function BarChart({ months, planFilter }: { months: MonthData[]; planFilter: str
         className="w-full h-auto overflow-visible"
         onMouseLeave={() => setTooltip(null)}
       >
-        {/* Gridlines */}
         {yTicks.map((tick) => (
-          <line
-            key={tick}
-            x1={PAD.left} y1={toY(tick)}
-            x2={VW - PAD.right} y2={toY(tick)}
-            stroke="#f3f4f6" strokeWidth="1"
-          />
+          <line key={tick} x1={PAD.left} y1={toY(tick)} x2={VW - PAD.right} y2={toY(tick)} stroke="#f3f4f6" strokeWidth="1" />
         ))}
-
-        {/* Y-axis labels */}
         {yTicks.map((tick) => (
-          <text
-            key={tick}
-            x={PAD.left - 8} y={toY(tick) + 4}
-            textAnchor="end" fontSize="10" fill="#9ca3af"
-            fontFamily="inherit"
-          >
-            {fmtCompact(tick)}
+          <text key={tick} x={PAD.left - 8} y={toY(tick) + 4} textAnchor="end" fontSize="10" fill="#9ca3af" fontFamily="inherit">
+            {fmtShort(tick)}
           </text>
         ))}
-
-        {/* Bars */}
         {data.map((d, i) => {
-          const barH = Math.max((d.revenue / yMax) * PLOT_H, 0);
-          const cx = slotX(i);
-          const bx = cx - barW / 2;
-          const by = toY(d.revenue);
+          const barH   = Math.max((d.revenue / yMax) * PLOT_H, 0);
+          const cx     = slotX(i);
+          const bx     = cx - barW / 2;
+          const by     = toY(d.revenue);
           const isActive = tooltip?.label === d.label;
-
           return (
             <g key={i}>
-              {/* Invisible hit area covering full column slot */}
               <rect
-                x={PAD.left + i * slotW} y={PAD.top}
-                width={slotW} height={PLOT_H}
+                x={PAD.left + i * slotW} y={PAD.top} width={slotW} height={PLOT_H}
                 fill="transparent"
                 onMouseEnter={() => setTooltip({ slotX: cx, barTop: by, label: d.label, revenue: d.revenue, count: d.count })}
               />
-              {/* Bar */}
               {barH > 0 && (
-                <rect
-                  x={bx} y={by}
-                  width={barW} height={barH}
-                  fill={isActive ? BAR_COLOR : BAR_COLOR_MUTED}
-                  rx="4" ry="4"
-                />
+                <rect x={bx} y={by} width={barW} height={barH} fill={isActive ? BAR_COLOR : BAR_COLOR_MUTED} rx="4" ry="4" />
               )}
-              {/* Square out the bottom corners */}
               {barH > 4 && (
-                <rect
-                  x={bx} y={by + barH - 4}
-                  width={barW} height={4}
-                  fill={isActive ? BAR_COLOR : BAR_COLOR_MUTED}
-                />
+                <rect x={bx} y={by + barH - 4} width={barW} height={4} fill={isActive ? BAR_COLOR : BAR_COLOR_MUTED} />
               )}
             </g>
           );
         })}
-
-        {/* X-axis labels */}
         {data.map((d, i) => (
-          <text
-            key={i}
-            x={slotX(i)} y={VH - PAD.bottom + 18}
-            textAnchor="middle" fontSize="10" fill="#9ca3af"
-            fontFamily="inherit"
-          >
+          <text key={i} x={slotX(i)} y={VH - PAD.bottom + 18} textAnchor="middle" fontSize="10" fill="#9ca3af" fontFamily="inherit">
             {d.label}
           </text>
         ))}
-
-        {/* Baseline */}
-        <line
-          x1={PAD.left} y1={PAD.top + PLOT_H}
-          x2={VW - PAD.right} y2={PAD.top + PLOT_H}
-          stroke="#e5e7eb" strokeWidth="1"
-        />
+        <line x1={PAD.left} y1={PAD.top + PLOT_H} x2={VW - PAD.right} y2={PAD.top + PLOT_H} stroke="#e5e7eb" strokeWidth="1" />
       </svg>
 
-      {/* Tooltip */}
       {tooltip && (
         <div
           className="absolute pointer-events-none z-10 bg-white border border-gray-100 shadow-lg rounded-xl px-3 py-2 text-xs whitespace-nowrap"
@@ -197,7 +179,7 @@ function BarChart({ months, planFilter }: { months: MonthData[]; planFilter: str
           }}
         >
           <p className="font-semibold text-gray-900 mb-0.5">{tooltip.label}</p>
-          <p className="text-gray-700">{fmtRupees(tooltip.revenue)}</p>
+          <p className="text-gray-700">{fmtFull(tooltip.revenue)}</p>
           <p className="text-gray-400">{tooltip.count} invoice{tooltip.count !== 1 ? "s" : ""}</p>
         </div>
       )}
@@ -205,17 +187,26 @@ function BarChart({ months, planFilter }: { months: MonthData[]; planFilter: str
   );
 }
 
-// -- Page --
+// ── Page ───────────────────────────────────────────────────────────────────────
+
 export default function AdminRevenuePage() {
-  const [data, setData]     = useState<RevenueData | null>(null);
+  const [data, setData]       = useState<RevenueData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [planFilter, setPlanFilter] = useState<string>("all");
+  const [activeCurrency, setActiveCurrency] = useState<"INR" | "USD">("INR");
+  const [planFilter, setPlanFilter]         = useState<string>("all");
 
   useEffect(() => {
     axios.get("/api/admin/revenue")
       .then((res) => setData(res.data.data))
       .finally(() => setLoading(false));
   }, []);
+
+  function handleCurrencyChange(c: "INR" | "USD") {
+    setActiveCurrency(c);
+    setPlanFilter("all");
+  }
+
+  const currData = data?.[activeCurrency] ?? null;
 
   const periods = [
     { key: "week"    as const, label: "This week" },
@@ -225,8 +216,8 @@ export default function AdminRevenuePage() {
   ];
 
   function getPeriodStat(key: "week" | "month" | "quarter" | "fy"): PeriodResult {
-    if (!data) return { revenue: 0, count: 0 };
-    const period = data.stats[key];
+    if (!currData) return { revenue: 0, count: 0 };
+    const period = currData.stats[key];
     return planFilter === "all" ? period.all : (period.byPlan[planFilter] ?? { revenue: 0, count: 0 });
   }
 
@@ -238,12 +229,31 @@ export default function AdminRevenuePage() {
           <p className="text-sm text-gray-400 mt-1">Indian financial year · paid invoices only</p>
         </div>
 
-        {/* Plan filter */}
-        <PlanSelect
-          value={planFilter}
-          onChange={setPlanFilter}
-          options={data?.plans ?? []}
-        />
+        <div className="flex items-center gap-3">
+          {/* Currency toggle */}
+          <div className="flex rounded-xl border border-gray-200 overflow-hidden text-sm">
+            {(["INR", "USD"] as const).map((c) => (
+              <button
+                key={c}
+                onClick={() => handleCurrencyChange(c)}
+                className={`px-4 py-2 font-semibold transition-colors ${
+                  activeCurrency === c
+                    ? "bg-gray-900 text-white"
+                    : "bg-white text-gray-500 hover:bg-gray-50"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+
+          {/* Plan filter */}
+          <PlanSelect
+            value={planFilter}
+            onChange={setPlanFilter}
+            options={currData?.plans ?? []}
+          />
+        </div>
       </div>
 
       {/* Stat cards */}
@@ -257,6 +267,7 @@ export default function AdminRevenuePage() {
               revenue={stat.revenue}
               count={stat.count}
               loading={loading}
+              currency={activeCurrency}
             />
           );
         })}
@@ -267,15 +278,17 @@ export default function AdminRevenuePage() {
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm font-black text-gray-900">Monthly revenue</p>
           <p className="text-xs text-gray-400">
-            {planFilter === "all" ? "All plans" : (data?.plans.find((p) => p.id === planFilter)?.name ?? planFilter)}
+            {planFilter === "all"
+              ? `All ${activeCurrency} plans`
+              : (currData?.plans.find((p) => p.id === planFilter)?.name ?? planFilter)}
           </p>
         </div>
         {loading ? (
           <div className="h-64 bg-gray-50 rounded-xl animate-pulse" />
-        ) : data && data.monthly.length > 0 ? (
-          <BarChart months={data.monthly} planFilter={planFilter} />
+        ) : currData && currData.monthly.length > 0 ? (
+          <BarChart months={currData.monthly} planFilter={planFilter} currency={activeCurrency} />
         ) : (
-          <p className="text-xs text-gray-400 py-16 text-center">No revenue data for this financial year yet</p>
+          <p className="text-xs text-gray-400 py-16 text-center">No revenue data for this period yet</p>
         )}
       </div>
     </div>

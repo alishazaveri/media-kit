@@ -6,11 +6,12 @@ import Button from "@/components/reusable/Button";
 import { COUNTRY_CODES } from "@/lib/country-codes";
 import { BILLING_COUNTRIES, STATES_BY_COUNTRY } from "@/lib/states-by-country";
 import { getStateFromGstin } from "@/lib/gst-states";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface BillingProfile {
   name: string;
   phone: string;
-  phone_country_code: string;
+  phone_country_code?: string;
   gstin?: string;
   company_name?: string;
   address_line1?: string;
@@ -28,23 +29,31 @@ interface Props {
 }
 
 export function BillingDetailsModal({ initial = {}, onSave, onCancel }: Props) {
+  const { country: detectedCountry } = useLocale();
+  const defaultCountry = initial.country || detectedCountry || "US";
+  const defaultPhoneCode = initial.phone_country_code
+    || COUNTRY_CODES.find((c) => c.iso === defaultCountry)?.code
+    || "+1";
+
   const [name, setName] = useState(initial.name ?? "");
-  const [countryCode, setCountryCode] = useState(initial.phone_country_code ?? "+91");
+  const [countryCode, setCountryCode] = useState(defaultPhoneCode);
   const [phone, setPhone] = useState(initial.phone ?? "");
   const [gstin, setGstin] = useState(initial.gstin ?? "");
   const [companyName, setCompanyName] = useState(initial.company_name ?? "");
   const [addressLine1, setAddressLine1] = useState(initial.address_line1 ?? "");
   const [addressLine2, setAddressLine2] = useState(initial.address_line2 ?? "");
   const [city, setCity] = useState(initial.city ?? "");
-  const [country, setCountry] = useState(initial.country ?? "IN");
+  const [country, setCountry] = useState(defaultCountry);
   const [state, setState] = useState(initial.state ?? "");
   const [pincode, setPincode] = useState(initial.pincode ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const showGstFields = gstin.trim().length > 0;
-  const gstinState = gstin.trim().length >= 2 ? getStateFromGstin(gstin.trim()) : undefined;
+  const isIndia = country === "IN";
+  const showGstFields = isIndia && gstin.trim().length > 0;
+  const gstinState = isIndia && gstin.trim().length >= 2 ? getStateFromGstin(gstin.trim()) : undefined;
   const stateOptions = STATES_BY_COUNTRY[country] ?? [];
+  const stateRequired = isIndia || stateOptions.length > 0;
 
   function handleCountryChange(iso: string) {
     setCountry(iso);
@@ -61,7 +70,7 @@ export function BillingDetailsModal({ initial = {}, onSave, onCancel }: Props) {
 
     if (!name.trim()) { setError("Name is required"); return; }
     if (!phone.trim()) { setError("Phone number is required"); return; }
-    if (!state.trim()) { setError("State is required"); return; }
+    if (stateRequired && !state.trim()) { setError("State / Province is required"); return; }
     if (showGstFields) {
       if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(gstin.trim().toUpperCase())) {
         setError("Invalid GSTIN format (e.g. 24AAAAA0000A1Z5)"); return;
@@ -142,23 +151,19 @@ export function BillingDetailsModal({ initial = {}, onSave, onCancel }: Props) {
             </div>
           </Field>
 
-          <Field label="GST Number" hint="Optional — for business invoices">
-            <input
-              type="text"
-              value={gstin}
-              onChange={(e) => {
-                const val = e.target.value;
-                setGstin(val);
-                const detected = val.trim().length >= 2 ? getStateFromGstin(val.trim()) : undefined;
-                if (detected) setState(detected);
-              }}
-              placeholder="24AAAAA0000A1Z5"
-              maxLength={15}
-              className={`${inputCls} uppercase`}
-            />
+          <Field label="Country">
+            <select
+              value={country}
+              onChange={(e) => handleCountryChange(e.target.value)}
+              className={selectCls + " w-full"}
+            >
+              {BILLING_COUNTRIES.map(({ iso, name: countryName }) => (
+                <option key={iso} value={iso}>{countryName}</option>
+              ))}
+            </select>
           </Field>
 
-          <Field label="State / Province" required>
+          <Field label="State / Province" required={stateRequired}>
             {gstinState ? (
               <input
                 type="text"
@@ -188,17 +193,23 @@ export function BillingDetailsModal({ initial = {}, onSave, onCancel }: Props) {
             )}
           </Field>
 
-          <Field label="Country">
-            <select
-              value={country}
-              disabled
-              className={selectCls + " w-full opacity-50 cursor-not-allowed"}
-            >
-              {BILLING_COUNTRIES.map(({ iso, name: countryName }) => (
-                <option key={iso} value={iso}>{countryName}</option>
-              ))}
-            </select>
-          </Field>
+          {isIndia && (
+            <Field label="GST Number" hint="Optional — for business invoices">
+              <input
+                type="text"
+                value={gstin}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setGstin(val);
+                  const detected = val.trim().length >= 2 ? getStateFromGstin(val.trim()) : undefined;
+                  if (detected) setState(detected);
+                }}
+                placeholder="24AAAAA0000A1Z5"
+                maxLength={15}
+                className={`${inputCls} uppercase`}
+              />
+            </Field>
+          )}
 
           {showGstFields && (
             <>
@@ -256,7 +267,6 @@ export function BillingDetailsModal({ initial = {}, onSave, onCancel }: Props) {
                   />
                 </Field>
               </div>
-
             </>
           )}
 

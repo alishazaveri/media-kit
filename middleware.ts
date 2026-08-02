@@ -78,6 +78,20 @@ function applyAuthGuards(
   return null;
 }
 
+function applyCountryHeader(req: NextRequest): NextResponse {
+  const country = req.headers.get("x-vercel-ip-country") ?? "";
+
+  // Allow ?country= override in non-production for testing
+  const override = process.env.NODE_ENV !== "production"
+    ? req.nextUrl.searchParams.get("country")
+    : null;
+
+  const value = override ?? country;
+  const headers = new Headers(req.headers);
+  headers.set("x-kloot-country", value);
+  return NextResponse.next({ request: { headers } });
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -96,7 +110,7 @@ export async function middleware(req: NextRequest) {
     if (guard) return guard;
   }
 
-  return NextResponse.next();
+  return applyCountryHeader(req);
 }
 
 export const config = {

@@ -7,13 +7,15 @@ export async function createSubscriptionRecord(
   razorpaySubscriptionId: string,
   razorpayPaymentId?: string,
   status?: string,
-  meta?: any
+  meta?: any,
+  paymentGateway?: string
 ) {
   await connectDB();
   return Subscription.create({
     user_id: userId,
     plan_id: planId,
     razorpay_subscription_id: razorpaySubscriptionId,
+    ...(paymentGateway && { payment_gateway: paymentGateway }),
     ...(razorpayPaymentId && { last_payment_id: razorpayPaymentId }),
     ...(status && { status }),
     ...(meta && { meta }),

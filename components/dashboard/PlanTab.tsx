@@ -7,7 +7,7 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import SubscribeButtonHOC from "@/components/SubscribeButtonHOC";
 import { PricingCards } from "@/components/PricingCards";
 import { useUser } from "@/contexts/UserContext";
-import { getPricingByPlanId } from "@/lib/plans";
+import { findPlanByGatewayPlanId } from "@/lib/plans";
 
 interface Invoice {
   _id: string;
@@ -46,16 +46,23 @@ export function PlanTab() {
       .finally(() => setInvoicesLoading(false));
   }, []);
 
-  const matched = subscription?.planId ? getPricingByPlanId(subscription.planId) : null;
+  const matched = subscription?.planId ? findPlanByGatewayPlanId("razorpay", subscription.planId) : null;
   const renewalDate = formatDate(subscription?.currentPeriodEnd ?? null);
-  const scheduledMatched = scheduledSubscription?.planId ? getPricingByPlanId(scheduledSubscription.planId) : null;
+  const scheduledMatched = scheduledSubscription?.planId ? findPlanByGatewayPlanId("razorpay", scheduledSubscription.planId) : null;
   const scheduledStartDate = formatDate(scheduledSubscription?.startsAt ?? null);
-  const scheduledOtherBilling = scheduledMatched?.billing === "monthly" ? "yearly" : "monthly";
-  const scheduledOtherPricing = scheduledMatched ? scheduledMatched.plan.pricing[scheduledOtherBilling] : null;
+  const scheduledOtherFrequency = scheduledMatched?.billingOption.frequency === "monthly" ? "yearly" : "monthly";
+  const scheduledOtherBillingOption = scheduledMatched
+    ? scheduledMatched.plan.billingOptions.find((b) => b.frequency === scheduledOtherFrequency) ?? null
+    : null;
   const scheduledStartAt = scheduledSubscription?.startsAt ? Math.floor(new Date(scheduledSubscription.startsAt).getTime() / 1000) : undefined;
 
-  const otherBilling = matched?.billing === "monthly" ? "yearly" : "monthly";
-  const otherPricing = matched ? matched.plan.pricing[otherBilling] : null;
+  const otherFrequency = matched?.billingOption.frequency === "monthly" ? "yearly" : "monthly";
+  const otherBillingOption = matched
+    ? matched.plan.billingOptions.find((b) => b.frequency === otherFrequency) ?? null
+    : null;
+
+  const subSymbol = matched?.currency === "INR" ? "₹" : "$";
+  const scheduledSubSymbol = scheduledMatched?.currency === "INR" ? "₹" : "$";
 
   async function handleCancel() {
     setCancelling(true);
@@ -174,7 +181,7 @@ export function PlanTab() {
               <p className="text-sm text-gray-500 mt-1">
                 You&apos;re on the{" "}
                 <strong className="text-primary font-semibold">{matched.plan.name}</strong> plan,
-                billed {matched.billing === "yearly" ? "annually" : "monthly"}.
+                billed {matched.billingOption.frequency === "yearly" ? "annually" : "monthly"}.
               </p>
             ) : scheduledMatched ? (
               <p className="text-sm text-gray-500 mt-1">
@@ -210,15 +217,15 @@ export function PlanTab() {
                 <div>
                   <p className="font-bold text-gray-900 text-base">{matched.plan.name}</p>
                   <p className="text-3xl font-black text-gray-900 mt-1">
-                    ₹{matched.pricing.effectiveMonthlyPrice}
+                    {subSymbol}{matched.billingOption.effectiveMonthlyAmount}
                     <span className="text-base font-normal text-gray-400"> /mo</span>
-                    {matched.billing === "yearly" && (
+                    {matched.billingOption.frequency === "yearly" && (
                       <span className="text-sm font-normal text-gray-400 ml-2">
-                        · ₹{matched.pricing.price}/yr
+                        · {subSymbol}{matched.billingOption.amount}/yr
                       </span>
                     )}
                   </p>
-                  <p className="text-sm text-gray-400 mt-0.5">{matched.pricing.billingLabel}</p>
+                  <p className="text-sm text-gray-400 mt-0.5">{matched.billingOption.billingLabel}</p>
                 </div>
                 <span className="bg-primary/10 text-primary text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
                   Active
@@ -237,15 +244,15 @@ export function PlanTab() {
                 <div>
                   <p className="font-bold text-gray-900 text-base">{scheduledMatched.plan.name}</p>
                   <p className="text-3xl font-black text-gray-900 mt-1">
-                    ₹{scheduledMatched.pricing.effectiveMonthlyPrice}
+                    {scheduledSubSymbol}{scheduledMatched.billingOption.effectiveMonthlyAmount}
                     <span className="text-base font-normal text-gray-400"> /mo</span>
-                    {scheduledMatched.billing === "yearly" && (
+                    {scheduledMatched.billingOption.frequency === "yearly" && (
                       <span className="text-sm font-normal text-gray-400 ml-2">
-                        · ₹{scheduledMatched.pricing.price}/yr
+                        · {scheduledSubSymbol}{scheduledMatched.billingOption.amount}/yr
                       </span>
                     )}
                   </p>
-                  <p className="text-sm text-gray-400 mt-0.5">{scheduledMatched.pricing.billingLabel}</p>
+                  <p className="text-sm text-gray-400 mt-0.5">{scheduledMatched.billingOption.billingLabel}</p>
                 </div>
                 <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
                   Scheduled
@@ -267,10 +274,10 @@ export function PlanTab() {
           ) : null}
 
           {/* Scheduled plan actions — switch billing or cancel before it starts */}
-          {scheduledMatched && scheduledOtherPricing && scheduledStartAt && (
+          {scheduledMatched && scheduledOtherBillingOption && scheduledStartAt && (
             <SubscribeButtonHOC
               userId={userId}
-              planId={scheduledOtherPricing.id}
+              planId={scheduledOtherBillingOption.razorpayDetails?.planId ?? ""}
               startAt={scheduledStartAt}
               onSuccess={async (v) => {
                 const newSubId = v?.subscription?.razorpay_subscription_id;
@@ -293,9 +300,9 @@ export function PlanTab() {
                 >
                   {switching
                     ? "Processing…"
-                    : scheduledOtherBilling === "yearly"
-                    ? `Switch to yearly · Save ${scheduledOtherPricing.discountPct ?? 15}%`
-                    : `Switch to monthly · ₹${scheduledOtherPricing.price}/mo`}
+                    : scheduledOtherFrequency === "yearly"
+                    ? `Switch to yearly · Save ${scheduledOtherBillingOption.discountPct ?? 15}%`
+                    : `Switch to monthly · ${scheduledSubSymbol}${scheduledOtherBillingOption.amount}/mo`}
                 </Button>
               )}
             </SubscribeButtonHOC>
@@ -330,10 +337,10 @@ export function PlanTab() {
           )}
 
           {/* Switch billing — below the card, only when active and not already scheduled */}
-          {matched && !subscription?.cancelAtCycleEnd && otherPricing && subscription?.currentPeriodEnd && (
+          {matched && !subscription?.cancelAtCycleEnd && otherBillingOption && subscription?.currentPeriodEnd && (
             <SubscribeButtonHOC
               userId={userId}
-              planId={otherPricing.id}
+              planId={otherBillingOption.razorpayDetails?.planId ?? ""}
               startAt={Math.floor(new Date(subscription.currentPeriodEnd!).getTime() / 1000)}
               onSuccess={async (v) => {
                 const newSubId = v?.subscription?.razorpay_subscription_id;
@@ -356,9 +363,9 @@ export function PlanTab() {
                 >
                   {switching
                     ? "Processing…"
-                    : otherBilling === "yearly"
-                    ? `Switch to yearly · Save ${otherPricing.discountPct ?? 15}%`
-                    : `Switch to monthly · ₹${otherPricing.price}/mo`}
+                    : otherFrequency === "yearly"
+                    ? `Switch to yearly · Save ${otherBillingOption.discountPct ?? 15}%`
+                    : `Switch to monthly · ${subSymbol}${otherBillingOption.amount}/mo`}
                 </Button>
               )}
             </SubscribeButtonHOC>
@@ -399,7 +406,7 @@ export function PlanTab() {
                         <p className="text-xs text-gray-400">
                           {new Date(inv.invoice_date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
                           <span className="mx-1.5">·</span>
-                          ₹{(inv.total_amount / 100).toLocaleString("en-IN")}
+                          {inv.currency === "INR" ? "₹" : "$"}{(inv.total_amount / 100).toLocaleString("en-IN")}
                         </p>
                       </div>
                       {inv.pdf_url ? (
