@@ -3,9 +3,7 @@ import { ADMIN_COOKIE_NAME } from "@/lib/admin-session";
 
 export async function POST() {
   const res = NextResponse.json({ ok: true });
-  res.cookies.set({
-    name: ADMIN_COOKIE_NAME,
-    value: "",
+  res.cookies.set(ADMIN_COOKIE_NAME, "", {
     httpOnly: true,
     maxAge: 0,
     path: "/",
