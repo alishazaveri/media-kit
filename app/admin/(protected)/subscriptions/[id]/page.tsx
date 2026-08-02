@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import axios from "axios";
+import useSWR from "swr";
 import { findPlanByGatewayPlanId } from "@/lib/plans";
 
 type SubscriptionDetail = {
@@ -83,21 +82,28 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 
 export default function SubscriptionDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [data, setData] = useState<SubscriptionDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const { data: response, isLoading, error } = useSWR<{ data: SubscriptionDetail }>(
+    `/api/admin/subscriptions/${id}`
+  );
 
-  useEffect(() => {
-    axios.get(`/api/admin/subscriptions/${id}`)
-      .then((res) => setData(res.data.data))
-      .catch((err) => { if (err.response?.status === 404) setNotFound(true); })
-      .finally(() => setLoading(false));
-  }, [id]);
+  const data = response?.data ?? null;
+  const notFound = error?.response?.status === 404;
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-64">
         <p className="text-sm text-gray-400">Loading…</p>
+      </div>
+    );
+  }
+
+  if (error && !notFound) {
+    return (
+      <div className="p-8">
+        <p className="text-sm text-gray-400">Failed to load subscription.</p>
+        <Link href="/admin/subscriptions" className="text-sm text-primary font-semibold mt-2 block">
+          ← Back to subscriptions
+        </Link>
       </div>
     );
   }

@@ -5,120 +5,62 @@ import User from "@/db/models/user";
 import SocialChannel from "@/db/models/social_channel";
 import Subscription from "@/db/models/subscription";
 import UserData from "@/db/models/user_data";
+import { resolveSubscriptionState, computeStage } from "@/lib/user-stage";
 
-export type JourneyStage =
-  | "signed_up"
-  | "instagram_connected"
-  | "trial_started"
-  | "trial_expired"
-  | "subscribed"
-  | "cancelled"
-  | "scheduled"
-  | "published";
+export type { JourneyStage, SubscriptionSlotStage } from "@/lib/user-stage";
 
-export type SubscriptionSlotStage = "subscribed" | "cancelled" | "scheduled" | null;
-
-// Mirrors /api/me logic exactly
-function resolveSubscriptionState(
-  subs: any[],
-  trialEndsAt: Date | null | undefined,
-): { subscriptionSlotStage: SubscriptionSlotStage; trialExpired: boolean } {
-  const now = new Date();
-
-  const activeSub = subs.find(
-    (s) => s.current_period_end && new Date(s.current_period_end) > now,
-  ) ?? null;
-
-  const scheduledSub = activeSub
-    ? subs.find(
-        (s) =>
-          s.status === "authenticated" &&
-          s.subscription_start_at &&
-          new Date(s.subscription_start_at) > now,
-      ) ?? null
-    : null;
-
-  const pendingSub = !activeSub
-    ? subs.find(
-        (s) =>
-          s.status === "authenticated" &&
-          s.subscription_start_at &&
-          new Date(s.subscription_start_at) > now,
-      ) ?? null
-    : null;
-
-  const hasPastSub = subs.some((s) =>
-    ["active", "cancelled", "expired"].includes(s.status ?? ""),
-  );
-
-  let subscriptionSlotStage: SubscriptionSlotStage = null;
-  if (activeSub) {
-    subscriptionSlotStage =
-      activeSub.cancel_at_cycle_end && !scheduledSub ? "cancelled" : "subscribed";
-  } else if (pendingSub && trialEndsAt && new Date(trialEndsAt) > now) {
-    subscriptionSlotStage = "scheduled";
-  } else if (hasPastSub) {
-    subscriptionSlotStage = "cancelled";
-  }
-
-  // Trial expired: has trial, trial has passed, and no active subscription access
-  const trialExpired = !!trialEndsAt && new Date(trialEndsAt) <= now && !activeSub && !hasPastSub;
-
-  return { subscriptionSlotStage, trialExpired };
+function escapeRegex(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function computeStage(
-  user: any,
-  social: any,
-  subs: any[],
-  userData: any,
-): JourneyStage {
-  const { subscriptionSlotStage, trialExpired } = resolveSubscriptionState(subs, user.trial_ends_at);
-  const isPublished = !!userData?.published_data?.display_name;
-
-  if (isPublished && subscriptionSlotStage === "subscribed") return "published";
-  if (subscriptionSlotStage === "cancelled") return "cancelled";
-  if (subscriptionSlotStage === "subscribed") return "subscribed";
-  if (subscriptionSlotStage === "scheduled") return "scheduled";
-  if (trialExpired) return "trial_expired";
-  if (user.trial_ends_at) return "trial_started";
-  if (social) return "instagram_connected";
-  return "signed_up";
-}
-
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { searchParams } = new URL(req.url);
+  const page    = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
+  const limit   = Math.min(100, Math.max(10, parseInt(searchParams.get("limit") ?? "25")));
+  const search  = searchParams.get("search")?.trim() ?? "";
+  const stage   = searchParams.get("stage") ?? "all";
+  const sort    = searchParams.get("sort") ?? "createdAt";
+  const sortDir = searchParams.get("sortDir") === "asc" ? 1 : -1;
+  const skip    = (page - 1) * limit;
+
   await connectDB();
 
-  const [users, socialChannels, subscriptions, userDataRecords] = await Promise.all([
-    User.find().sort({ created_at: -1 }).lean(),
-    SocialChannel.find({ platform: "instagram" }).lean(),
-    Subscription.find().lean(),
-    UserData.find({ platform: "profile" }).lean(),
+  const userQuery: Record<string, unknown> = {};
+  if (search) {
+    const regex = new RegExp(escapeRegex(search), "i");
+    userQuery.$or = [{ name: regex }, { email: regex }, { username: regex }];
+  }
+
+  const users = await User.find(userQuery).lean();
+  const userIds = users.map((u) => u._id);
+
+  const [socialChannels, subscriptions, userDataRecords] = await Promise.all([
+    SocialChannel.find({ user_id: { $in: userIds }, platform: "instagram" }).lean(),
+    Subscription.find({ user_id: { $in: userIds } }).lean(),
+    UserData.find({ user_id: { $in: userIds }, platform: "profile" }).lean(),
   ]);
 
   const socialMap = new Map(socialChannels.map((s) => [s.user_id.toString(), s]));
   const userDataMap = new Map(userDataRecords.map((d) => [d.user_id.toString(), d]));
-
-  const subscriptionMap = new Map<string, any[]>();
+  const subscriptionMap = new Map<string, typeof subscriptions>();
   for (const sub of subscriptions) {
     const uid = sub.user_id.toString();
     if (!subscriptionMap.has(uid)) subscriptionMap.set(uid, []);
     subscriptionMap.get(uid)!.push(sub);
   }
 
-  const result = users.map((u) => {
-    const uid = (u._id as any).toString();
-    const social = socialMap.get(uid);
+  const all = users.map((u) => {
+    const uid = (u._id as { toString(): string }).toString();
+    const social = socialMap.get(uid) ?? null;
     const userSubs = subscriptionMap.get(uid) ?? [];
-    const userData = userDataMap.get(uid);
+    const userData = userDataMap.get(uid) ?? null;
     const { subscriptionSlotStage, trialExpired } = resolveSubscriptionState(
       userSubs,
       u.trial_ends_at,
     );
-
     return {
       id: uid,
       name: u.name,
@@ -134,5 +76,24 @@ export async function GET() {
     };
   });
 
-  return NextResponse.json({ data: result });
+  all.sort((a, b) => {
+    if (sort === "followers") {
+      // nulls (no Instagram) always at the bottom regardless of direction
+      const af = a.followers ?? (sortDir === 1 ? Infinity : -Infinity);
+      const bf = b.followers ?? (sortDir === 1 ? Infinity : -Infinity);
+      return sortDir === 1 ? af - bf : bf - af;
+    }
+    const ad = new Date(a.createdAt as Date).getTime();
+    const bd = new Date(b.createdAt as Date).getTime();
+    return sortDir === 1 ? ad - bd : bd - ad;
+  });
+
+  const filtered = stage === "all" ? all : all.filter((u) => u.stage === stage);
+  const total = filtered.length;
+  const data = filtered.slice(skip, skip + limit);
+
+  return NextResponse.json({
+    data,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 },
+  });
 }
