@@ -8,7 +8,6 @@ export type AdminSessionPayload = {
 };
 
 const COOKIE_NAME = "admin_session";
-const MAX_AGE = 7 * 24 * 60 * 60; // 1 week
 
 export function signAdminToken(payload: AdminSessionPayload): string {
   return jwt.sign(payload, process.env.ADMIN_JWT_SECRET!, { expiresIn: "7d" });
@@ -23,18 +22,6 @@ export async function getAdminSession(): Promise<AdminSessionPayload | null> {
   } catch {
     return null;
   }
-}
-
-export function setAdminSessionCookie(token: string): Record<string, string | boolean | number> {
-  return {
-    name: COOKIE_NAME,
-    value: token,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-    maxAge: MAX_AGE,
-    path: "/",
-  };
 }
 
 export const ADMIN_COOKIE_NAME = COOKIE_NAME;

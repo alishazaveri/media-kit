@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { getAdminUserByEmail } from "@/db/admin_user.db";
-import { signAdminToken, setAdminSessionCookie } from "@/lib/admin-session";
+import { signAdminToken } from "@/lib/admin-session";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,9 +28,14 @@ export async function POST(req: NextRequest) {
       name: admin.name,
     });
 
-    const cookie = setAdminSessionCookie(token);
     const res = NextResponse.json({ ok: true });
-    res.cookies.set(cookie as any);
+    res.cookies.set("admin_session", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60,
+      path: "/",
+    });
     return res;
   } catch (err) {
     console.error("POST /api/admin/auth/login:", err);
