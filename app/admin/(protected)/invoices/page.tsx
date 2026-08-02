@@ -152,7 +152,7 @@ function InvoicesContent() {
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-black text-gray-900">Invoices</h1>
         <p className="text-sm text-gray-400 mt-1">
@@ -221,7 +221,8 @@ function InvoicesContent() {
         ) : invoices.length === 0 ? (
           <p className="px-6 py-12 text-sm text-gray-400 text-center">No invoices found</p>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="overflow-x-auto">
+          <div className="min-w-4xl divide-y divide-gray-50">
             {/* Header */}
             <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-5 py-3 bg-gray-50">
               <button
@@ -321,6 +322,7 @@ function InvoicesContent() {
               </div>
             ))}
           </div>
+          </div>
         )}
       </div>
 
@@ -340,7 +342,7 @@ function InvoicesContent() {
 
 export default function AdminInvoicesPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-sm text-gray-400">Loading…</div>}>
+    <Suspense fallback={<div className="p-4 sm:p-8 text-sm text-gray-400">Loading…</div>}>
       <InvoicesContent />
     </Suspense>
   );

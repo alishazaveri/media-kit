@@ -166,70 +166,78 @@ export function ChartUI({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <h2 className="text-sm font-black text-gray-900">{title}</h2>
-          <div className="flex items-center gap-1">
-            {metrics.map((m) => (
-              <button
-                key={m.key}
-                onClick={() => onMetricChange(m.key)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                  metric === m.key
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                }`}
-              >
-                {m.label}
+      <div className="mb-3">
+
+        {/* Mobile: two balanced rows */}
+        <div className="sm:hidden space-y-1.5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-black text-gray-900">{title}</h2>
+            <div className="flex rounded-md border border-gray-200 overflow-hidden">
+              <button onClick={() => handleChartTypeChange("line")} title="Line chart" className={`px-2 py-1 transition-colors cursor-pointer ${chartType === "line" ? "bg-gray-900 text-white" : "bg-white text-gray-400 hover:bg-gray-50"}`}>
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><polyline points="1,11 4.5,6 7.5,8.5 13,2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
-            ))}
+              <button onClick={() => handleChartTypeChange("bar")} title="Bar chart" className={`px-2 py-1 transition-colors cursor-pointer ${chartType === "bar" ? "bg-gray-900 text-white" : "bg-white text-gray-400 hover:bg-gray-50"}`}>
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><rect x="1" y="7" width="3" height="6" rx="0.5" fill="currentColor" /><rect x="5.5" y="4" width="3" height="9" rx="0.5" fill="currentColor" /><rect x="10" y="1.5" width="3" height="11.5" rx="0.5" fill="currentColor" /></svg>
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              {metrics.map((m) => (
+                <button key={m.key} onClick={() => onMetricChange(m.key)} className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-colors cursor-pointer ${metric === m.key ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex rounded-md border border-gray-200 overflow-hidden">
+              {(["daily", "monthly"] as ChartGranularity[]).map((g) => (
+                <button key={g} onClick={() => onGranularityChange(g)} className={`px-2 py-0.5 text-[11px] font-semibold capitalize transition-colors cursor-pointer ${granularity === g ? "bg-gray-900 text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}>
+                  {g}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Chart type toggle */}
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-            <button
-              onClick={() => handleChartTypeChange("line")}
-              title="Line chart"
-              className={`px-2.5 py-1.5 transition-colors cursor-pointer ${
-                chartType === "line" ? "bg-gray-900 text-white" : "bg-white text-gray-400 hover:bg-gray-50"
-              }`}
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <polyline points="1,11 4.5,6 7.5,8.5 13,2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <button
-              onClick={() => handleChartTypeChange("bar")}
-              title="Bar chart"
-              className={`px-2.5 py-1.5 transition-colors cursor-pointer ${
-                chartType === "bar" ? "bg-gray-900 text-white" : "bg-white text-gray-400 hover:bg-gray-50"
-              }`}
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <rect x="1" y="7" width="3" height="6" rx="0.5" fill="currentColor" />
-                <rect x="5.5" y="4" width="3" height="9" rx="0.5" fill="currentColor" />
-                <rect x="10" y="1.5" width="3" height="11.5" rx="0.5" fill="currentColor" />
-              </svg>
-            </button>
+
+        {/* Desktop: single row */}
+        <div className="hidden sm:flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h2 className="text-sm font-black text-gray-900">{title}</h2>
+            <div className="flex items-center gap-1">
+              {metrics.map((m) => (
+                <button
+                  key={m.key}
+                  onClick={() => onMetricChange(m.key)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                    metric === m.key
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
           </div>
-          {/* Granularity toggle */}
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs">
-            {(["daily", "monthly"] as ChartGranularity[]).map((g) => (
-              <button
-                key={g}
-                onClick={() => onGranularityChange(g)}
-                className={`px-3 py-1.5 font-semibold capitalize transition-colors cursor-pointer ${
-                  granularity === g
-                    ? "bg-gray-900 text-white"
-                    : "bg-white text-gray-500 hover:bg-gray-50"
-                }`}
-              >
-                {g}
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+              <button onClick={() => handleChartTypeChange("line")} title="Line chart" className={`px-2.5 py-1.5 transition-colors cursor-pointer ${chartType === "line" ? "bg-gray-900 text-white" : "bg-white text-gray-400 hover:bg-gray-50"}`}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="1,11 4.5,6 7.5,8.5 13,2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
-            ))}
+              <button onClick={() => handleChartTypeChange("bar")} title="Bar chart" className={`px-2.5 py-1.5 transition-colors cursor-pointer ${chartType === "bar" ? "bg-gray-900 text-white" : "bg-white text-gray-400 hover:bg-gray-50"}`}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="7" width="3" height="6" rx="0.5" fill="currentColor" /><rect x="5.5" y="4" width="3" height="9" rx="0.5" fill="currentColor" /><rect x="10" y="1.5" width="3" height="11.5" rx="0.5" fill="currentColor" /></svg>
+              </button>
+            </div>
+            <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs">
+              {(["daily", "monthly"] as ChartGranularity[]).map((g) => (
+                <button key={g} onClick={() => onGranularityChange(g)} className={`px-3 py-1.5 font-semibold capitalize transition-colors cursor-pointer ${granularity === g ? "bg-gray-900 text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}>
+                  {g}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+
       </div>
 
       {/* Legend — only when multiple series */}

@@ -42,7 +42,7 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-black text-gray-900">Dashboard</h1>
         <p className="text-sm text-gray-400 mt-1">

@@ -132,7 +132,7 @@ function UsersContent() {
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-black text-gray-900">Users</h1>
         <p className="text-sm text-gray-400 mt-1">
@@ -143,7 +143,7 @@ function UsersContent() {
       </div>
 
       {/* Search + filter */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <div className="flex flex-col gap-3 mb-6">
         <input
           type="text"
           value={searchInput}
@@ -151,7 +151,18 @@ function UsersContent() {
           placeholder="Search by name, email or handle…"
           className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-gray-400 transition-colors bg-white w-full sm:w-72"
         />
-        <div className="flex flex-wrap gap-1.5">
+        {/* Mobile: dropdown */}
+        <select
+          className="sm:hidden border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 bg-white outline-none"
+          value={stage}
+          onChange={(e) => setParam("stage", e.target.value)}
+        >
+          {STAGES.map((s) => (
+            <option key={s.key} value={s.key}>{s.label}</option>
+          ))}
+        </select>
+        {/* Desktop: pills */}
+        <div className="hidden sm:flex flex-wrap gap-1.5">
           {STAGES.map((s) => (
             <button
               key={s.key}
@@ -175,7 +186,8 @@ function UsersContent() {
         ) : users.length === 0 ? (
           <p className="px-6 py-12 text-sm text-gray-400 text-center">No users found</p>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="overflow-x-auto">
+          <div className="min-w-160 divide-y divide-gray-50">
             {/* Header */}
             <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-3 bg-gray-50">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Creator</p>
@@ -227,6 +239,7 @@ function UsersContent() {
               );
             })}
           </div>
+          </div>
         )}
       </div>
 
@@ -246,7 +259,7 @@ function UsersContent() {
 
 export default function AdminUsersPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-sm text-gray-400">Loading…</div>}>
+    <Suspense fallback={<div className="p-4 sm:p-8 text-sm text-gray-400">Loading…</div>}>
       <UsersContent />
     </Suspense>
   );
