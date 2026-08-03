@@ -99,12 +99,15 @@ export async function GET(req: NextRequest) {
     rows.map((r) => [dateKey(new Date(r.date as Date)), r.subscriptions])
   );
 
+  // Cap at the last date we actually have data for (avoids a trailing zero for today)
+  const lastRow = rows.at(-1);
+  const end = lastRow ? new Date(lastRow.date as Date) : since;
+  end.setUTCHours(0, 0, 0, 0);
+
   // Generate complete date range
   const allDates: Date[] = [];
   const cursor = new Date(since);
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  while (cursor <= today) {
+  while (cursor <= end) {
     allDates.push(new Date(cursor));
     cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
