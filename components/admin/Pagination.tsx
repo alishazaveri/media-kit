@@ -24,9 +24,10 @@ function getPages(page: number, totalPages: number): (number | "…")[] {
 export function Pagination({ page, totalPages, total, limit, onPageChange, onLimitChange }: Props) {
   const pages = getPages(page, Math.max(1, totalPages));
   return (
-    <div className="flex items-center justify-between px-1 mt-4">
-      <p className="text-xs text-gray-400">{total.toLocaleString()} total</p>
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1 mt-4">
+      {/* Row 1 on mobile: total + per-page */}
+      <div className="flex items-center justify-between sm:justify-start gap-3">
+        <p className="text-xs text-gray-400">{total.toLocaleString()} total</p>
         <select
           value={limit}
           onChange={(e) => onLimitChange(Number(e.target.value))}
@@ -36,39 +37,44 @@ export function Pagination({ page, totalPages, total, limit, onPageChange, onLim
             <option key={n} value={n}>{n} / page</option>
           ))}
         </select>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => onPageChange(page - 1)}
-            disabled={page <= 1}
-            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors bg-white"
-          >
-            ← Prev
-          </button>
-          {pages.map((p, i) =>
-            p === "…" ? (
-              <span key={`e${i}`} className="px-1.5 text-xs text-gray-400">…</span>
-            ) : (
-              <button
-                key={p}
-                onClick={() => onPageChange(p as number)}
-                className={`w-8 h-8 text-xs font-semibold rounded-lg transition-colors ${
-                  p === page
-                    ? "bg-gray-900 text-white"
-                    : "border border-gray-200 text-gray-500 hover:border-gray-400 bg-white"
-                }`}
-              >
-                {p}
-              </button>
-            )
-          )}
-          <button
-            onClick={() => onPageChange(page + 1)}
-            disabled={page >= totalPages}
-            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors bg-white"
-          >
-            Next →
-          </button>
-        </div>
+      </div>
+
+      {/* Row 2 on mobile: prev / page numbers / next */}
+      <div className="flex items-center justify-center gap-1">
+        <button
+          onClick={() => onPageChange(page - 1)}
+          disabled={page <= 1}
+          className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors bg-white"
+        >
+          ← Prev
+        </button>
+        {pages.map((p, i) =>
+          p === "…" ? (
+            <span key={`e${i}`} className="hidden sm:inline px-1.5 text-xs text-gray-400">…</span>
+          ) : (
+            <button
+              key={p}
+              onClick={() => onPageChange(p as number)}
+              className={`hidden sm:flex w-8 h-8 items-center justify-center text-xs font-semibold rounded-lg transition-colors ${
+                p === page
+                  ? "bg-gray-900 text-white"
+                  : "border border-gray-200 text-gray-500 hover:border-gray-400 bg-white"
+              }`}
+            >
+              {p}
+            </button>
+          )
+        )}
+        <span className="sm:hidden text-xs text-gray-400 px-2">
+          {page} / {totalPages}
+        </span>
+        <button
+          onClick={() => onPageChange(page + 1)}
+          disabled={page >= totalPages}
+          className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors bg-white"
+        >
+          Next →
+        </button>
       </div>
     </div>
   );
