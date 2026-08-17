@@ -55,6 +55,10 @@ function OnboardingContent() {
 
     // Instagram OAuth just completed — go straight to plan selection
     if (searchParams.get("connected") === "true") {
+      if (!sessionStorage.getItem("cr_fired")) {
+        sessionStorage.setItem("cr_fired", "1");
+        trackPixelEvent("CompleteRegistration");
+      }
       setStep("activate");
       router.replace("/app/onboarding?step=activate");
       return;
