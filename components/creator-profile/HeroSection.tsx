@@ -15,6 +15,9 @@ interface HeroSectionProps {
   availableForCollabs: boolean;
   nicheTags: string[];
   email?: string;
+  showContact?: boolean;
+  onUpgradeClick?: () => void;
+  isPreview?: boolean;
 }
 
 export function HeroSection({
@@ -29,6 +32,9 @@ export function HeroSection({
   availableForCollabs,
   nicheTags,
   email,
+  showContact = true,
+  onUpgradeClick,
+  isPreview = false,
   baseColor,
   accentColor,
   darkMode = false,
@@ -209,32 +215,53 @@ export function HeroSection({
             </div>
 
             {/* CTA */}
-            <div className="flex flex-wrap gap-3 pt-2">
-              <a
-                href={email ? buildMailto(email, name) : undefined}
-                className="group inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-bold text-sm transition-all hover:translate-y-0.5 active:translate-y-1"
-                style={
-                  {
-                    backgroundColor: accentColor,
-                    boxShadow: `0 8px 0 color-mix(in srgb, ${accentColor} 65%, black)`,
-                  } as React.CSSProperties
-                }
-              >
-                Work With Me
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="group-hover:rotate-45 transition-transform"
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              {showContact ? (
+                <a
+                  href={email ? buildMailto(email, name) : undefined}
+                  className="group inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-bold text-sm transition-all hover:translate-y-0.5 active:translate-y-1"
+                  style={
+                    {
+                      backgroundColor: accentColor,
+                      boxShadow: `0 8px 0 color-mix(in srgb, ${accentColor} 65%, black)`,
+                    } as React.CSSProperties
+                  }
                 >
-                  <path d="M7 7h10v10M7 17 17 7" />
-                </svg>
-              </a>
+                  Work With Me
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="group-hover:rotate-45 transition-transform"
+                  >
+                    <path d="M7 7h10v10M7 17 17 7" />
+                  </svg>
+                </a>
+              ) : isPreview ? (
+                <div className="flex items-center gap-2.5">
+                  <span className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm bg-gray-100 text-gray-300 cursor-not-allowed select-none">
+                    Work With Me
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M7 7h10v10M7 17 17 7" />
+                    </svg>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onUpgradeClick}
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md hover:bg-amber-100 transition-colors cursor-pointer"
+                  >
+                    <svg width="9" height="9" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                      <path d="M8 1a2 2 0 0 1 2 2v2H6V3a2 2 0 0 1 2-2zm3 4V3A3 3 0 1 0 5 3v2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2z" fill="currentColor"/>
+                    </svg>
+                    Pro
+                  </button>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

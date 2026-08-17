@@ -41,6 +41,9 @@ export function PartnerSection({
   accentColor,
   contrastColor,
   darkMode = false,
+  showContact = true,
+  isPreview = false,
+  onUpgradeClick,
 }: {
   sortedCollabs: Collaboration[];
   visiblePackages: Package[];
@@ -53,6 +56,9 @@ export function PartnerSection({
   accentColor: string;
   contrastColor: string;
   darkMode?: boolean;
+  showContact?: boolean;
+  isPreview?: boolean;
+  onUpgradeClick?: () => void;
 }) {
   const [testimonialIdx, setTestimonialIdx] = useState(0);
   const t = TESTIMONIALS[testimonialIdx];
@@ -138,40 +144,49 @@ export function PartnerSection({
                           )}
                         </div>
                       </div>
-                      <a
-                        href={
-                          email
-                            ? buildPackageMailto(
-                                email,
-                                name,
-                                title,
-                                price || "—",
-                              )
-                            : undefined
-                        }
-                        className="w-12 h-12 rounded-full border-1 flex items-center justify-center hover:border-[var(--accent)] hover:text-white transition-colors shrink-0 text-[var(--accent)] hover:bg-[var(--accent)]"
-                        style={
-                          {
-                            "--accent": accentColor,
-                            borderColor: `${accentColor}80`,
-                          } as React.CSSProperties
-                        }
-                      >
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
+                      {showContact ? (
+                        <a
+                          href={
+                            email
+                              ? buildPackageMailto(
+                                  email,
+                                  name,
+                                  title,
+                                  price || "—",
+                                )
+                              : undefined
+                          }
+                          className="w-12 h-12 rounded-full border-1 flex items-center justify-center hover:border-[var(--accent)] hover:text-white transition-colors shrink-0 text-[var(--accent)] hover:bg-[var(--accent)]"
+                          style={
+                            {
+                              "--accent": accentColor,
+                              borderColor: `${accentColor}80`,
+                            } as React.CSSProperties
+                          }
                         >
-                          <path
-                            d="M7 17L17 7M17 7H7M17 7v10"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </a>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </a>
+                      ) : isPreview ? (
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed select-none">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                              <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={onUpgradeClick}
+                            className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md hover:bg-amber-100 transition-colors cursor-pointer shrink-0"
+                          >
+                            <svg width="9" height="9" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                              <path d="M8 1a2 2 0 0 1 2 2v2H6V3a2 2 0 0 1 2-2zm3 4V3A3 3 0 1 0 5 3v2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2z" fill="currentColor"/>
+                            </svg>
+                            Pro
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 ))}

@@ -19,8 +19,8 @@ import { getDefaultPackages } from "@/lib/default-packages";
 
 export default function DashboardPage() {
   const { sidebarCollapsed, setSidebarCollapsed, openActivateModal } = useDashboard();
-  const { subscription, trialEndsAt, hasScheduledSubscription } = useUser();
-  const isInactive = !subscription && !hasScheduledSubscription && !(trialEndsAt && new Date(trialEndsAt) > new Date());
+  const { subscription, trialEndsAt, hasScheduledSubscription, isFreePlan } = useUser();
+  const isInactive = false;
 
   const [analyticsLoaded, setAnalyticsLoaded] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -328,7 +328,6 @@ export default function DashboardPage() {
 
   /* Publish */
   const handlePublish = async () => {
-    if (isInactive) { openActivateModal(); return; }
     setPublishing(true);
     try {
       await Promise.all([
@@ -583,7 +582,17 @@ export default function DashboardPage() {
           onFeaturedPostsChange={setFeaturedPosts}
           receiptsVisible={receiptsVisible}
           setReceiptsVisible={setReceiptsVisible}
-          theme={theme}
+          theme={(() => {
+            if (isFreePlan && draftThemeIdentifier) {
+              const t = getThemeByIdentifier(draftThemeIdentifier);
+              if (t?.is_premium) {
+                const def = getThemeByIdentifier("default")!;
+                return { accent_color: def.accent_color, base_color: def.base_color, contrast_color: def.contrast_color };
+              }
+              return theme ? { ...theme, dark_mode: false } : theme;
+            }
+            return theme;
+          })()}
           onThemeChange={(identifier, themeData) => {
             setDraftThemeIdentifier(identifier);
             setDraftDarkMode(themeData.dark_mode ?? false);
@@ -593,6 +602,8 @@ export default function DashboardPage() {
           publishing={publishing}
           hasUnpublishedChanges={hasUnpublishedChanges}
           isInactive={isInactive}
+          isFreePlan={isFreePlan}
+          onUpgradeClick={openActivateModal}
           onPublish={handlePublish}
         />
       </div>

@@ -66,6 +66,8 @@ interface Props {
   publishing?: boolean;
   hasUnpublishedChanges?: boolean;
   isInactive?: boolean;
+  isFreePlan?: boolean;
+  onUpgradeClick?: () => void;
   onPublish?: () => void;
 }
 
@@ -121,6 +123,8 @@ export function CustomizeTab(props: Props) {
     publishing = false,
     hasUnpublishedChanges = false,
     isInactive = false,
+    isFreePlan = false,
+    onUpgradeClick,
     onPublish,
   } = props;
 
@@ -149,6 +153,7 @@ export function CustomizeTab(props: Props) {
     servicesVisible,
     receiptsVisible,
     theme,
+    isPaidPlan: !isFreePlan,
   };
 
   // Keep ref in sync so the PREVIEW_READY handler always sends fresh data
@@ -163,11 +168,13 @@ export function CustomizeTab(props: Props) {
           { type: "PREVIEW_UPDATE", payload: previewPropsRef.current },
           "*",
         );
+      } else if (e.data?.type === "UPGRADE_CLICK") {
+        onUpgradeClick?.();
       }
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, []);
+  }, [onUpgradeClick]);
 
   // Push updates whenever form values change after the preview is already live
   useEffect(() => {
@@ -192,6 +199,7 @@ export function CustomizeTab(props: Props) {
     receiptsVisible,
     featuredPosts,
     theme,
+    isFreePlan,
   ]);
 
   const formProps = {
@@ -240,7 +248,9 @@ export function CustomizeTab(props: Props) {
     publishing,
     hasUnpublishedChanges,
     isInactive,
+    isFreePlan,
     onThemeChange,
+    onUpgradeClick,
     onProfilePicUploaded: props.onProfilePicUploaded,
     onSectionFocus: (sectionId: string) => {
       iframeRef.current?.contentWindow?.postMessage(

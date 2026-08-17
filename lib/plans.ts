@@ -23,6 +23,7 @@ export type LocalizedPlan = {
   features: string[];
   currency: Currency;
   billingOptions: BillingOption[];
+  isFree?: boolean;
 };
 
 export type PlanLookupResult = {
@@ -32,13 +33,28 @@ export type PlanLookupResult = {
 };
 
 const CREATOR_PRO_FEATURES = [
-  "Your unique kloot.io link",
+  "Everything in free",
   "7 customizable themes",
-  "Daily updating analytics & insights",
+  "Work with me button",
 ];
+
+const FREE_PLAN: LocalizedPlan = {
+  id: "free",
+  name: "Free",
+  description: "Get started at no cost.",
+  features: [
+    "Your unique kloot.io link",
+    "1 theme (Default)",
+    "Daily updating analytics & insights",
+  ],
+  currency: "INR",
+  billingOptions: [],
+  isFree: true,
+};
 
 const COUNTRY_PLANS: Record<string, LocalizedPlan[]> = {
   IN: [
+    FREE_PLAN,
     {
       id: "creator_pro",
       name: "Creator Pro",
@@ -73,6 +89,7 @@ const COUNTRY_PLANS: Record<string, LocalizedPlan[]> = {
     },
   ],
   US: [
+    { ...FREE_PLAN, currency: "USD" },
     {
       id: "creator_pro",
       name: "Creator Pro",

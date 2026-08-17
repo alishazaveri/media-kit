@@ -6,6 +6,7 @@ import { getSocialChannelByPlatform } from "@/db/social_channel.db";
 import { getUserData } from "@/db/user_data.db";
 import { getInsightBySocialChannel } from "@/db/insight.db";
 import { getCustomization } from "@/db/customization.db";
+import { getSubscriptionsByUserId } from "@/db/subscription.db";
 import { getThemeByIdentifier } from "@/constants/themes";
 import { CreatorProfile } from "@/components/CreatorProfile";
 import isLinkActive from "@/lib/isLinkActive";
@@ -113,22 +114,31 @@ export default async function PublishedProfilePage(props: {
     return <WipPage username={username} />;
   }
 
-  const [userData, insight, customization] = await Promise.all([
+  const [userData, insight, customization, subs] = await Promise.all([
     getUserData(userId, "profile"),
     getInsightBySocialChannel((channel as any)._id.toString()),
     getCustomization(userId, "published"),
+    getSubscriptionsByUserId(userId),
   ]);
 
+  const now = new Date();
+  const trialEndsAt = (user as any).trial_ends_at ?? null;
+  const activeSub = (subs as any[]).find(
+    (s) => s.current_period_end && new Date(s.current_period_end) > now
+  ) ?? null;
+  const isPaidPlan = !!activeSub || !!(trialEndsAt && new Date(trialEndsAt) > now);
+
   const themeIdentifier = (customization as any)?.theme_identifier;
-  const resolved = themeIdentifier
-    ? getThemeByIdentifier(themeIdentifier)
-    : undefined;
-  const theme = resolved
+  const savedTheme = themeIdentifier ? getThemeByIdentifier(themeIdentifier) : undefined;
+  const effectiveTheme = (!isPaidPlan && savedTheme?.is_premium)
+    ? getThemeByIdentifier("default")
+    : savedTheme;
+  const theme = effectiveTheme
     ? {
-        accent_color: resolved.accent_color,
-        base_color: resolved.base_color,
-        contrast_color: resolved.contrast_color,
-        dark_mode: (customization as any)?.dark_mode ?? false,
+        accent_color: effectiveTheme.accent_color,
+        base_color: effectiveTheme.base_color,
+        contrast_color: effectiveTheme.contrast_color,
+        dark_mode: isPaidPlan ? ((customization as any)?.dark_mode ?? false) : false,
       }
     : undefined;
 
@@ -221,6 +231,7 @@ export default async function PublishedProfilePage(props: {
         email={published.display_email ?? ""}
         servicesVisible={published.services_visible !== false}
         receiptsVisible={published.receipts_visible !== false}
+        isPaidPlan={isPaidPlan}
       />
     </main>
   );

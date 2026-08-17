@@ -63,9 +63,11 @@ export interface CustomizeFormProps {
   publishing?: boolean;
   hasUnpublishedChanges?: boolean;
   isInactive?: boolean;
+  isFreePlan?: boolean;
   onThemeChange?: (identifier: string, theme: ThemeData) => void;
   onProfilePicUploaded?: (url: string | null) => void;
   onSectionFocus?: (sectionId: string) => void;
+  onUpgradeClick?: () => void;
 }
 
 export function CustomizeForm({
@@ -104,9 +106,11 @@ export function CustomizeForm({
   publishing = false,
   hasUnpublishedChanges = false,
   isInactive = false,
+  isFreePlan = false,
   onThemeChange,
   onProfilePicUploaded,
   onSectionFocus,
+  onUpgradeClick,
 }: CustomizeFormProps) {
   return (
     <div className="w-full lg:w-[520px] shrink-0 overflow-y-auto px-4 lg:px-6 lg:mb-5 mb-[68px] mt-5 space-y-4 ">
@@ -189,11 +193,15 @@ export function CustomizeForm({
         setNicheTags={setNicheTags}
         onProfilePicUploaded={onProfilePicUploaded}
         onSectionFocus={onSectionFocus}
+        isFreePlan={isFreePlan}
+        onUpgradeClick={onUpgradeClick}
       />
 
       <ThemeSection
+        isFreePlan={isFreePlan}
         onThemeChange={onThemeChange}
         onSectionFocus={onSectionFocus}
+        onUpgradeClick={onUpgradeClick}
       />
 
       <FeaturedPostsSection

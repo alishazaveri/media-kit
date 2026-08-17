@@ -46,6 +46,9 @@ export interface CreatorProfileProps {
   email?: string;
   servicesVisible?: boolean;
   receiptsVisible?: boolean;
+  isPaidPlan?: boolean;
+  onUpgradeClick?: () => void;
+  isPreview?: boolean;
 }
 
 export function CreatorProfile({
@@ -125,6 +128,9 @@ export function CreatorProfile({
   email = "",
   servicesVisible = true,
   receiptsVisible = true,
+  isPaidPlan = true,
+  onUpgradeClick,
+  isPreview = false,
 }: CreatorProfileProps) {
   const nameParts = name.trim().split(/\s+/);
   const firstName = nameParts[0] || "";
@@ -158,6 +164,9 @@ export function CreatorProfile({
         accentColor={accentColor}
         contrastColor={contrastColor}
         darkMode={darkMode}
+        showContact={isPaidPlan}
+        onUpgradeClick={onUpgradeClick}
+        isPreview={isPreview}
       />
       <HeroSection
         firstName={firstName}
@@ -171,6 +180,9 @@ export function CreatorProfile({
         availableForCollabs={availableForCollabs}
         nicheTags={nicheTags}
         email={email}
+        showContact={isPaidPlan}
+        onUpgradeClick={onUpgradeClick}
+        isPreview={isPreview}
         baseColor={baseColor}
         accentColor={accentColor}
         contrastColor={contrastColor}
@@ -217,6 +229,9 @@ export function CreatorProfile({
         accentColor={accentColor}
         contrastColor={contrastColor}
         darkMode={darkMode}
+        showContact={isPaidPlan}
+        isPreview={isPreview}
+        onUpgradeClick={onUpgradeClick}
       />
       <FooterSection
         handle={handle}
@@ -224,6 +239,9 @@ export function CreatorProfile({
         email={email}
         accentColor={accentColor}
         contrastColor={contrastColor}
+        showEmail={isPaidPlan}
+        isPreview={isPreview}
+        onUpgradeClick={onUpgradeClick}
       />
     </div>
   );

@@ -27,6 +27,7 @@ export type UserContextValue = {
   username: string;
   profilePic: string | null;
   isLinkActive: boolean;
+  isFreePlan: boolean;
   trialEndsAt: string | null;
   hasScheduledSubscription: boolean;
   scheduledSubscription: ScheduledSubscription | null;
@@ -41,6 +42,7 @@ const UserContext = createContext<UserContextValue>({
   username: "",
   profilePic: null,
   isLinkActive: false,
+  isFreePlan: true,
   trialEndsAt: null,
   hasScheduledSubscription: false,
   scheduledSubscription: null,
@@ -56,6 +58,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     username: "",
     profilePic: null,
     isLinkActive: false,
+    isFreePlan: true,
     trialEndsAt: null,
     hasScheduledSubscription: false,
     scheduledSubscription: null,

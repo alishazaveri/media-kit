@@ -29,5 +29,11 @@ export default function PreviewPage() {
     return <div className="h-screen bg-white" />;
   }
 
-  return <CreatorProfile {...props} />;
+  return (
+    <CreatorProfile
+      {...props}
+      isPreview
+      onUpgradeClick={() => window.parent.postMessage({ type: "UPGRADE_CLICK" }, "*")}
+    />
+  );
 }
