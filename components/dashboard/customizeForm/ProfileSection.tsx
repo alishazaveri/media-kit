@@ -21,6 +21,8 @@ interface ProfileSectionProps {
   setNicheTags: (v: string[]) => void;
   onProfilePicUploaded?: (url: string | null) => void;
   onSectionFocus?: (sectionId: string) => void;
+  isFreePlan?: boolean;
+  onUpgradeClick?: () => void;
 }
 
 export function ProfileSection({
@@ -41,6 +43,8 @@ export function ProfileSection({
   setNicheTags,
   onProfilePicUploaded,
   onSectionFocus,
+  isFreePlan = false,
+  onUpgradeClick,
 }: ProfileSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const picMenuRef = useRef<HTMLDivElement>(null);
@@ -153,21 +157,20 @@ export function ProfileSection({
               </div>
             )}
             {!uploading && (
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-                  <circle cx="12" cy="13" r="4" />
-                </svg>
-              </div>
+              <>
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                </div>
+                <div className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center pointer-events-none">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </div>
+              </>
             )}
             {uploading && (
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl">
@@ -279,11 +282,26 @@ export function ProfileSection({
       {/* Contact email */}
       <div className="grid grid-cols-1 min-[425px]:grid-cols-2 gap-3">
         <div>
-          <Label>Contact email</Label>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-sm font-medium text-gray-900">Contact email</span>
+            {isFreePlan && (
+              <button
+                type="button"
+                onClick={onUpgradeClick}
+                className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md cursor-pointer hover:bg-amber-100 transition-colors"
+              >
+                <svg width="9" height="9" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                  <path d="M8 1a2 2 0 0 1 2 2v2H6V3a2 2 0 0 1 2-2zm3 4V3A3 3 0 1 0 5 3v2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2z" fill="currentColor"/>
+                </svg>
+                Pro
+              </button>
+            )}
+          </div>
           <Input
             value={displayEmail}
-            onChange={setDisplayEmail}
+            onChange={isFreePlan ? undefined : setDisplayEmail}
             placeholder="hi@you.com"
+            readOnly={isFreePlan}
           />
         </div>
       </div>

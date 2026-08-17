@@ -2,7 +2,6 @@ import config from "@/lib/config";
 import instagramConnect from "@/lib/instagramConnect";
 import { connectInstagramChannel } from "@/services/social_channel.service";
 import { fetchAndSaveInstagramAnalytics } from "@/services/instagram.service";
-import isLinkActive from "@/lib/isLinkActive";
 import { getUserById, updateUser } from "@/db/user.db";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
@@ -122,10 +121,7 @@ export async function GET(request: NextRequest) {
       const sep = returnTo.includes("?") ? "&" : "?";
       successRedirect = `${config.PUBLIC_URL}${returnTo}${sep}ig_connected=1`;
     } else {
-      const hasPlan = await isLinkActive(userId).catch(() => false);
-      successRedirect = hasPlan
-        ? `${config.PUBLIC_URL}/app/dashboard`
-        : `${config.PUBLIC_URL}/app/onboarding?connected=true`;
+      successRedirect = `${config.PUBLIC_URL}/app/onboarding?connected=true`;
     }
     return NextResponse.redirect(successRedirect);
   } catch (err) {

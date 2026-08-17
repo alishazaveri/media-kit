@@ -23,7 +23,7 @@ export const THEMES: Theme[] = [
     accent_color: "#6F42C1",
     base_color: "#F3EFFF",
     contrast_color: "#160D26",
-    is_premium: false,
+    is_premium: true,
   },
   {
     identifier: "blues",
@@ -31,7 +31,7 @@ export const THEMES: Theme[] = [
     accent_color: "#3363ea",
     base_color: "#edfcf5",
     contrast_color: "#0D1B2A",
-    is_premium: false,
+    is_premium: true,
   },
   {
     identifier: "chocolate",
@@ -39,7 +39,7 @@ export const THEMES: Theme[] = [
     accent_color: "#8D5B4C",
     base_color: "#FDF8F5",
     contrast_color: "#1A1210",
-    is_premium: false,
+    is_premium: true,
   },
   {
     identifier: "forest",
@@ -47,7 +47,7 @@ export const THEMES: Theme[] = [
     accent_color: "#2E7D32",
     base_color: "#F1F8F2",
     contrast_color: "#0B1A0E",
-    is_premium: false,
+    is_premium: true,
   },
   {
     identifier: "thunder",
@@ -55,7 +55,7 @@ export const THEMES: Theme[] = [
     accent_color: "#495057",
     base_color: "#F1F3F5",
     contrast_color: "#0A0A0A",
-    is_premium: false,
+    is_premium: true,
   },
   {
     identifier: "bubblegum",
@@ -63,7 +63,7 @@ export const THEMES: Theme[] = [
     accent_color: "#D63384",
     base_color: "#FFF0F5",
     contrast_color: "#2B0A18",
-    is_premium: false,
+    is_premium: true,
   },
 ];
 

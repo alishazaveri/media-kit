@@ -8,14 +8,13 @@ import { ConnectStep } from "@/components/onBoarding/ConnectStep";
 import { PreviewStep } from "@/components/onBoarding/PreviewStep";
 import { ActivateStep } from "@/components/onBoarding/ActivateStep";
 import { useUser } from "@/contexts/UserContext";
-import { PageLoader } from "@/components/ui/PageLoader";
 import { trackPixelEvent } from "@/lib/pixel";
 
 type Step = "username" | "signup" | "connect" | "preview" | "activate";
 
 function resolveStep(searchParams: ReturnType<typeof useSearchParams>): Step {
   if (searchParams.get("error")) return "connect";
-  if (searchParams.get("connected") === "true") return "preview";
+  if (searchParams.get("connected") === "true") return "activate";
   const stepParam = searchParams.get("step");
   if (stepParam === "connect") return "connect";
   if (stepParam === "preview") return "preview";
@@ -33,7 +32,7 @@ function resolveConnectError(searchParams: ReturnType<typeof useSearchParams>): 
 
 function OnboardingContent() {
   const router = useRouter();
-  const { refresh, isLinkActive, loading } = useUser();
+  const { refresh } = useUser();
   const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>(() => resolveStep(searchParams));
   const [userId, setUserId] = useState("");
@@ -54,10 +53,10 @@ function OnboardingContent() {
       return;
     }
 
-    // Instagram OAuth just completed — clean up the URL
+    // Instagram OAuth just completed — go straight to plan selection
     if (searchParams.get("connected") === "true") {
-      setStep("preview");
-      router.replace("/app/onboarding?step=preview");
+      setStep("activate");
+      router.replace("/app/onboarding?step=activate");
       return;
     }
 
@@ -71,12 +70,6 @@ function OnboardingContent() {
     }
     // signup has no URL param — reloading lands back on username (default state)
   }, [searchParams]);
-
-  useEffect(() => {
-    if (step === "activate" && !loading && isLinkActive) {
-      router.push("/app/dashboard");
-    }
-  }, [step, loading, isLinkActive, router]);
 
   return (
     <div>
@@ -113,9 +106,7 @@ function OnboardingContent() {
         />
       )}
       {step === "activate" && (
-        loading
-          ? <PageLoader />
-          : !isLinkActive && <ActivateStep onNext={() => { refresh(); router.push("/app/dashboard"); }} onSkip={() => router.push("/app/dashboard")} />
+        <ActivateStep onNext={() => { refresh(); router.push("/app/dashboard"); }} onSkip={() => router.push("/app/dashboard")} />
       )}
     </div>
   );

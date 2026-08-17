@@ -29,8 +29,10 @@ export default function PricingPage() {
   const [billing, setBilling] = useState<BillingFrequency>("yearly");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { country } = useLocale();
-  const plans = getPlans(country);
-  const discountPct = plans[0]?.billingOptions.find((b) => b.frequency === "yearly")?.discountPct ?? 15;
+  const allPlans = getPlans(country);
+  const freePlan = allPlans.find((p) => p.isFree) ?? null;
+  const paidPlans = allPlans.filter((p) => !p.isFree);
+  const discountPct = paidPlans[0]?.billingOptions.find((b) => b.frequency === "yearly")?.discountPct ?? 15;
 
   return (
     <div className="min-h-screen bg-[#FAF8F5]">
@@ -69,15 +71,49 @@ export default function PricingPage() {
         </div>
 
         {/* Plan cards */}
-        <div className="max-w-sm mx-auto flex flex-col gap-4">
-          {plans.map((plan) => {
+        <div className="max-w-3xl mx-auto flex flex-col sm:flex-row gap-4 justify-center">
+          {/* Free plan card */}
+          {freePlan && (
+            <div className="bg-gray-50 rounded-3xl border border-gray-200 p-8 flex flex-col gap-6 shadow-sm sm:flex-1">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 mb-1">{freePlan.name}</h2>
+                <p className="text-sm text-gray-400">{freePlan.description}</p>
+              </div>
+              <div>
+                <div className="flex items-end gap-2 mb-1">
+                  <span className="text-5xl font-black text-gray-900">₹0</span>
+                  <span className="text-lg text-gray-400 mb-2">/month</span>
+                </div>
+                <p className="text-sm text-gray-400">No credit card required</p>
+              </div>
+              <ul className="space-y-3">
+                {freePlan.features.map((f) => (
+                  <li key={f} className="flex items-center gap-3 text-sm text-gray-600">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                      <path d="M3 8L6.5 11.5L13 5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="/app/onboarding"
+                className="block w-full border border-gray-200 text-gray-500 text-sm font-semibold text-center py-3 rounded-xl transition-colors hover:border-gray-400"
+              >
+                Start free
+              </a>
+            </div>
+          )}
+
+          {/* Paid plan cards */}
+          {paidPlans.map((plan) => {
             const billingOption = plan.billingOptions.find((b) => b.frequency === billing);
             if (!billingOption) return null;
             const symbol = plan.currency === "INR" ? "₹" : "$";
             return (
               <div
                 key={plan.id}
-                className="bg-white rounded-3xl border border-gray-200 p-8 flex flex-col gap-6 shadow-sm"
+                className="bg-white rounded-3xl border border-gray-200 p-8 flex flex-col gap-6 shadow-sm sm:flex-1"
               >
                 <div>
                   <h2 className="text-lg font-bold text-gray-900 mb-1">{plan.name}</h2>

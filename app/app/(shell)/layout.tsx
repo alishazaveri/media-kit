@@ -44,7 +44,7 @@ function AppBanner() {
     });
     return (
       <Banner variant="amber">
-        Your kloot link will be deactivated on <strong>{formatted}</strong> ·{" "}
+        Your Pro plan ends on <strong>{formatted}</strong> ·{" "}
         <span className="block sm:inline">
           <Link href="/app/plan" className="font-semibold text-amber-900 underline underline-offset-2">
             Resume plan
@@ -54,14 +54,14 @@ function AppBanner() {
     );
   }
 
-  // No subscription and trial expired or never existed
+  // No subscription and trial expired or never existed — free plan
   const trialActive = trialEndsAt && new Date(trialEndsAt) > now;
   if (!subscription && !hasScheduledSubscription && !trialActive) {
     return (
-      <Banner variant="primary">
-        Your kloot link is inactive ·{" "}
+      <Banner variant="amber">
+        You&apos;re on the free plan ·{" "}
         <Link href="/app/plan" className="font-semibold underline underline-offset-2">
-          Activate now →
+          Upgrade to Pro →
         </Link>
       </Banner>
     );
@@ -87,8 +87,8 @@ function ActivateModal({ onClose }: { onClose: () => void }) {
           </svg>
         </button>
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Your Kloot link is inactive</h2>
-          <p className="text-sm text-gray-400 mt-1">Subscribe to make your media kit live and visible to brands</p>
+          <h2 className="text-xl font-bold text-gray-900">Go Pro</h2>
+          <p className="text-sm text-gray-400 mt-1">Unlock themes and your contact button.</p>
         </div>
         <PricingCards
           userId={userId}

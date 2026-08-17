@@ -7,7 +7,8 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import SubscribeButtonHOC from "@/components/SubscribeButtonHOC";
 import { PricingCards } from "@/components/PricingCards";
 import { useUser } from "@/contexts/UserContext";
-import { findPlanByGatewayPlanId } from "@/lib/plans";
+import { findPlanByGatewayPlanId, getPlans } from "@/lib/plans";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface Invoice {
   _id: string;
@@ -29,7 +30,11 @@ function formatDate(dateStr: string | null) {
 }
 
 export function PlanTab() {
-  const { userId, subscription, scheduledSubscription, trialEndsAt, loading, refresh } = useUser();
+  const { userId, subscription, scheduledSubscription, trialEndsAt, loading, refresh, isFreePlan } = useUser();
+  const { country } = useLocale();
+  const allPlans = getPlans(country);
+  const freePlan = allPlans.find((p) => p.isFree) ?? null;
+  const symbol = (allPlans.find((p) => !p.isFree)?.currency === "INR") ? "₹" : "$";
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showCancelScheduledModal, setShowCancelScheduledModal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -115,8 +120,8 @@ export function PlanTab() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Activate your kloot link</h2>
-                <p className="text-sm text-gray-500 mt-0.5">One simple plan. Cancel anytime.</p>
+                <h2 className="text-lg font-bold text-gray-900">Go Pro</h2>
+                <p className="text-sm text-gray-500 mt-0.5">Unlock themes and your contact button.</p>
               </div>
               <button
                 onClick={() => setShowActivateModal(false)}
@@ -129,6 +134,7 @@ export function PlanTab() {
             </div>
             <PricingCards
               userId={userId}
+              currentPlanIsFree={isFreePlan}
               startAt={trialEndsAt && new Date(trialEndsAt) > new Date() ? Math.floor(new Date(trialEndsAt).getTime() / 1000) : undefined}
               onSuccess={() => { setShowActivateModal(false); refresh(); }}
             />
@@ -204,7 +210,7 @@ export function PlanTab() {
               <div>
                 <p className="text-sm font-semibold text-amber-800">Plan cancellation scheduled</p>
                 <p className="text-sm text-amber-700 mt-0.5">
-                  Your kloot link stays active until <strong>{renewalDate}</strong>. No further charges will be made.
+                  Your Pro access stays active until <strong>{renewalDate}</strong>. No further charges will be made.
                 </p>
               </div>
             </div>
@@ -264,14 +270,36 @@ export function PlanTab() {
                 </p>
               )}
             </div>
-          ) : !loading ? (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center flex flex-col gap-3 items-center">
-              <p className="text-gray-500 text-sm">You don&apos;t have an active plan.</p>
-              <Button variant="primary" size="sm" className="rounded-xl" onClick={() => setShowActivateModal(true)}>
-                Activate your kloot link
+          ) : isFreePlan && !loading ? (
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-bold text-gray-900 text-base">Free</p>
+                  <p className="text-3xl font-black text-gray-900 mt-1">
+                    {symbol}0
+                    <span className="text-base font-normal text-gray-400"> /mo</span>
+                  </p>
+                  <p className="text-sm text-gray-400 mt-0.5">No credit card required</p>
+                </div>
+                <span className="bg-gray-100 text-gray-500 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Current plan
+                </span>
+              </div>
+              <ul className="space-y-2">
+                {(freePlan?.features ?? []).map((f) => (
+                  <li key={f} className="flex items-center gap-2.5 text-sm text-gray-600">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                      <path d="M3 8L6.5 11.5L13 5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Button variant="primary" size="sm" className="rounded-xl self-start" onClick={() => setShowActivateModal(true)}>
+                Upgrade to Pro
               </Button>
             </div>
-          ) : null}
+          ) : !loading ? null : null}
 
           {/* Scheduled plan actions — switch billing or cancel before it starts */}
           {scheduledMatched && scheduledOtherBillingOption && scheduledStartAt && (
