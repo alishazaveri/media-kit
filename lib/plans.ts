@@ -34,7 +34,7 @@ export type PlanLookupResult = {
 
 const CREATOR_PRO_FEATURES = [
   "Everything in free",
-  "7 customizable themes",
+  "7 customizable themes + dark mode",
   "Work with me button",
 ];
 
