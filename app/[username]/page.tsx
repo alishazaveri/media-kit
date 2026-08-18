@@ -233,6 +233,17 @@ export default async function PublishedProfilePage(props: {
         receiptsVisible={published.receipts_visible !== false}
         isPaidPlan={isPaidPlan}
       />
+      {!isPaidPlan && (
+        <a
+          href="https://kloot.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-5 right-5 sm:bottom-10 sm:right-10 z-50 flex items-center gap-2 bg-white/40 backdrop-blur-md border border-white/30 shadow-md rounded-full px-4 py-2 sm:px-5 sm:py-2.5 text-xs font-semibold text-gray-800 hover:bg-white transition-colors"
+        >
+          Made with
+          <img src="/assets/images/logo/logo-transparent-slim.png" alt="Kloot" className="h-3.5 object-contain" />
+        </a>
+      )}
     </main>
   );
 }
