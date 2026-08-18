@@ -33,6 +33,7 @@ export default function PricingPage() {
   const freePlan = allPlans.find((p) => p.isFree) ?? null;
   const paidPlans = allPlans.filter((p) => !p.isFree);
   const discountPct = paidPlans[0]?.billingOptions.find((b) => b.frequency === "yearly")?.discountPct ?? 15;
+  const symbol = paidPlans[0]?.currency === "INR" ? "₹" : "$";
 
   return (
     <div className="min-h-screen bg-[#FAF8F5]">
@@ -81,7 +82,7 @@ export default function PricingPage() {
               </div>
               <div>
                 <div className="flex items-end gap-2 mb-1">
-                  <span className="text-5xl font-black text-gray-900">₹0</span>
+                  <span className="text-5xl font-black text-gray-900">{symbol}0</span>
                   <span className="text-lg text-gray-400 mb-2">/month</span>
                 </div>
                 <p className="text-sm text-gray-400">No credit card required</p>
