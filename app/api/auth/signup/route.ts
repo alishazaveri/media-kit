@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       if (isValid) {
         const trialEndsAt = new Date(now.getTime() + link.duration_days * 24 * 60 * 60 * 1000);
         await Promise.all([
-          updateUser(userId, { trial_ends_at: trialEndsAt } as Parameters<typeof updateUser>[1]),
+          updateUser(userId, { trial_ends_at: trialEndsAt }),
           incrementTrialLinkUses(trial_token),
         ]);
       }

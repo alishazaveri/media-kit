@@ -20,6 +20,7 @@ type UserUpdateInput = Partial<{
   profile_image_url: string;
   data_refresh_interval_hours: number;
   last_data_refreshed_at: Date;
+  trial_ends_at: Date;
 }>;
 
 export async function createUser(data: UserCreateInput) {

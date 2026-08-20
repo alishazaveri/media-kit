@@ -39,8 +39,9 @@ export async function PATCH(req: NextRequest) {
       const activeSub = (subs as any[]).find(
         (s) => s.current_period_end && new Date(s.current_period_end) > now
       );
-      const trialEndsAt = (user as any)?.trial_ends_at ?? null;
-      const isFreePlan = !activeSub && !(trialEndsAt && new Date(trialEndsAt) > now);
+      const rawTrial = (user as any)?.trial_ends_at;
+      const trialEndsAt = rawTrial ? new Date(rawTrial) : null;
+      const isFreePlan = !activeSub && !(trialEndsAt && trialEndsAt > now);
       if (isFreePlan) {
         return NextResponse.json({ error: "Premium themes require a paid plan" }, { status: 403 });
       }
