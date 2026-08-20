@@ -21,6 +21,8 @@ type UserUpdateInput = Partial<{
   data_refresh_interval_hours: number;
   last_data_refreshed_at: Date;
   trial_ends_at: Date;
+  referred_by: Types.ObjectId;
+  referral_rewarded_at: Date;
 }>;
 
 export async function createUser(data: UserCreateInput) {

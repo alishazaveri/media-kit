@@ -9,10 +9,12 @@ export function SignupStep({
   onNext,
   claimedUsername,
   trialToken,
+  refCode,
 }: {
   onNext: (userId: string) => void;
   claimedUsername: string;
   trialToken?: string;
+  refCode?: string;
 }) {
   const [form, setForm] = useState({
     email: "",
@@ -36,6 +38,7 @@ export function SignupStep({
         username: claimedUsername,
         password: form.password,
         ...(trialToken && { trial_token: trialToken }),
+        ...(refCode && { ref: refCode }),
       });
       onNext(res.data.userId);
     } catch (err) {
