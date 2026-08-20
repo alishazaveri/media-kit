@@ -1,6 +1,6 @@
 import { registerUser, loginUser } from "@/services/user.service";
 import { getTrialLinkByToken, incrementTrialLinkUses } from "@/db/trial_link.db";
-import { updateUser } from "@/db/user.db";
+import { updateUser, getUserByUsername } from "@/db/user.db";
 import { NextRequest, NextResponse } from "next/server";
 
 const ACCESS_TOKEN_MAX_AGE = 15 * 60;
@@ -8,7 +8,7 @@ const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60;
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, username, password, trial_token } = await req.json();
+    const { email, username, password, trial_token, ref } = await req.json();
 
     const { user } = await registerUser("", email, username, password);
     const userId = user._id.toString();
@@ -25,9 +25,18 @@ export async function POST(req: NextRequest) {
       if (isValid) {
         const trialEndsAt = new Date(now.getTime() + link.duration_days * 24 * 60 * 60 * 1000);
         await Promise.all([
-          updateUser(userId, { trial_ends_at: trialEndsAt } as Parameters<typeof updateUser>[1]),
+          updateUser(userId, { trial_ends_at: trialEndsAt }),
           incrementTrialLinkUses(trial_token),
         ]);
+      }
+    }
+
+    // Save referred_by — body param takes priority, cookie is fallback for returning visitors
+    const refUsername = (typeof ref === "string" && ref) || req.cookies.get("kloot_ref")?.value || null;
+    if (refUsername) {
+      const referrer = await getUserByUsername(refUsername);
+      if (referrer && referrer._id.toString() !== userId) {
+        await updateUser(userId, { referred_by: referrer._id });
       }
     }
 

@@ -15,11 +15,13 @@ import { getThemeByIdentifier } from "@/constants/themes";
 import { useDashboard } from "@/components/dashboard/DashboardContext";
 import { useUser } from "@/contexts/UserContext";
 import { Toast } from "@/components/ui/Toast";
+import { ReferralModal } from "@/components/dashboard/ReferralModal";
 import { getDefaultPackages } from "@/lib/default-packages";
 
 export default function DashboardPage() {
   const { sidebarCollapsed, setSidebarCollapsed, openActivateModal } = useDashboard();
-  const { subscription, trialEndsAt, hasScheduledSubscription, isFreePlan } = useUser();
+  const { username, subscription, trialEndsAt, hasScheduledSubscription, isFreePlan } = useUser();
+  const [showReferralModal, setShowReferralModal] = useState(false);
   const isInactive = false;
 
   const [analyticsLoaded, setAnalyticsLoaded] = useState(false);
@@ -353,6 +355,9 @@ export default function DashboardPage() {
       setProfilePicChanged(false);
       setPublishedThemeIdentifier(draftThemeIdentifier);
       setPublishedDarkMode(draftDarkMode);
+      if (isFreePlan && !trialEndsAt) {
+        setShowReferralModal(true);
+      }
     } catch {
       /* silent */
     } finally {
@@ -433,6 +438,9 @@ export default function DashboardPage() {
           type="success"
           onClose={() => setCopied(false)}
         />
+      )}
+      {showReferralModal && (
+        <ReferralModal username={username} onClose={() => setShowReferralModal(false)} />
       )}
       <DashboardTopBar
         appUsername={appUsername}

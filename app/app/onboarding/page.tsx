@@ -40,6 +40,7 @@ function OnboardingContent() {
   const [claimedUsername, setClaimedUsername] = useState("");
   const prefillUsername = searchParams.get("username") ?? undefined;
   const trialToken = searchParams.get("trial") ?? undefined;
+  const refCode = searchParams.get("ref") ?? undefined;
 
   useEffect(() => {
     const errorParam = searchParams.get("error");
@@ -90,6 +91,7 @@ function OnboardingContent() {
         <SignupStep
           claimedUsername={claimedUsername}
           trialToken={trialToken}
+          refCode={refCode}
           onNext={(id) => {
             trackPixelEvent("Lead");
             setUserId(id);

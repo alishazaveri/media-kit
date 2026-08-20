@@ -270,6 +270,23 @@ export function PlanTab() {
                 </p>
               )}
             </div>
+          ) : trialEndsAt && !isFreePlan && !loading ? (
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-bold text-gray-900 text-base">Free Trial</p>
+                  <p className="text-sm text-gray-400 mt-0.5">
+                    Expires on {new Date(trialEndsAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+                  </p>
+                </div>
+                <span className="bg-amber-50 text-amber-600 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Trial
+                </span>
+              </div>
+              <Button variant="primary" size="sm" className="rounded-xl self-start" onClick={() => setShowActivateModal(true)}>
+                Upgrade to Pro
+              </Button>
+            </div>
           ) : isFreePlan && !loading ? (
             <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-4">
               <div className="flex items-start justify-between">

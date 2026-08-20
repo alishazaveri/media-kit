@@ -2,8 +2,10 @@ import { del } from "@vercel/blob";
 import { getSession } from "@/lib/session";
 import { publishUserData } from "@/services/user_data.service";
 import { getUserData } from "@/db/user_data.db";
-import { updateUser } from "@/db/user.db";
+import { updateUser, getUserById } from "@/db/user.db";
 import { NextResponse } from "next/server";
+
+const REFERRAL_REWARD_MONTHS = 3;
 
 function isVercelBlobUrl(url: unknown): url is string {
   return typeof url === "string" && url.includes(".public.blob.vercel-storage.com");
@@ -33,6 +35,25 @@ export async function POST() {
     // Delete old published blob now that it's been replaced
     if (isVercelBlobUrl(oldPublishedPic) && oldPublishedPic !== newDraftPic) {
       del(oldPublishedPic).catch(() => {});
+    }
+
+    // Reward referrer on first successful publish (idempotent — only fires once per referral)
+    const currentUser = await getUserById(session.userId);
+    const referredBy = (currentUser as any)?.referred_by;
+    const referralRewardedAt = (currentUser as any)?.referral_rewarded_at;
+    if (referredBy && !referralRewardedAt) {
+      const referrer = await getUserById(referredBy.toString());
+      if (referrer) {
+        const now = new Date();
+        const existingTrial = (referrer as any).trial_ends_at;
+        const base = existingTrial instanceof Date && existingTrial > now ? existingTrial : now;
+        const newTrialEndsAt = new Date(base);
+        newTrialEndsAt.setMonth(newTrialEndsAt.getMonth() + REFERRAL_REWARD_MONTHS);
+        await Promise.all([
+          updateUser(referredBy.toString(), { trial_ends_at: newTrialEndsAt }),
+          updateUser(session.userId, { referral_rewarded_at: now }),
+        ]);
+      }
     }
 
     return NextResponse.json({ data: published });

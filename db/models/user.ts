@@ -12,6 +12,8 @@ export interface IUser extends Document {
   data_refresh_interval_hours: number;
   last_data_refreshed_at?: Date;
   trial_ends_at?: Date;
+  referred_by?: mongoose.Types.ObjectId;
+  referral_rewarded_at?: Date;
   created_at: Date;
   updated_at: Date;
 }
@@ -29,6 +31,8 @@ const UserSchema = new Schema<IUser>(
     data_refresh_interval_hours: { type: Number, default: 24 },
     last_data_refreshed_at: { type: Date },
     trial_ends_at: { type: Date },
+    referred_by: { type: Schema.Types.ObjectId, ref: "User" },
+    referral_rewarded_at: { type: Date },
   },
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );

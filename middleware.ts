@@ -89,7 +89,21 @@ function applyCountryHeader(req: NextRequest): NextResponse {
   const value = override ?? country;
   const headers = new Headers(req.headers);
   headers.set("x-kloot-country", value);
-  return NextResponse.next({ request: { headers } });
+  const response = NextResponse.next({ request: { headers } });
+
+  // Persist referral code as a 30-day cookie from any page that carries ?ref=
+  const ref = req.nextUrl.searchParams.get("ref");
+  if (ref && /^[a-zA-Z0-9_.-]{1,50}$/.test(ref)) {
+    response.cookies.set("kloot_ref", ref, {
+      maxAge: 30 * 24 * 60 * 60,
+      path: "/",
+      sameSite: "lax",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
+  }
+
+  return response;
 }
 
 export async function middleware(req: NextRequest) {

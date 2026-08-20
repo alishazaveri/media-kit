@@ -49,10 +49,10 @@ export async function GET() {
 
     const hasScheduledSubscription = !!scheduledSub || !!pendingScheduledSub;
 
-    const trialEndsAt = user?.trial_ends_at ?? null;
+    const trialEndsAt = user?.trial_ends_at instanceof Date ? user.trial_ends_at : null;
     const isFreePlan =
       !activeSub &&
-      !(trialEndsAt && new Date(trialEndsAt) > now);
+      !(trialEndsAt && trialEndsAt > now);
 
     return NextResponse.json({
       userId: session.userId,
@@ -61,7 +61,7 @@ export async function GET() {
       profilePic: user?.profile_image_url ?? null,
       isLinkActive: active,
       isFreePlan,
-      trialEndsAt: trialEndsAt?.toISOString() ?? null,
+      trialEndsAt: trialEndsAt ? trialEndsAt.toISOString() : null,
       hasScheduledSubscription,
       scheduledSubscription: pendingScheduledSub
         ? {
