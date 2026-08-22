@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
       state: statePayload,
     });
     return NextResponse.json({
-      url: `https://api.instagram.com/oauth/authorize?${params.toString()}`,
+      url: `https://www.instagram.com/oauth/authorize?${params.toString()}`,
     });
   } catch (error) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // Step 1: Short-lived token
     const shortRes = await axios.post(
-      "https://api.instagram.com/oauth/access_token",
+      "https://www.instagram.com/oauth/access_token",
       new URLSearchParams({
         client_id: config.APP_ID,
         client_secret: config.APP_SECRET,
